@@ -2,6 +2,7 @@
 # Copyright 2011 OpenStack Foundation
 # Copyright 2012 Grid Dynamics
 # Copyright 2013 OpenStack Foundation
+# Copyright 2016 Cloudbase Solutions Srl
 # All Rights Reserved.
 #
 #    Licensed under the Apache License, Version 2.0 (the "License"); you may

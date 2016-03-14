@@ -13,19 +13,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-MIGRATION_STATUS_RUNNING = "RUNNING"
-MIGRATION_STATUS_COMPLETED = "COMPLETED"
-MIGRATION_STATUS_ERROR = "ERROR"
+import pbr.version
 
-TASK_STATUS_PENDING = "PENDING"
-TASK_STATUS_RUNNING = "RUNNING"
-TASK_STATUS_COMPLETED = "COMPLETED"
-TASK_STATUS_ERROR = "ERROR"
-TASK_STATUS_CANCELED = "CANCELED"
+__all__ = ['__version__']
 
-TASK_TYPE_EXPORT_INSTANCE = "EXPORT_INSTANCE"
-TASK_TYPE_IMPORT_INSTANCE = "IMPORT_INSTANCE"
-
-TASK_EVENT_INFO = "INFO"
-TASK_EVENT_WARNING = "WARNING"
-TASK_EVENT_ERROR = "ERROR"
+version_info = pbr.version.VersionInfo('python-coriolisclient')
+try:
+    __version__ = version_info.version_string()
+except AttributeError:
+    __version__ = None
