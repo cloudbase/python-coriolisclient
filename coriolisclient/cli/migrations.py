@@ -33,6 +33,9 @@ class MigrationFormatter(formatter.EntityFormatter):
                "Created",
                )
 
+    def _get_sorted_list(self, obj_list):
+        return sorted(obj_list, key=lambda o: o.created_at)
+
     def _get_formatted_data(self, obj):
         data = (obj.id,
                 obj.status,

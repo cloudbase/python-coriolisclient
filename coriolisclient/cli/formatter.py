@@ -19,9 +19,13 @@ class EntityFormatter(object):
     the function _get_formatted_data().
     """
 
+    def _get_sorted_list(self, obj_list):
+        return obj_list
+
     def list_objects(self, obj_list):
         columns = []
-        data = (self._get_generic_data(obj) for obj in obj_list)
+        data = (self._get_generic_data(obj) for obj in
+                self._get_sorted_list(obj_list))
         if obj_list:
             columns = self._get_generic_columns()
         return columns, data
