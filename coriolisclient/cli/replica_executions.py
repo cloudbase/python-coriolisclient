@@ -70,6 +70,7 @@ class ReplicaExecutionDetailFormatter(formatter.EntityFormatter):
 
     def _format_task(self, task):
         d = task.to_dict()
+        d["depends_on"] = ", ".join(d.get("depends_on") or [])
 
         progress_updates_format = "progress_updates:"
         progress_updates = self._format_progress_updates(d)
