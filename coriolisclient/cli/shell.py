@@ -327,7 +327,8 @@ class Coriolis(app.App):
         client interface.
         This is inherited from the framework.
         """
-        self.client_manager = namedtuple('ClientManager', 'migration')
+        self.client_manager = namedtuple(
+            'ClientManager', 'coriolis')
         if cmd.auth_required:
             self.client_manager.coriolis = self.create_client(self.options)
 

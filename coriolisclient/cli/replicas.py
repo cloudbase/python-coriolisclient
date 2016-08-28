@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """
-Command-line interface sub-commands related to migrations.
+Command-line interface sub-commands related to replicas.
 """
 import json
 import os
@@ -24,32 +24,38 @@ from cliff import show
 
 from coriolisclient import exceptions
 from coriolisclient.cli import formatter
+from coriolisclient.cli import replica_executions
 
 
-class MigrationFormatter(formatter.EntityFormatter):
+class ReplicaFormatter(formatter.EntityFormatter):
 
     columns = ("ID",
-               "Status",
                "Instances",
+               "Last tasks execution",
                "Created",
                )
 
     def _get_sorted_list(self, obj_list):
         return sorted(obj_list, key=lambda o: o.created_at)
 
+    def _format_last_execution(self, obj):
+        if obj.executions:
+            execution = obj.executions[-1]
+            return "%(id)s %(status)s" % execution.to_dict()
+        return ""
+
     def _get_formatted_data(self, obj):
         data = (obj.id,
-                obj.status,
                 "\n".join(obj.instances),
+                self._format_last_execution(obj),
                 obj.created_at,
                 )
         return data
 
 
-class MigrationDetailFormatter(formatter.EntityFormatter):
+class ReplicaDetailFormatter(formatter.EntityFormatter):
 
     columns = ("id",
-               "status",
                "created",
                "last_updated",
                "instances",
@@ -57,7 +63,8 @@ class MigrationDetailFormatter(formatter.EntityFormatter):
                "origin-connection",
                "destination-provider",
                "destination-connection",
-               "tasks",
+               "executions",
+               "instances-data",
                )
 
     def _format_instances(self, obj):
@@ -66,42 +73,16 @@ class MigrationDetailFormatter(formatter.EntityFormatter):
     def _format_conn_info(self, endpoint):
         return endpoint.to_dict().get("connection_info") or ""
 
-    def _format_progress_update(self, progress_update):
-        return (
-            "%(created_at)s %(message)s" % progress_update)
+    def _format_execution(self, execution):
+        return ("%(id)s %(status)s" % execution.to_dict())
 
-    def _format_progress_updates(self, task_dict):
+    def _format_executions(self, executions):
         return ("%(ls)s" % {"ls": os.linesep}).join(
-            [self._format_progress_update(p) for p in
-             sorted(task_dict.get("progress_updates", []),
-                    key=lambda p: p["created_at"])])
-
-    def _format_task(self, task):
-        d = task.to_dict()
-
-        progress_updates_format = "progress_updates:"
-        progress_updates = self._format_progress_updates(d)
-        if progress_updates:
-            progress_updates_format += os.linesep
-            progress_updates_format += progress_updates
-
-        return os.linesep.join(
-            ["%s: %s" % (k, d.get(k) or "") for k in
-                ['id',
-                 'task_type',
-                 'instance',
-                 'status',
-                 'depends_on',
-                 'exception_details']] +
-            [progress_updates_format])
-
-    def _format_tasks(self, obj):
-        return ("%(ls)s%(ls)s" % {"ls": os.linesep}).join(
-            [self._format_task(t) for t in obj.tasks])
+            [self._format_execution(e) for e in
+             sorted(executions, key=lambda e: e.created_at)])
 
     def _get_formatted_data(self, obj):
         data = (obj.id,
-                obj.status,
                 obj.created_at,
                 obj.updated_at,
                 self._format_instances(obj),
@@ -109,16 +90,16 @@ class MigrationDetailFormatter(formatter.EntityFormatter):
                 self._format_conn_info(obj.origin),
                 obj.destination.type,
                 self._format_conn_info(obj.destination),
-                self._format_tasks(obj),
+                self._format_executions(obj.executions),
+                obj.info,
                 )
         return data
 
 
-class CreateMigration(show.ShowOne):
-    """Start a new migration"""
+class CreateReplica(show.ShowOne):
+    """Create a new replica"""
     def get_parser(self, prog_name):
-        parser = super(CreateMigration, self).get_parser(prog_name)
-
+        parser = super(CreateReplica, self).get_parser(prog_name)
         parser.add_argument('--origin-provider', required=True,
                             help='The origin provider, e.g.: '
                             'vmware_vsphere, openstack')
@@ -172,7 +153,7 @@ class CreateMigration(show.ShowOne):
         if args.target_environment:
             target_environment = json.loads(args.target_environment)
 
-        migration = self.app.client_manager.coriolis.migrations.create(
+        replica = self.app.client_manager.coriolis.replicas.create(
             args.origin_provider,
             origin_conn_info,
             args.destination_provider,
@@ -180,78 +161,56 @@ class CreateMigration(show.ShowOne):
             target_environment,
             args.instances)
 
-        return MigrationDetailFormatter().get_formatted_entity(migration)
+        return ReplicaDetailFormatter().get_formatted_entity(replica)
 
 
-class CreateMigrationFromReplica(show.ShowOne):
-    """Start a new migration from an existing replica"""
+class ShowReplica(show.ShowOne):
+    """Show a replica"""
+
     def get_parser(self, prog_name):
-        parser = super(CreateMigrationFromReplica, self).get_parser(prog_name)
-        parser.add_argument('replica',
-                            help='The ID of the replica to migrate')
-        parser.add_argument('--force',
-                            help='Force the migration in case of a replica '
-                            'with failed executions', action='store_true',
-                            default=False)
+        parser = super(ShowReplica, self).get_parser(prog_name)
+        parser.add_argument('id', help='The replica\'s id')
         return parser
 
     def take_action(self, args):
-        m = self.app.client_manager.coriolis.migrations
-        migration = m.create_from_replica(
-            args.replica,
-            args.force)
-
-        return MigrationDetailFormatter().get_formatted_entity(migration)
+        replica = self.app.client_manager.coriolis.replicas.get(args.id)
+        return ReplicaDetailFormatter().get_formatted_entity(replica)
 
 
-class ShowMigration(show.ShowOne):
-    """Show a migration"""
+class DeleteReplica(command.Command):
+    """Delete a replica"""
 
     def get_parser(self, prog_name):
-        parser = super(ShowMigration, self).get_parser(prog_name)
-        parser.add_argument('id', help='The migration\'s id')
+        parser = super(DeleteReplica, self).get_parser(prog_name)
+        parser.add_argument('id', help='The replica\'s id')
         return parser
 
     def take_action(self, args):
-        migration = self.app.client_manager.coriolis.migrations.get(args.id)
-        return MigrationDetailFormatter().get_formatted_entity(migration)
+        self.app.client_manager.coriolis.replicas.delete(args.id)
 
 
-class CancelMigration(command.Command):
-    """Cancel a migration"""
+class DeleteReplicaDisks(show.ShowOne):
+    """Delete replica target disks"""
 
     def get_parser(self, prog_name):
-        parser = super(CancelMigration, self).get_parser(prog_name)
-        parser.add_argument('id', help='The migration\'s id')
-        parser.add_argument('--force',
-                            help='Perform a forced termination of running '
-                            'tasks', action='store_true',
-                            default=False)
+        parser = super(DeleteReplicaDisks, self).get_parser(prog_name)
+        parser.add_argument('id', help='The replica\'s id')
         return parser
 
     def take_action(self, args):
-        self.app.client_manager.coriolis.migrations.cancel(args.id, args.force)
+        execution = self.app.client_manager.coriolis.replicas.delete_disks(
+            args.id)
+        return replica_executions.ReplicaExecutionDetailFormatter(
+        ).get_formatted_entity(execution)
 
 
-class DeleteMigration(command.Command):
-    """Delete a migration"""
+class ListReplica(lister.Lister):
+    """List replicas"""
 
     def get_parser(self, prog_name):
-        parser = super(DeleteMigration, self).get_parser(prog_name)
-        parser.add_argument('id', help='The migration\'s id')
+        parser = super(ListReplica, self).get_parser(prog_name)
         return parser
 
     def take_action(self, args):
-        self.app.client_manager.coriolis.migrations.delete(args.id)
-
-
-class ListMigration(lister.Lister):
-    """List migrations"""
-
-    def get_parser(self, prog_name):
-        parser = super(ListMigration, self).get_parser(prog_name)
-        return parser
-
-    def take_action(self, args):
-        obj_list = self.app.client_manager.coriolis.migrations.list()
-        return MigrationFormatter().list_objects(obj_list)
+        obj_list = self.app.client_manager.coriolis.replicas.list()
+        return ReplicaFormatter().list_objects(obj_list)

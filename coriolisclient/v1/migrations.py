@@ -14,31 +14,7 @@
 # limitations under the License.
 
 from coriolisclient import base
-
-
-class ProgressUpdate(base.Resource):
-    pass
-
-
-class Task(base.Resource):
-    @property
-    def progress_updates(self):
-        if not self._loaded or self._info.get('progress_updates') is None:
-            self.get()
-        return [ProgressUpdate(None, d, loaded=True) for d in
-                self._info.get('progress_updates', [])]
-
-
-class MigrationEndpoint(base.Resource):
-    pass
-
-
-class Origin(MigrationEndpoint):
-    pass
-
-
-class Destination(MigrationEndpoint):
-    pass
+from coriolisclient.v1 import common
 
 
 class Migration(base.Resource):
@@ -46,21 +22,19 @@ class Migration(base.Resource):
 
     @property
     def origin(self):
-        return Origin(None, self._info.get("origin"), loaded=True)
+        return common.Origin(None, self._info.get("origin"), loaded=True)
 
     @property
     def destination(self):
-        return Destination(None, self._info.get("destination"), loaded=True)
+        return common.Destination(None, self._info.get("destination"),
+                                  loaded=True)
 
     @property
     def tasks(self):
-        if not self._loaded or self._info.get('tasks') is None:
+        if self._info.get('tasks') is None:
             self.get()
-        return [Task(None, d, loaded=True) for d in
+        return [common.Task(None, d, loaded=True) for d in
                 self._info.get('tasks', [])]
-
-    def cancel(self):
-        self.client.cancel(self)
 
 
 class MigrationManager(base.BaseManager):
@@ -70,7 +44,7 @@ class MigrationManager(base.BaseManager):
         super(MigrationManager, self).__init__(api)
 
     def list(self):
-        return self._list('/migrations', 'migrations')
+        return self._list('/migrations/detail', 'migrations')
 
     def get(self, migration):
         return self._get('/migrations/%s' % base.getid(migration), 'migration')
@@ -81,21 +55,24 @@ class MigrationManager(base.BaseManager):
             "origin": {
                 "type": origin_type,
                 "connection_info": origin_connection_info,
-                },
+            },
             "destination": {
                 "type": destination_type,
                 "connection_info": destination_connection_info,
                 "target_environment": target_environment,
-                },
-            "instances": instances,
-            }
+            },
+            "instances": instances, }
         }
+        return self._post('/migrations', data, 'migration')
+
+    def create_from_replica(self, replica_id, force=False):
+        data = {"migration": {"replica_id": replica_id, "force": force}}
         return self._post('/migrations', data, 'migration')
 
     def delete(self, migration):
         return self._delete('/migrations/%s' % base.getid(migration))
 
-    def cancel(self, migration):
+    def cancel(self, migration, force=False):
         return self.client.post(
             '/migrations/%s/actions' % base.getid(migration),
-            json={'cancel': None})
+            json={'cancel': {'force': force}})
