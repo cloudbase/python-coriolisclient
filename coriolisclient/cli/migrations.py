@@ -194,12 +194,17 @@ class CreateMigrationFromReplica(show.ShowOne):
                             help='Force the migration in case of a replica '
                             'with failed executions', action='store_true',
                             default=False)
+        parser.add_argument('--dont-clone-disks',
+                            help='Retain the replica disks by cloning them',
+                            action='store_false', dest="clone_disks",
+                            default=True)
         return parser
 
     def take_action(self, args):
         m = self.app.client_manager.coriolis.migrations
         migration = m.create_from_replica(
             args.replica,
+            args.clone_disks,
             args.force)
 
         return MigrationDetailFormatter().get_formatted_entity(migration)

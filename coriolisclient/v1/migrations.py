@@ -65,8 +65,11 @@ class MigrationManager(base.BaseManager):
         }
         return self._post('/migrations', data, 'migration')
 
-    def create_from_replica(self, replica_id, force=False):
-        data = {"migration": {"replica_id": replica_id, "force": force}}
+    def create_from_replica(self, replica_id, clone_disks=True, force=False):
+        data = {"migration": {
+            "replica_id": replica_id,
+            "clone_disks": clone_disks,
+            "force": force}}
         return self._post('/migrations', data, 'migration')
 
     def delete(self, migration):
