@@ -55,17 +55,21 @@ class ReplicaFormatter(formatter.EntityFormatter):
 
 class ReplicaDetailFormatter(formatter.EntityFormatter):
 
-    columns = ("id",
-               "created",
-               "last_updated",
-               "instances",
-               "origin-provider",
-               "origin-connection",
-               "destination-provider",
-               "destination-connection",
-               "executions",
-               "instances-data",
-               )
+    def __init__(self, show_instances_data=False):
+        self.columns = [
+            "id",
+            "created",
+            "last_updated",
+            "instances",
+            "origin-provider",
+            "origin-connection",
+            "destination-provider",
+            "destination-connection",
+            "executions",
+        ]
+
+        if show_instances_data:
+            self.columns.append("instances-data")
 
     def _format_instances(self, obj):
         return os.linesep.join(sorted(obj.instances))
@@ -82,7 +86,7 @@ class ReplicaDetailFormatter(formatter.EntityFormatter):
              sorted(executions, key=lambda e: e.created_at)])
 
     def _get_formatted_data(self, obj):
-        data = (obj.id,
+        data = [obj.id,
                 obj.created_at,
                 obj.updated_at,
                 self._format_instances(obj),
@@ -91,8 +95,11 @@ class ReplicaDetailFormatter(formatter.EntityFormatter):
                 obj.destination.type,
                 self._format_conn_info(obj.destination),
                 self._format_executions(obj.executions),
-                obj.info,
-                )
+                ]
+
+        if "instances-data" in self.columns:
+            data.append(obj.info)
+
         return data
 
 
@@ -123,7 +130,6 @@ class CreateReplica(show.ShowOne):
                             dest="instances",
                             help='An instances to be migrated, can be '
                             'specified multiple times')
-
         return parser
 
     def take_action(self, args):
@@ -170,11 +176,16 @@ class ShowReplica(show.ShowOne):
     def get_parser(self, prog_name):
         parser = super(ShowReplica, self).get_parser(prog_name)
         parser.add_argument('id', help='The replica\'s id')
+        parser.add_argument('--show-instances-data', action='store_true',
+                            help='Includes the instances data used for tasks '
+                            'execution, this is useful for troubleshooting',
+                            default=False)
         return parser
 
     def take_action(self, args):
         replica = self.app.client_manager.coriolis.replicas.get(args.id)
-        return ReplicaDetailFormatter().get_formatted_entity(replica)
+        return ReplicaDetailFormatter(
+            args.show_instances_data).get_formatted_entity(replica)
 
 
 class DeleteReplica(command.Command):

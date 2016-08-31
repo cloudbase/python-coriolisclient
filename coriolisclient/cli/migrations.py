@@ -48,17 +48,22 @@ class MigrationFormatter(formatter.EntityFormatter):
 
 class MigrationDetailFormatter(formatter.EntityFormatter):
 
-    columns = ("id",
-               "status",
-               "created",
-               "last_updated",
-               "instances",
-               "origin-provider",
-               "origin-connection",
-               "destination-provider",
-               "destination-connection",
-               "tasks",
-               )
+    def __init__(self, show_instances_data=False):
+        self.columns = [
+            "id",
+            "status",
+            "created",
+            "last_updated",
+            "instances",
+            "origin-provider",
+            "origin-connection",
+            "destination-provider",
+            "destination-connection",
+            "tasks",
+        ]
+
+        if show_instances_data:
+            self.columns.append("instances-data")
 
     def _format_instances(self, obj):
         return os.linesep.join(sorted(obj.instances))
@@ -101,7 +106,7 @@ class MigrationDetailFormatter(formatter.EntityFormatter):
             [self._format_task(t) for t in obj.tasks])
 
     def _get_formatted_data(self, obj):
-        data = (obj.id,
+        data = [obj.id,
                 obj.status,
                 obj.created_at,
                 obj.updated_at,
@@ -111,7 +116,11 @@ class MigrationDetailFormatter(formatter.EntityFormatter):
                 obj.destination.type,
                 self._format_conn_info(obj.destination),
                 self._format_tasks(obj),
-                )
+                ]
+
+        if "instances-data" in self.columns:
+            data.append(obj.info)
+
         return data
 
 
@@ -216,11 +225,16 @@ class ShowMigration(show.ShowOne):
     def get_parser(self, prog_name):
         parser = super(ShowMigration, self).get_parser(prog_name)
         parser.add_argument('id', help='The migration\'s id')
+        parser.add_argument('--show-instances-data', action='store_true',
+                            help='Includes the instances data used for tasks '
+                            'execution, this is useful for troubleshooting',
+                            default=False)
         return parser
 
     def take_action(self, args):
         migration = self.app.client_manager.coriolis.migrations.get(args.id)
-        return MigrationDetailFormatter().get_formatted_entity(migration)
+        return MigrationDetailFormatter(
+            args.show_instances_data).get_formatted_entity(migration)
 
 
 class CancelMigration(command.Command):
