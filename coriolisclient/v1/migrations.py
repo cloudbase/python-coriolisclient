@@ -21,13 +21,10 @@ class Migration(base.Resource):
     _tasks = None
 
     @property
-    def origin(self):
-        return common.Origin(None, self._info.get("origin"), loaded=True)
-
-    @property
-    def destination(self):
-        return common.Destination(None, self._info.get("destination"),
-                                  loaded=True)
+    def target_environment(self):
+        dest_env = self._info.get("destination_environment")
+        if dest_env is not None:
+            return common.TargetEnvironment(None, dest_env, loaded=True)
 
     @property
     def tasks(self):
@@ -49,18 +46,12 @@ class MigrationManager(base.BaseManager):
     def get(self, migration):
         return self._get('/migrations/%s' % base.getid(migration), 'migration')
 
-    def create(self, origin_type, origin_connection_info, destination_type,
-               destination_connection_info, target_environment, instances):
+    def create(self, origin_endpoint_id, destination_endpoint_id,
+               target_environment, instances):
         data = {"migration": {
-            "origin": {
-                "type": origin_type,
-                "connection_info": origin_connection_info,
-            },
-            "destination": {
-                "type": destination_type,
-                "connection_info": destination_connection_info,
-                "target_environment": target_environment,
-            },
+            "origin_endpoint_id": origin_endpoint_id,
+            "destination_endpoint_id": destination_endpoint_id,
+            "destination_environment": target_environment,
             "instances": instances, }
         }
         return self._post('/migrations', data, 'migration')

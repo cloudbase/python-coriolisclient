@@ -22,7 +22,6 @@ from cliff import command
 from cliff import lister
 from cliff import show
 
-from coriolisclient import exceptions
 from coriolisclient.cli import formatter
 
 
@@ -55,21 +54,23 @@ class MigrationDetailFormatter(formatter.EntityFormatter):
             "created",
             "last_updated",
             "instances",
-            "origin-provider",
-            "origin-connection",
-            "destination-provider",
-            "destination-connection",
+            "origin_endpoint_id",
+            "destination_endpoint_id",
+            "target_environment",
             "tasks",
         ]
 
         if show_instances_data:
-            self.columns.append("instances-data")
+            self.columns.append("instances_data")
 
     def _format_instances(self, obj):
         return os.linesep.join(sorted(obj.instances))
 
-    def _format_conn_info(self, endpoint):
-        return endpoint.to_dict().get("connection_info") or ""
+    def _format_target_environment(self, obj):
+        if obj.target_environment is not None:
+            return obj.target_environment.to_dict()
+        else:
+            return ""
 
     def _format_progress_update(self, progress_update):
         return (
@@ -111,10 +112,9 @@ class MigrationDetailFormatter(formatter.EntityFormatter):
                 obj.created_at,
                 obj.updated_at,
                 self._format_instances(obj),
-                obj.origin.type,
-                self._format_conn_info(obj.origin),
-                obj.destination.type,
-                self._format_conn_info(obj.destination),
+                obj.origin_endpoint_id,
+                obj.destination_endpoint_id,
+                self._format_target_environment(obj),
                 self._format_tasks(obj),
                 ]
 
@@ -128,23 +128,10 @@ class CreateMigration(show.ShowOne):
     """Start a new migration"""
     def get_parser(self, prog_name):
         parser = super(CreateMigration, self).get_parser(prog_name)
-
-        parser.add_argument('--origin-provider', required=True,
-                            help='The origin provider, e.g.: '
-                            'vmware_vsphere, openstack')
-        parser.add_argument('--origin-connection',
-                            help='JSON encoded origin connection data')
-        parser.add_argument('--origin-connection-secret',
-                            help='The url of the Barbican secret containing '
-                            'the origin connection info')
-        parser.add_argument('--destination-provider', required=True,
-                            help='The destination provider, e.g.: '
-                            'vmware_vsphere, openstack')
-        parser.add_argument('--destination-connection',
-                            help='JSON encoded destination connection data')
-        parser.add_argument('--destination-connection-secret',
-                            help='The url of the Barbican secret containing '
-                            'the destination connection info')
+        parser.add_argument('--origin-endpoint', required=True,
+                            help='The origin endpoint id')
+        parser.add_argument('--destination-endpoint', required=True,
+                            help='The destination endpoint id')
         parser.add_argument('--target-environment',
                             help='JSON encoded data related to the '
                             'destination\'s target environment')
@@ -152,41 +139,16 @@ class CreateMigration(show.ShowOne):
                             dest="instances",
                             help='An instances to be migrated, can be '
                             'specified multiple times')
-
         return parser
 
     def take_action(self, args):
-        if args.origin_connection_secret and args.origin_connection:
-            raise exceptions.CoriolisException(
-                "Please specify either --origin-connection or "
-                "--origin-connection-secret, but not both")
-
-        if args.destination_connection_secret and args.destination_connection:
-            raise exceptions.CoriolisException(
-                "Please specify either --destination-connection or "
-                "--destination-connection-secret, but not both")
-
-        origin_conn_info = None
-        if args.origin_connection_secret:
-            origin_conn_info = {"secret_ref": args.origin_connection_secret}
-        if args.origin_connection:
-            origin_conn_info = json.loads(args.origin_connection)
-
-        dest_conn_info = None
-        if args.destination_connection_secret:
-            dest_conn_info = {"secret_ref": args.destination_connection_secret}
-        if args.destination_connection:
-            dest_conn_info = json.loads(args.destination_connection)
-
         target_environment = None
         if args.target_environment:
             target_environment = json.loads(args.target_environment)
 
         migration = self.app.client_manager.coriolis.migrations.create(
-            args.origin_provider,
-            origin_conn_info,
-            args.destination_provider,
-            dest_conn_info,
+            args.origin_endpoint,
+            args.destination_endpoint,
             target_environment,
             args.instances)
 

@@ -53,7 +53,7 @@ class EndpointDetailFormatter(formatter.EntityFormatter):
             "name",
             "type",
             "description",
-            "connection-info",
+            "connection_info",
             "last_updated",
         ]
 
