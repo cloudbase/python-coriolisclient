@@ -27,9 +27,10 @@ from cliff import command
 from cliff import commandmanager
 from cliff import complete
 from cliff import help
+from keystoneauth1 import loading
+from keystoneauth1 import session
 from keystoneclient.auth.identity import v3
 from keystoneclient.auth.identity import v2
-from keystoneclient import session
 import six
 
 from coriolisclient import client
@@ -315,7 +316,8 @@ class Coriolis(app.App):
                             help='Defaults to env[CORIOLIS_API_VERSION].')
         parser.epilog = ('See "coriolis help COMMAND" for help '
                          'on a specific command.')
-        session.Session.register_cli_options(parser)
+        loading.register_session_argparse_arguments(parser)
+
         return parser
 
     def _env(self, var_name, default=None):
