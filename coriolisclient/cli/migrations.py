@@ -56,7 +56,7 @@ class MigrationDetailFormatter(formatter.EntityFormatter):
             "instances",
             "origin_endpoint_id",
             "destination_endpoint_id",
-            "target_environment",
+            "destination_environment",
             "tasks",
         ]
 
@@ -66,9 +66,9 @@ class MigrationDetailFormatter(formatter.EntityFormatter):
     def _format_instances(self, obj):
         return os.linesep.join(sorted(obj.instances))
 
-    def _format_target_environment(self, obj):
-        if obj.target_environment is not None:
-            return obj.target_environment.to_dict()
+    def _format_destination_environment(self, obj):
+        if obj.destination_environment is not None:
+            return obj.destination_environment.to_dict()
         else:
             return ""
 
@@ -114,7 +114,7 @@ class MigrationDetailFormatter(formatter.EntityFormatter):
                 self._format_instances(obj),
                 obj.origin_endpoint_id,
                 obj.destination_endpoint_id,
-                self._format_target_environment(obj),
+                self._format_destination_environment(obj),
                 self._format_tasks(obj),
                 ]
 
@@ -132,9 +132,9 @@ class CreateMigration(show.ShowOne):
                             help='The origin endpoint id')
         parser.add_argument('--destination-endpoint', required=True,
                             help='The destination endpoint id')
-        parser.add_argument('--target-environment',
+        parser.add_argument('--destination-environment',
                             help='JSON encoded data related to the '
-                            'destination\'s target environment')
+                            'destination\'s environment')
         parser.add_argument('--instance', action='append', required=True,
                             dest="instances",
                             help='An instances to be migrated, can be '
@@ -142,14 +142,14 @@ class CreateMigration(show.ShowOne):
         return parser
 
     def take_action(self, args):
-        target_environment = None
-        if args.target_environment:
-            target_environment = json.loads(args.target_environment)
+        destination_environment = None
+        if args.destination_environment:
+            destination_environment = json.loads(args.destination_environment)
 
         migration = self.app.client_manager.coriolis.migrations.create(
             args.origin_endpoint,
             args.destination_endpoint,
-            target_environment,
+            destination_environment,
             args.instances)
 
         return MigrationDetailFormatter().get_formatted_entity(migration)

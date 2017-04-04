@@ -21,7 +21,7 @@ class Migration(base.Resource):
     _tasks = None
 
     @property
-    def target_environment(self):
+    def destination_environment(self):
         dest_env = self._info.get("destination_environment")
         if dest_env is not None:
             return common.TargetEnvironment(None, dest_env, loaded=True)
@@ -47,11 +47,11 @@ class MigrationManager(base.BaseManager):
         return self._get('/migrations/%s' % base.getid(migration), 'migration')
 
     def create(self, origin_endpoint_id, destination_endpoint_id,
-               target_environment, instances):
+               destination_environment, instances):
         data = {"migration": {
             "origin_endpoint_id": origin_endpoint_id,
             "destination_endpoint_id": destination_endpoint_id,
-            "destination_environment": target_environment,
+            "destination_environment": destination_environment,
             "instances": instances, }
         }
         return self._post('/migrations', data, 'migration')
