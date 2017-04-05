@@ -22,13 +22,10 @@ class Replica(base.Resource):
     _tasks = None
 
     @property
-    def origin(self):
-        return common.Origin(None, self._info.get("origin"), loaded=True)
-
-    @property
-    def destination(self):
-        return common.Destination(None, self._info.get("destination"),
-                                  loaded=True)
+    def destination_environment(self):
+        dest_env = self._info.get("destination_environment")
+        if dest_env is not None:
+            return common.TargetEnvironment(None, dest_env, loaded=True)
 
     @property
     def executions(self):
@@ -50,19 +47,13 @@ class ReplicaManager(base.BaseManager):
     def get(self, replica):
         return self._get('/replicas/%s' % base.getid(replica), 'replica')
 
-    def create(self, origin_type, origin_connection_info, destination_type,
-               destination_connection_info, target_environment, instances):
+    def create(self, origin_endpoint_id, destination_endpoint_id,
+               destination_environment, instances):
         data = {
             "replica": {
-                "origin": {
-                    "type": origin_type,
-                    "connection_info": origin_connection_info,
-                },
-                "destination": {
-                    "type": destination_type,
-                    "connection_info": destination_connection_info,
-                    "target_environment": target_environment,
-                },
+                "origin_endpoint_id": origin_endpoint_id,
+                "destination_endpoint_id": destination_endpoint_id,
+                "destination_environment": destination_environment,
                 "instances": instances,
             }
         }

@@ -33,13 +33,5 @@ class TasksExecution(base.Resource):
     pass
 
 
-class TransferActionEndpoint(base.Resource):
-    pass
-
-
-class Origin(TransferActionEndpoint):
-    pass
-
-
-class Destination(TransferActionEndpoint):
+class TargetEnvironment(base.Resource):
     pass
