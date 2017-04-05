@@ -27,7 +27,6 @@ class EndpointInstanceFormatter(formatter.EntityFormatter):
                "Memory MB",
                "Cores",
                "OS Type",
-               "Firmware Type",
                )
 
     def _get_formatted_data(self, obj):
@@ -37,7 +36,6 @@ class EndpointInstanceFormatter(formatter.EntityFormatter):
                 obj.memory_mb,
                 obj.num_cpu,
                 obj.os_type,
-                obj.firmware_type or "",
                 )
         return data
 

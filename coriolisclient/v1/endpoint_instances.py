@@ -23,10 +23,6 @@ class EndpointInstance(base.Resource):
     def flavor_name(self):
         return self._info.get("flavor_name")
 
-    @property
-    def firmware_type(self):
-        return self._info.get("firmware_type")
-
 
 class EndpointInstanceManager(base.BaseManager):
     resource_class = EndpointInstance
