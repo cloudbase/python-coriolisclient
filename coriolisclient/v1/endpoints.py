@@ -53,3 +53,10 @@ class EndpointManager(base.BaseManager):
 
     def delete(self, endpoint):
         return self._delete('/endpoints/%s' % base.getid(endpoint))
+
+    def validate_connection(self, endpoint):
+        data = self.client.post(
+            '/endpoints/%s/actions' % base.getid(endpoint),
+            json={'validate-connection': None}).json()
+        validate_data = data["validate-connection"]
+        return validate_data.get("valid"), validate_data.get("message")

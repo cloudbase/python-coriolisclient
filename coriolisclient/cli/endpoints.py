@@ -146,3 +146,18 @@ class ListEndpoint(lister.Lister):
     def take_action(self, args):
         obj_list = self.app.client_manager.coriolis.endpoints.list()
         return EndpointFormatter().list_objects(obj_list)
+
+
+class EndpointValidateConnection(command.Command):
+    """validates an edpoint's connection"""
+
+    def get_parser(self, prog_name):
+        parser = super(EndpointValidateConnection, self).get_parser(prog_name)
+        parser.add_argument('id', help='The endpoint\'s id')
+        return parser
+
+    def take_action(self, args):
+        endpoints = self.app.client_manager.coriolis.endpoints
+        valid, message = endpoints.validate_connection(args.id)
+        if not valid:
+            raise exceptions.EndpointConnectionValidationFailed(message)
