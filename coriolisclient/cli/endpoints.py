@@ -40,7 +40,7 @@ class EndpointFormatter(formatter.EntityFormatter):
         data = (obj.id,
                 obj.name,
                 obj.type,
-                obj.description,
+                obj.description or "",
                 )
         return data
 
@@ -61,7 +61,7 @@ class EndpointDetailFormatter(formatter.EntityFormatter):
         data = [obj.id,
                 obj.name,
                 obj.type,
-                obj.description,
+                obj.description or "",
                 obj.connection_info.to_dict(),
                 obj.created_at,
                 obj.updated_at,
