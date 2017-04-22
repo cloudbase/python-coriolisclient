@@ -66,7 +66,7 @@ class ReplicaExecutionDetailFormatter(formatter.EntityFormatter):
         return ("%(ls)s" % {"ls": os.linesep}).join(
             [self._format_progress_update(p) for p in
              sorted(task_dict.get("progress_updates", []),
-                    key=lambda p: p["created_at"])])
+                    key=lambda p: (p["current_step"], p["created_at"]))])
 
     def _format_task(self, task):
         d = task.to_dict()
