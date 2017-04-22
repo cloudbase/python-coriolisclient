@@ -39,7 +39,7 @@ class ReplicaFormatter(formatter.EntityFormatter):
 
     def _format_last_execution(self, obj):
         if obj.executions:
-            execution = obj.executions[-1]
+            execution = sorted(obj.executions, key=lambda e: e.created_at)[-1]
             return "%(id)s %(status)s" % execution.to_dict()
         return ""
 
