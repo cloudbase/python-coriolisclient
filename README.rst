@@ -50,17 +50,55 @@ There are two types of providers: origin and destination. For example, when
 migrating a VM from VMware vSphere to OpenStack, ``wmware_vsphere`` is the
 origin and ``openstack`` the destination.
 
-Target environment
+
+Endpoints
+---------
+
+Coriolis Endpoints are composed of the set of credentials and other
+connection-related options specific to a certain cloud account. They are
+used to uniquely identify clouds within Coriolis and referenced when
+launching migrations/replicas. By default, a plaintext, cloud-specific
+set of JSON credentials may be used to create a new Coriolis endpoint,
+though passing a reference to a secret stored in Barbican is also possible,
+should Barbican be deployed alongside or later hooked up to the Coriolis
+deployment.
+
+Creating an endpoint::
+
+    coriolis endpoint create \ 
+    --name $ENDPOINT_NAME \
+    --provider $ENDPOINT_PROVIDER \
+    --description $DESCRIPTION \
+    --connection $JSON_ENCODED_CONNECTION_DATA
+    (or --connection-secret $BARBICAN_SECRET_URL in case Barbican secrets are used)
+
+Listing the existing endpoints::
+
+    coriolis endpoint list
+
+Showing all deteails of an endpoint::
+
+    coriolis endpoint show $ENDPOINT_ID
+
+Listing the instances on an endpoint::
+
+    coriolis endpoint instance list $ENDPOINT_ID
+
+
+Destination environment
 ------------------
 
-A target environment defines a set of provider specific parameters that can
-override default options set by the Coriolis work processes. For example in the
-case of the OpenStack's provider, the following JSON formatted values allow to
-specify a custom mapping between origin and Neutron networks, along with a
-specific Nova flavor for the migrated instance and a custom worker image name::
+A destination environment defines a set of provider specific parameters that
+override both the global configuration and built-in defaults of the Coriolis
+worker process(es). For example in the case of the OpenStack's provider, the
+following JSON formatted values allow for the definition of a custom mapping
+between origin and Neutron networks, another mapping for source storage
+backends to Cinder volume types, along with a specific Nova flavor for the
+migrated instance and a custom worker image name::
 
-    TARGET_ENV='{"network_map": {"VM Network Local": "public", "VM Network":
-    "private"}, "flavor_name": "m1.small", "migr_image_name": "Nano"}'
+    DESTINATION_ENV='{"network_map": {"VM Network Local": "public", "VM Network":
+    "private"}, "storage_map": {"san2": "ssd"}, "flavor_name": "m1.small",
+    "migr_image_name": "Nano"}'
 
 
 Starting a migration
@@ -69,12 +107,14 @@ Starting a migration
 Various types of virtual workloads can be migrated, including instances,
 templates, network configurations and storage.
 
-The following command migrates a virtual machine named ``VM1`` from VMware
-vSphere to OpenStack::
+The following command migrates a virtual machine between two clouds denoted
+by their Coriolis endpoint IDs::
 
-    coriolis migration create --origin-provider vmware_vsphere
-    --destination-provider openstack --origin-connection-secret $SECRET_REF
-    --instance VM1 --target-environment "$TARGET_ENV"
+    coriolis migration create \
+    --origin-endpoint $ENDPOINT_1_ID \
+    --destination-endpoint $ENDPOINT_2_ID \
+    --destination-environment "$DESTINATION_ENV" \
+    --instance $VM_NAME
 
 List all migrations
 -------------------
@@ -90,14 +130,14 @@ Show migration details
 Migrations can be fairly long running tasks. This command is very useful to
 retrieve the current status and all progress updates::
 
-    coriolis migration show <migration_id>
+    coriolis migration show $MIGRATION_ID
 
 Cancel a migration
 ------------------
 
 A pending or running migration can be canceled anytime::
 
-    coriolis migration cancel <migration_id>
+    coriolis migration cancel $MIGRATION_ID
 
 Delete a migation
 -----------------
@@ -105,8 +145,94 @@ Delete a migation
 Only migrations in pending or error state can be deleted. Running migrations
 need to be first cancelled::
 
-    coriolis migration delete <migration_id>
+    coriolis migration delete $MIGRATION_ID
 
+Creating a replica
+------------------
+
+The process of creating replicas is similar to starting migrations::
+
+    coriolis replica create \
+    --origin-endpoint $ENDPOINT_1_ID \
+    --destination-endpoint $ENDPOINT_2_ID \
+    --destination-environment "$DESTINATION_ENV" \
+    --instance $VM_NAME
+
+Executing a replica
+-------------------
+
+After defining a replica in Coriolis, you have to actually launch so-called
+replica executions in order for the replication process to kick off.
+With each replica execution, the VM's storage elements on the source
+environment are 'replicated' directly into storage elements on the
+destination, practically creating cross-cloud backups of your instances
+which are continuously updated. A replica execution would imply transferring
+only the necessary changes to synchronize the state of the storage elements
+of the destination, thus the first execution of a replica will always mean
+a full transfer of the source storage elements (albeit only of the allocated
+blocks), with all subsequent executions implying only transfer of the changed
+blocks. Replica executions may then be booted into fully-fledged instances
+on the destination cloud should failover from the source environment be
+required.
+
+To execute a replica::
+
+    coriolis replica execute $REPLICA_ID
+
+To list all the executions of a replica::
+
+    coriolis replica execution list $REPLICA_ID
+
+To cancel a specific execution of a replica::
+
+    coriolis replica execution cancel $REPLICA_ID $EXECUTION_ID
+
+To delete a specific execution of a replica::
+
+    coriolis replica execution delete $REPLICA_ID $EXECUTION_ID
+
+Showing a replica
+-----------------
+
+To retrieve the current status of a replica ::
+
+    coriolis replica show $REPLICA_ID
+
+And to do that for a particular execution of a replica::
+
+    coriolis replica execution show $REPLICA_ID $EXECUTION_ID
+
+Deploying a replica
+-------------------
+
+Replicas can be deployed into full VMs with::
+
+    coriolis migration deploy replica $REPLICA_ID
+
+As this process may take some time, it is useful to know that it can be
+interacted with just like a regular migration (i.e. coriolis migration
+show $ID).
+
+Listing all replicas
+--------------------
+
+To list the currently existing replicas::
+
+    coriolis replica list
+
+Deleting a replica
+------------------
+
+To delete a replica::
+
+    coriolis replica delete $REPLICA_ID
+
+Deleting replica target disks
+-----------------------------
+
+To delete a replica's target disks::
+
+    coriolis replica disks delete $REPLICA_ID
 
 Python API
 ----------
