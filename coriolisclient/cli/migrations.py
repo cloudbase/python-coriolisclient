@@ -139,6 +139,10 @@ class CreateMigration(show.ShowOne):
                             dest="instances",
                             help='An instances to be migrated, can be '
                             'specified multiple times')
+        parser.add_argument('--skip-os-morphing',
+                            help='Skip the OS morphing process',
+                            action='store_true',
+                            default=False)
         return parser
 
     def take_action(self, args):
@@ -150,7 +154,8 @@ class CreateMigration(show.ShowOne):
             args.origin_endpoint,
             args.destination_endpoint,
             destination_environment,
-            args.instances)
+            args.instances,
+            args.skip_os_morphing)
 
         return MigrationDetailFormatter().get_formatted_entity(migration)
 
@@ -169,6 +174,10 @@ class CreateMigrationFromReplica(show.ShowOne):
                             help='Retain the replica disks by cloning them',
                             action='store_false', dest="clone_disks",
                             default=True)
+        parser.add_argument('--skip-os-morphing',
+                            help='Skip the OS morphing process',
+                            action='store_true',
+                            default=False)
         return parser
 
     def take_action(self, args):
@@ -176,7 +185,8 @@ class CreateMigrationFromReplica(show.ShowOne):
         migration = m.create_from_replica(
             args.replica,
             args.clone_disks,
-            args.force)
+            args.force,
+            args.skip_os_morphing)
 
         return MigrationDetailFormatter().get_formatted_entity(migration)
 

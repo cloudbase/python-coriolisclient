@@ -47,20 +47,23 @@ class MigrationManager(base.BaseManager):
         return self._get('/migrations/%s' % base.getid(migration), 'migration')
 
     def create(self, origin_endpoint_id, destination_endpoint_id,
-               destination_environment, instances):
+               destination_environment, instances, skip_os_morphing=False):
         data = {"migration": {
             "origin_endpoint_id": origin_endpoint_id,
             "destination_endpoint_id": destination_endpoint_id,
             "destination_environment": destination_environment,
-            "instances": instances, }
+            "instances": instances,
+            "skip_os_morphing": skip_os_morphing}
         }
         return self._post('/migrations', data, 'migration')
 
-    def create_from_replica(self, replica_id, clone_disks=True, force=False):
+    def create_from_replica(self, replica_id, clone_disks=True, force=False,
+                            skip_os_morphing=False):
         data = {"migration": {
             "replica_id": replica_id,
             "clone_disks": clone_disks,
-            "force": force}}
+            "force": force,
+            "skip_os_morphing": skip_os_morphing}}
         return self._post('/migrations', data, 'migration')
 
     def delete(self, migration):
