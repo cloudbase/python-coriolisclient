@@ -111,6 +111,48 @@ class CreateEndpoint(show.ShowOne):
         return EndpointDetailFormatter().get_formatted_entity(endpoint)
 
 
+class UpdateEndpoint(show.ShowOne):
+    """Updates an endpoint"""
+    def get_parser(self, prog_name):
+        parser = super(UpdateEndpoint, self).get_parser(prog_name)
+        parser.add_argument('id', help='The endpoint\'s id')
+        parser.add_argument('--name',
+                            help='The endpoints\'s name')
+        parser.add_argument('--description',
+                            help='A description for this endpoint')
+        parser.add_argument('--connection',
+                            help='JSON encoded connection data')
+        parser.add_argument('--connection-secret',
+                            help='The url of the Barbican secret containing '
+                            'the connection info')
+        return parser
+
+    def take_action(self, args):
+        if args.connection_secret and args.connection:
+            raise exceptions.CoriolisException(
+                "Please specify either --connection or "
+                "--connection-secret, but not both")
+
+        conn_info = None
+        if args.connection_secret:
+            conn_info = {"secret_ref": args.connection_secret}
+        if args.connection:
+            conn_info = json.loads(args.connection)
+
+        updated_values = {}
+        if args.name is not None:
+            updated_values["name"] = args.name
+        if args.description is not None:
+            updated_values["description"] = args.description
+        if conn_info:
+            updated_values["connection_info"] = conn_info
+
+        endpoint = self.app.client_manager.coriolis.endpoints.update(
+            args.id, updated_values)
+
+        return EndpointDetailFormatter().get_formatted_entity(endpoint)
+
+
 class ShowEndpoint(show.ShowOne):
     """Show an endpoint"""
 
