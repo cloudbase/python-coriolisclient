@@ -51,6 +51,13 @@ class EndpointManager(base.BaseManager):
 
         return self._post('/endpoints', data, 'endpoint')
 
+    def update(self, endpoint, updated_values):
+        data = {
+            "endpoint": updated_values
+        }
+        return self._put(
+            '/endpoints/%s' % base.getid(endpoint), data, 'endpoint')
+
     def delete(self, endpoint):
         return self._delete('/endpoints/%s' % base.getid(endpoint))
 
