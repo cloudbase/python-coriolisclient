@@ -27,6 +27,9 @@ class EndpointNetworkFormatter(formatter.EntityFormatter):
                "Name",
                )
 
+    def _get_sorted_list(self, obj_list):
+        return sorted(obj_list, key=lambda o: o.name)
+
     def _get_formatted_data(self, obj):
         data = (obj.id,
                 obj.name,
