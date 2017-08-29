@@ -15,6 +15,8 @@
 """
 Command-line interface sub-commands related to endpoints.
 """
+import json
+
 from cliff import lister
 from coriolisclient.cli import formatter
 
@@ -38,9 +40,16 @@ class ListEndpointNetwork(lister.Lister):
     def get_parser(self, prog_name):
         parser = super(ListEndpointNetwork, self).get_parser(prog_name)
         parser.add_argument('endpoint', help='The endpoint\'s id')
+        parser.add_argument('--environment',
+                            help='JSON encoded endpoint environment data')
         return parser
 
     def take_action(self, args):
-        ei = self.app.client_manager.coriolis.endpoint_networks
-        obj_list = ei.list(args.endpoint)
+        if args.environment:
+            environment = json.loads(args.environment)
+        else:
+            environment = None
+
+        en = self.app.client_manager.coriolis.endpoint_networks
+        obj_list = en.list(args.endpoint, environment)
         return EndpointNetworkFormatter().list_objects(obj_list)

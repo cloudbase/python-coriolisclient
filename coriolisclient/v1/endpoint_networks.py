@@ -12,6 +12,8 @@
 # implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+import base64
+import json
 
 from coriolisclient import base
 
@@ -26,6 +28,12 @@ class EndpointNetworkManager(base.BaseManager):
     def __init__(self, api):
         super(EndpointNetworkManager, self).__init__(api)
 
-    def list(self, endpoint):
+    def list(self, endpoint, environment=None):
         url = '/endpoints/%s/networks' % base.getid(endpoint)
+
+        if environment:
+            encoded_env = base64.b64encode(
+                json.dumps(environment).encode()).decode()
+            url = '%s?env=%s' % (url, encoded_env)
+
         return self._list(url, 'networks')
