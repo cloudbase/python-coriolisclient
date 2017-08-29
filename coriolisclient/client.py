@@ -17,6 +17,7 @@ import logging
 from keystoneauth1 import adapter
 
 from coriolisclient.v1 import endpoint_instances
+from coriolisclient.v1 import endpoint_networks
 from coriolisclient.v1 import endpoints
 from coriolisclient.v1 import migrations
 from coriolisclient.v1 import replica_executions
@@ -47,6 +48,8 @@ class Client(object):
         httpclient = _HTTPClient(session=session, *args, **kwargs)
         self.endpoints = endpoints.EndpointManager(httpclient)
         self.endpoint_instances = endpoint_instances.EndpointInstanceManager(
+            httpclient)
+        self.endpoint_networks = endpoint_networks.EndpointNetworkManager(
             httpclient)
         self.migrations = migrations.MigrationManager(httpclient)
         self.replicas = replicas.ReplicaManager(httpclient)
