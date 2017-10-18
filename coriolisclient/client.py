@@ -21,6 +21,7 @@ from coriolisclient.v1 import endpoint_networks
 from coriolisclient.v1 import endpoints
 from coriolisclient.v1 import migrations
 from coriolisclient.v1 import replica_executions
+from coriolisclient.v1 import replica_schedules
 from coriolisclient.v1 import replicas
 
 LOG = logging.getLogger(__name__)
@@ -53,5 +54,7 @@ class Client(object):
             httpclient)
         self.migrations = migrations.MigrationManager(httpclient)
         self.replicas = replicas.ReplicaManager(httpclient)
+        self.replica_schedules = replica_schedules.ReplicaScheduleManager(
+            httpclient)
         self.replica_executions = replica_executions.ReplicaExecutionManager(
             httpclient)
