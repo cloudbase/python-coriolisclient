@@ -48,10 +48,12 @@ class ListEndpointNetwork(lister.Lister):
         return parser
 
     def take_action(self, args):
+        environment = {}
         if args.environment:
             environment = json.loads(args.environment)
-        else:
-            environment = None
+            if environment is None:
+                # empty string was provided, sending empty object instead:
+                environment = {}
 
         en = self.app.client_manager.coriolis.endpoint_networks
         obj_list = en.list(args.endpoint, environment)
