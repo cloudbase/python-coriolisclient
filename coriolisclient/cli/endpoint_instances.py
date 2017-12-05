@@ -15,7 +15,10 @@
 """
 Command-line interface sub-commands related to endpoints.
 """
+import base64
+
 from cliff import lister
+from cliff import show
 from coriolisclient.cli import formatter
 
 
@@ -40,6 +43,37 @@ class EndpointInstanceFormatter(formatter.EntityFormatter):
         return data
 
 
+class InstancesDetailFormatter(formatter.EntityFormatter):
+
+    def __init__(self, show_instances_data=False):
+        self.columns = [
+            "ID",
+            "Name",
+            "Instance name",
+            "Flavor",
+            "Memory MB",
+            "Cores",
+            "OS Type",
+            "Devices",
+            "Firmware type"
+        ]
+
+    def _get_formatted_data(self, obj):
+        data = [
+            obj.id,
+            obj.name,
+            obj.instance_name or "",
+            obj.flavor_name or "",
+            obj.memory_mb,
+            obj.num_cpu,
+            obj.os_type,
+            obj.devices,
+            obj.firmware_type
+        ]
+
+        return data
+
+
 class ListEndpointInstance(lister.Lister):
     """List endpoint instances"""
 
@@ -60,3 +94,19 @@ class ListEndpointInstance(lister.Lister):
         ei = self.app.client_manager.coriolis.endpoint_instances
         obj_list = ei.list(args.endpoint, args.marker, args.limit, args.name)
         return EndpointInstanceFormatter().list_objects(obj_list)
+
+
+class ShowEndpointInstance(show.ShowOne):
+
+    def get_parser(self, prog_name):
+        parser = super(ShowEndpointInstance, self).get_parser(prog_name)
+        parser.add_argument(
+            'endpoint', help='The endpoint ID.')
+        parser.add_argument(
+            'instance', help='The instance name.')
+        return parser
+
+    def take_action(self, args):
+        ei = self.app.client_manager.coriolis.endpoint_instances
+        obj = ei.get(args.endpoint, base64.b64encode(args.instance))
+        return InstancesDetailFormatter().get_formatted_entity(obj)
