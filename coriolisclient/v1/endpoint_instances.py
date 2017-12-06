@@ -45,3 +45,8 @@ class EndpointInstanceManager(base.BaseManager):
             url += "?" + urlparse.urlencode(query)
 
         return self._list(url, 'instances')
+
+    def get(self, endpoint, instance_id):
+        url = '/endpoints/%s/instances/%s' % (
+            base.getid(endpoint), instance_id)
+        return self._get(url, 'instance')
