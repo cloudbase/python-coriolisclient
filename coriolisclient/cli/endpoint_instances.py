@@ -54,8 +54,7 @@ class InstancesDetailFormatter(formatter.EntityFormatter):
             "Memory MB",
             "Cores",
             "OS Type",
-            "Devices",
-            "Firmware type"
+            "Devices"
         ]
 
     def _get_formatted_data(self, obj):
@@ -67,8 +66,7 @@ class InstancesDetailFormatter(formatter.EntityFormatter):
             obj.memory_mb,
             obj.num_cpu,
             obj.os_type,
-            obj.devices,
-            obj.firmware_type
+            obj.devices
         ]
 
         return data
