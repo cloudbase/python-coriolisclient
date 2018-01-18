@@ -124,6 +124,19 @@ class MigrationDetailFormatter(formatter.EntityFormatter):
         return data
 
 
+class MigrationCleanupResultFormatter(formatter.EntityFormatter):
+
+    columns = ("Instance Name",
+               "Cleanup Successful",
+               "Error Message")
+
+    def _get_formatted_data(self, obj):
+        data = (obj.instance_name,
+                obj.success,
+                obj.error_message)
+        return data
+
+
 class CreateMigration(show.ShowOne):
     """Start a new migration"""
     def get_parser(self, prog_name):
@@ -223,6 +236,30 @@ class CancelMigration(command.Command):
 
     def take_action(self, args):
         self.app.client_manager.coriolis.migrations.cancel(args.id, args.force)
+
+
+class CleanupMigrationSourceResources(command.Command):
+    """ Cleanup migration source resources. """
+
+    def get_parser(self, prog_name):
+        parser = super(CleanupMigrationSourceResources, self).get_parser(
+            prog_name)
+        parser.add_argument('id', help='The migration\'s id')
+        parser.add_argument('--cleanup-options',
+                            required=True,
+                            help='JSON Cleanup Options specific to the '
+                                 'source provider')
+        return parser
+
+    def take_action(self, args):
+        migrations_api = self.app.client_manager.coriolis.migrations
+        cleanup_opts = json.loads(args.cleanup_options)
+
+        results = migrations_api.cleanup_source_vm_resources(
+            args.id, cleanup_opts).json().get(
+                "cleanup-source-vm-resources")
+
+        return MigrationCleanupResultFormatter().list_objects(results)
 
 
 class DeleteMigration(command.Command):
