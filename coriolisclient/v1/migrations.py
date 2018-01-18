@@ -73,3 +73,9 @@ class MigrationManager(base.BaseManager):
         return self.client.post(
             '/migrations/%s/actions' % base.getid(migration),
             json={'cancel': {'force': force}})
+
+    def cleanup_source_vm_resources(self, migration, cleanup_options):
+        return self.client.post(
+            '/migrations/%s/actions' % base.getid(migration),
+            json={'cleanup-source-vm-resources': {
+                "cleanup_options": cleanup_options}})
