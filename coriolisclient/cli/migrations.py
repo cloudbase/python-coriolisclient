@@ -131,9 +131,9 @@ class MigrationCleanupResultFormatter(formatter.EntityFormatter):
                "Error Message")
 
     def _get_formatted_data(self, obj):
-        data = (obj.instance_name,
-                obj.success,
-                obj.error_message)
+        data = (obj["instance_name"],
+                obj["success"],
+                obj["error_message"])
         return data
 
 
@@ -238,7 +238,7 @@ class CancelMigration(command.Command):
         self.app.client_manager.coriolis.migrations.cancel(args.id, args.force)
 
 
-class CleanupMigrationSourceResources(command.Command):
+class CleanupMigrationSourceResources(lister.Lister):
     """ Cleanup migration source resources. """
 
     def get_parser(self, prog_name):
