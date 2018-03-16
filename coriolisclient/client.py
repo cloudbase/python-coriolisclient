@@ -19,6 +19,7 @@ from keystoneauth1 import adapter
 from coriolisclient.v1 import endpoint_destination_options
 from coriolisclient.v1 import endpoint_instances
 from coriolisclient.v1 import endpoint_networks
+from coriolisclient.v1 import endpoint_storage
 from coriolisclient.v1 import endpoints
 from coriolisclient.v1 import migrations
 from coriolisclient.v1 import providers
@@ -57,6 +58,8 @@ class Client(object):
         self.endpoint_destination_options = (
             endpoint_destination_options.EndpointDestinationOptionsManager(
                 httpclient))
+        self.endpoint_storage = endpoint_storage.EndpointStorageManager(
+            httpclient)
         self.migrations = migrations.MigrationManager(httpclient)
         self.providers = providers.ProvidersManager(httpclient)
         self.replicas = replicas.ReplicaManager(httpclient)
