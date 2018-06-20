@@ -20,6 +20,7 @@ from coriolisclient.v1 import endpoint_instances
 from coriolisclient.v1 import endpoint_networks
 from coriolisclient.v1 import endpoints
 from coriolisclient.v1 import migrations
+from coriolisclient.v1 import providers
 from coriolisclient.v1 import replica_executions
 from coriolisclient.v1 import replica_schedules
 from coriolisclient.v1 import replicas
@@ -53,6 +54,7 @@ class Client(object):
         self.endpoint_networks = endpoint_networks.EndpointNetworkManager(
             httpclient)
         self.migrations = migrations.MigrationManager(httpclient)
+        self.providers = providers.ProvidersManager(httpclient)
         self.replicas = replicas.ReplicaManager(httpclient)
         self.replica_schedules = replica_schedules.ReplicaScheduleManager(
             httpclient)
