@@ -15,9 +15,14 @@
 """
 Command-line interface sub-commands related to providers.
 """
+import logging
+
 from cliff import lister
+
 from coriolisclient.cli import formatter
 
+
+LOG = logging.getLogger(__name__)
 
 # TODO(aznashwan): find good way to keep this in sync with
 # the definitions in Coriolis-core.
@@ -49,10 +54,14 @@ class ProvidersFormatter(formatter.EntityFormatter):
         return sorted(obj_list, key=lambda o: o['name'])
 
     def _get_formatted_data(self, obj):
-        features = ", ".join([
-            PROVIDERS_TYPE_FEATURE_MAP[typ] for typ in obj['types']])
+        features = []
+        for typ in obj['types']:
+            if typ in PROVIDERS_TYPE_FEATURE_MAP:
+                features.append(PROVIDERS_TYPE_FEATURE_MAP[typ])
+            else:
+                LOG.debug("Unknown provider type: '%s'", typ)
         data = (obj['name'],
-                features)
+                ", ".join(features))
         return data
 
 
