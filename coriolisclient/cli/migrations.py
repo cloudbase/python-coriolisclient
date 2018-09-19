@@ -58,6 +58,7 @@ class MigrationDetailFormatter(formatter.EntityFormatter):
             "destination_endpoint_id",
             "destination_environment",
             "tasks",
+            "transfer_result"
         ]
 
         if show_instances_data:
@@ -116,6 +117,7 @@ class MigrationDetailFormatter(formatter.EntityFormatter):
                 obj.destination_endpoint_id,
                 self._format_destination_environment(obj),
                 self._format_tasks(obj),
+                obj.transfer_result
                 ]
 
         if "instances_data" in self.columns:
