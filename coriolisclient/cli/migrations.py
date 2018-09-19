@@ -118,7 +118,7 @@ class MigrationDetailFormatter(formatter.EntityFormatter):
                 self._format_tasks(obj),
                 ]
 
-        if "instances-data" in self.columns:
+        if "instances_data" in self.columns:
             data.append(obj.info)
 
         return data
