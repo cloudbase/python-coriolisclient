@@ -1,4 +1,4 @@
-# Copyright (c) 2016 Cloudbase Solutions Srl
+# Copyright (c) 2018 Cloudbase Solutions Srl
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@ import logging
 
 from keystoneauth1 import adapter
 
+from coriolisclient.v1 import endpoint_destination_options
 from coriolisclient.v1 import endpoint_instances
 from coriolisclient.v1 import endpoint_networks
 from coriolisclient.v1 import endpoints
@@ -53,6 +54,9 @@ class Client(object):
             httpclient)
         self.endpoint_networks = endpoint_networks.EndpointNetworkManager(
             httpclient)
+        self.endpoint_destination_options = (
+            endpoint_destination_options.EndpointDestinationOptionsManager(
+                httpclient))
         self.migrations = migrations.MigrationManager(httpclient)
         self.providers = providers.ProvidersManager(httpclient)
         self.replicas = replicas.ReplicaManager(httpclient)
