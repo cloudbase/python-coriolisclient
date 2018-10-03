@@ -87,6 +87,10 @@ class CreateEndpoint(show.ShowOne):
         parser.add_argument('--connection-secret',
                             help='The url of the Barbican secret containing '
                             'the connection info')
+        parser.add_argument('--skip-validation', dest='skip_validation',
+                            action='store_true',
+                            help='Whether to skip validating the connection '
+                            'when creating the endpoint.')
 
         return parser
 
@@ -107,6 +111,13 @@ class CreateEndpoint(show.ShowOne):
             args.provider,
             conn_info,
             args.description)
+
+        if not args.skip_validation:
+            valid, message = (
+                self.app.client_manager.coriolis.endpoints.validate_connection(
+                    endpoint.id))
+            if not valid:
+                raise exceptions.EndpointConnectionValidationFailed(message)
 
         return EndpointDetailFormatter().get_formatted_entity(endpoint)
 
