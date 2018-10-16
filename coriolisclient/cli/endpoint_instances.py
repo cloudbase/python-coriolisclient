@@ -25,7 +25,7 @@ from coriolisclient.cli import formatter
 class EndpointInstanceFormatter(formatter.EntityFormatter):
 
     columns = ("ID",
-               "Name",
+               "Instance Name",
                "Flavor",
                "Memory MB",
                "Cores",
@@ -34,7 +34,7 @@ class EndpointInstanceFormatter(formatter.EntityFormatter):
 
     def _get_formatted_data(self, obj):
         data = (obj.id,
-                obj.name,
+                obj.instance_name,
                 obj.flavor_name or "",
                 obj.memory_mb,
                 obj.num_cpu,
