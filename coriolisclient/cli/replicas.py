@@ -63,6 +63,7 @@ class ReplicaDetailFormatter(formatter.EntityFormatter):
             "origin_endpoint_id",
             "destination_endpoint_id",
             "destination_environment",
+            "network_map",
             "executions",
         ]
 
@@ -94,6 +95,7 @@ class ReplicaDetailFormatter(formatter.EntityFormatter):
                 obj.origin_endpoint_id,
                 obj.destination_endpoint_id,
                 self._format_destination_environment(obj),
+                obj.network_map,
                 self._format_executions(obj.executions),
                 ]
 
@@ -114,6 +116,10 @@ class CreateReplica(show.ShowOne):
         parser.add_argument('--destination-environment',
                             help='JSON encoded data related to the '
                             'destination\'s environment')
+        parser.add_argument('--network-map', dest='network_map', required=True,
+                            help='JSON mapping between identifiers of '
+                            'networks on the source and identifiers of '
+                            'networks on the destination.')
         parser.add_argument('--instance', action='append', required=True,
                             dest="instances",
                             help='An instances to be migrated, can be '
@@ -124,12 +130,16 @@ class CreateReplica(show.ShowOne):
         destination_environment = None
         if args.destination_environment:
             destination_environment = json.loads(args.destination_environment)
+        network_map = None
+        if args.network_map:
+            network_map = json.loads(args.network_map)
 
         replica = self.app.client_manager.coriolis.replicas.create(
             args.origin_endpoint,
             args.destination_endpoint,
             destination_environment,
-            args.instances)
+            args.instances,
+            network_map)
 
         return ReplicaDetailFormatter().get_formatted_entity(replica)
 
