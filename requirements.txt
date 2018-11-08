@@ -12,3 +12,4 @@ oslo.i18n>=2.1.0 # Apache-2.0
 oslo.utils>=3.5.0 # Apache-2.0
 requests!=2.9.0,>=2.8.1 # Apache-2.0
 stevedore>=1.5.0 # Apache-2.0
+future
