@@ -35,7 +35,7 @@ class EndpointInstanceFormatter(formatter.EntityFormatter):
 
     def _get_formatted_data(self, obj):
         data = (obj.id,
-                obj.name,
+                obj.to_dict().get("instance_name", obj.name),
                 obj.flavor_name or "",
                 obj.memory_mb,
                 obj.num_cpu,
