@@ -57,6 +57,7 @@ class MigrationDetailFormatter(formatter.EntityFormatter):
             "origin_endpoint_id",
             "destination_endpoint_id",
             "destination_environment",
+            "network_map",
             "tasks",
             "transfer_result"
         ]
@@ -116,6 +117,7 @@ class MigrationDetailFormatter(formatter.EntityFormatter):
                 obj.origin_endpoint_id,
                 obj.destination_endpoint_id,
                 self._format_destination_environment(obj),
+                obj.network_map,
                 self._format_tasks(obj),
                 obj.transfer_result
                 ]
@@ -141,6 +143,11 @@ class CreateMigration(show.ShowOne):
                             dest="instances",
                             help='An instances to be migrated, can be '
                             'specified multiple times')
+        parser.add_argument('--network-map', required=True,
+                            dest="network_map",
+                            help='JSON mapping between identifiers of '
+                            'networks on the source and identifiers of '
+                            'networks on the destination.')
         parser.add_argument('--skip-os-morphing',
                             help='Skip the OS morphing process',
                             action='store_true',
@@ -151,12 +158,16 @@ class CreateMigration(show.ShowOne):
         destination_environment = None
         if args.destination_environment:
             destination_environment = json.loads(args.destination_environment)
+        network_map = None
+        if args.network_map:
+            network_map = json.loads(args.network_map)
 
         migration = self.app.client_manager.coriolis.migrations.create(
             args.origin_endpoint,
             args.destination_endpoint,
             destination_environment,
             args.instances,
+            network_map,
             args.skip_os_morphing)
 
         return MigrationDetailFormatter().get_formatted_entity(migration)
