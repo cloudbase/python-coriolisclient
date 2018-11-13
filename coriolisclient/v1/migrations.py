@@ -48,16 +48,20 @@ class MigrationManager(base.BaseManager):
 
     def create(self, origin_endpoint_id, destination_endpoint_id,
                destination_environment, instances, network_map=None,
-               skip_os_morphing=False):
+               storage_mappings=None, skip_os_morphing=False):
         if not network_map:
             network_map = destination_environment.get('network_map', {})
+        if not storage_mappings:
+            storage_mappings = destination_environment.get(
+                'storage_mappings', {})
         data = {"migration": {
             "origin_endpoint_id": origin_endpoint_id,
             "destination_endpoint_id": destination_endpoint_id,
             "destination_environment": destination_environment,
             "instances": instances,
             "skip_os_morphing": skip_os_morphing,
-            "network_map": network_map}
+            "network_map": network_map,
+            "storage_mappings": storage_mappings}
         }
         return self._post('/migrations', data, 'migration')
 
