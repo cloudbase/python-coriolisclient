@@ -47,8 +47,10 @@ class MigrationManager(base.BaseManager):
         return self._get('/migrations/%s' % base.getid(migration), 'migration')
 
     def create(self, origin_endpoint_id, destination_endpoint_id,
-               destination_environment, instances, network_map,
+               destination_environment, instances, network_map=None,
                skip_os_morphing=False):
+        if not network_map:
+            network_map = destination_environment.get('network_map', {})
         data = {"migration": {
             "origin_endpoint_id": origin_endpoint_id,
             "destination_endpoint_id": destination_endpoint_id,

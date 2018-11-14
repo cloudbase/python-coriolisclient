@@ -48,7 +48,9 @@ class ReplicaManager(base.BaseManager):
         return self._get('/replicas/%s' % base.getid(replica), 'replica')
 
     def create(self, origin_endpoint_id, destination_endpoint_id,
-               destination_environment, instances, network_map):
+               destination_environment, instances, network_map=None):
+        if not network_map:
+            network_map = destination_environment.get('network_map', {})
         data = {
             "replica": {
                 "origin_endpoint_id": origin_endpoint_id,
