@@ -23,6 +23,7 @@ from cliff import lister
 from cliff import show
 
 from coriolisclient.cli import formatter
+from coriolisclient.cli import utils as cli_utils
 
 
 class MigrationFormatter(formatter.EntityFormatter):
@@ -58,6 +59,9 @@ class MigrationDetailFormatter(formatter.EntityFormatter):
             "destination_endpoint_id",
             "destination_environment",
             "network_map",
+            "disk_storage_mappings",
+            "storage_backend_mappings",
+            "default_storage_backend",
             "tasks",
             "transfer_result"
         ]
@@ -109,6 +113,9 @@ class MigrationDetailFormatter(formatter.EntityFormatter):
             [self._format_task(t) for t in obj.tasks])
 
     def _get_formatted_data(self, obj):
+        storage_mappings = obj.to_dict().get("storage_mappings", {})
+        default_storage, backend_mappings, disk_mappings = (
+            cli_utils.parse_storage_mappings(storage_mappings))
         data = [obj.id,
                 obj.status,
                 obj.created_at,
@@ -118,6 +125,9 @@ class MigrationDetailFormatter(formatter.EntityFormatter):
                 obj.destination_endpoint_id,
                 self._format_destination_environment(obj),
                 getattr(obj, 'network_map', None),
+                cli_utils.format_mapping(disk_mappings),
+                cli_utils.format_mapping(backend_mappings),
+                default_storage,
                 self._format_tasks(obj),
                 obj.transfer_result
                 ]
@@ -152,6 +162,9 @@ class CreateMigration(show.ShowOne):
                             help='Skip the OS morphing process',
                             action='store_true',
                             default=False)
+
+        cli_utils.add_storage_mappings_arguments_to_parser(parser)
+
         return parser
 
     def take_action(self, args):
@@ -161,14 +174,16 @@ class CreateMigration(show.ShowOne):
         network_map = None
         if args.network_map:
             network_map = json.loads(args.network_map)
+        storage_mappings = cli_utils.get_storage_mappings_dict_from_args(args)
 
         migration = self.app.client_manager.coriolis.migrations.create(
             args.origin_endpoint,
             args.destination_endpoint,
             destination_environment,
             args.instances,
-            network_map,
-            args.skip_os_morphing)
+            network_map=network_map,
+            storage_mappings=storage_mappings,
+            skip_os_morphing=args.skip_os_morphing)
 
         return MigrationDetailFormatter().get_formatted_entity(migration)
 
@@ -191,6 +206,7 @@ class CreateMigrationFromReplica(show.ShowOne):
                             help='Skip the OS morphing process',
                             action='store_true',
                             default=False)
+
         return parser
 
     def take_action(self, args):

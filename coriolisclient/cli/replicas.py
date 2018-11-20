@@ -24,6 +24,7 @@ from cliff import show
 
 from coriolisclient.cli import formatter
 from coriolisclient.cli import replica_executions
+from coriolisclient.cli import utils as cli_utils
 
 
 class ReplicaFormatter(formatter.EntityFormatter):
@@ -64,6 +65,9 @@ class ReplicaDetailFormatter(formatter.EntityFormatter):
             "destination_endpoint_id",
             "destination_environment",
             "network_map",
+            "disk_storage_mappings",
+            "storage_backend_mappings",
+            "default_storage_backend",
             "executions",
         ]
 
@@ -88,6 +92,9 @@ class ReplicaDetailFormatter(formatter.EntityFormatter):
              sorted(executions, key=lambda e: e.created_at)])
 
     def _get_formatted_data(self, obj):
+        storage_mappings = obj.to_dict().get("storage_mappings", {})
+        default_storage, backend_mappings, disk_mappings = (
+            cli_utils.parse_storage_mappings(storage_mappings))
         data = [obj.id,
                 obj.created_at,
                 obj.updated_at,
@@ -96,6 +103,9 @@ class ReplicaDetailFormatter(formatter.EntityFormatter):
                 obj.destination_endpoint_id,
                 self._format_destination_environment(obj),
                 getattr(obj, 'network_map', None),
+                cli_utils.format_mapping(disk_mappings),
+                cli_utils.format_mapping(backend_mappings),
+                default_storage,
                 self._format_executions(obj.executions),
                 ]
 
@@ -124,6 +134,9 @@ class CreateReplica(show.ShowOne):
                             dest="instances",
                             help='An instances to be migrated, can be '
                             'specified multiple times')
+
+        cli_utils.add_storage_mappings_arguments_to_parser(parser)
+
         return parser
 
     def take_action(self, args):
@@ -133,13 +146,15 @@ class CreateReplica(show.ShowOne):
         network_map = None
         if args.network_map:
             network_map = json.loads(args.network_map)
+        storage_mappings = cli_utils.get_storage_mappings_dict_from_args(args)
 
         replica = self.app.client_manager.coriolis.replicas.create(
             args.origin_endpoint,
             args.destination_endpoint,
             destination_environment,
             args.instances,
-            network_map)
+            network_map=network_map,
+            storage_mappings=storage_mappings)
 
         return ReplicaDetailFormatter().get_formatted_entity(replica)
 
