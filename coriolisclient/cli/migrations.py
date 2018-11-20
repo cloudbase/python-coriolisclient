@@ -117,7 +117,7 @@ class MigrationDetailFormatter(formatter.EntityFormatter):
                 obj.origin_endpoint_id,
                 obj.destination_endpoint_id,
                 self._format_destination_environment(obj),
-                obj.network_map,
+                getattr(obj, 'network_map', None),
                 self._format_tasks(obj),
                 obj.transfer_result
                 ]
