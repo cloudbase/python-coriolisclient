@@ -233,6 +233,45 @@ Deleting replica target disks
 To delete a replica's target disks::
 
     coriolis replica disks delete $REPLICA_ID
+    
+Creating replica execution schedule
+-----------------------------------
+
+To create a schedule for the execution of a replica, with UTC time::
+
+    coriolis replica schedule create \
+    $REPLICA_ID \
+    -M $MINUTE -H $HOUR -d $DAY -m $MONTH
+    
+Listing all replica execution schedules
+---------------------------------------
+
+To list the currently existing schedules of a replica::
+
+    coriolis replica schedule list $REPLICA_ID
+    
+Showing a replica execution schedule
+------------------------------------
+
+To retrieve the current status of a replica execution schedule::
+
+    coriolis replica schedule show  $REPLICA_ID $SCHEDULE_ID
+    
+Deleting a replica execution schedule
+-------------------------------------
+
+To delete a replica execution schedule::
+
+    coriolis replica schedule delete  $REPLICA_ID $SCHEDULE_ID
+    
+Updating a replica execution schedule
+-------------------------------------
+
+To update a replica execution schedule::
+
+    coriolis replica schedule update  $REPLICA_ID $SCHEDULE_ID \ 
+    -M $MINUTE -H $HOUR -w $WEEK_DAY \ 
+ 
 
 Python API
 ----------
