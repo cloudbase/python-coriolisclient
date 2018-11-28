@@ -47,13 +47,15 @@ class MigrationManager(base.BaseManager):
         return self._get('/migrations/%s' % base.getid(migration), 'migration')
 
     def create(self, origin_endpoint_id, destination_endpoint_id,
-               destination_environment, instances, network_map=None,
-               storage_mappings=None, skip_os_morphing=False):
+               source_environment, destination_environment, instances,
+               network_map=None, storage_mappings=None,
+               skip_os_morphing=False):
         if not network_map:
             network_map = destination_environment.get('network_map', {})
         if not storage_mappings:
             storage_mappings = destination_environment.get(
                 'storage_mappings', {})
+
         data = {"migration": {
             "origin_endpoint_id": origin_endpoint_id,
             "destination_endpoint_id": destination_endpoint_id,
@@ -63,6 +65,9 @@ class MigrationManager(base.BaseManager):
             "network_map": network_map,
             "storage_mappings": storage_mappings}
         }
+        if source_environment is not None:
+            data['migration']['source_environment'] = source_environment
+
         return self._post('/migrations', data, 'migration')
 
     def create_from_replica(self, replica_id, clone_disks=True, force=False,

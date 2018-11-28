@@ -48,8 +48,8 @@ class ReplicaManager(base.BaseManager):
         return self._get('/replicas/%s' % base.getid(replica), 'replica')
 
     def create(self, origin_endpoint_id, destination_endpoint_id,
-               destination_environment, instances, network_map=None,
-               storage_mappings=None):
+               source_environment, destination_environment, instances,
+               network_map=None, storage_mappings=None):
         if not network_map:
             network_map = destination_environment.get('network_map', {})
         if not storage_mappings:
@@ -65,6 +65,8 @@ class ReplicaManager(base.BaseManager):
                 "storage_mappings": storage_mappings
             }
         }
+        if source_environment:
+            data['replica']['source_environment'] = source_environment
         return self._post('/replicas', data, 'replica')
 
     def delete(self, replica):
