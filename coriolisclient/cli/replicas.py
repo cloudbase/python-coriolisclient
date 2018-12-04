@@ -225,3 +225,58 @@ class ListReplica(lister.Lister):
     def take_action(self, args):
         obj_list = self.app.client_manager.coriolis.replicas.list()
         return ReplicaFormatter().list_objects(obj_list)
+
+
+class UpdateReplica(show.ShowOne):
+    """Create a new replica"""
+    def get_parser(self, prog_name):
+        parser = super(UpdateReplica, self).get_parser(prog_name)
+        parser.add_argument('id', help='The replica\'s id')
+        parser.add_argument('--destination-environment',
+                            help='JSON encoded data related to the '
+                                 'destination\'s environment')
+        parser.add_argument('--source-environment',
+                            help='JSON encoded data related to the '
+                                 'source\'s environment.')
+        parser.add_argument('--network-map', dest='network_map',
+                            help='JSON mapping between identifiers of '
+                                 'networks on the source and identifiers of '
+                                 'networks on the destination.')
+        parser.add_argument('--notes', dest='notes',
+                            help='Notes about the replica.')
+
+        cli_utils.add_storage_mappings_arguments_to_parser(parser)
+
+        return parser
+
+    def take_action(self, args):
+        destination_environment = None
+        if args.destination_environment:
+            destination_environment = json.loads(args.destination_environment)
+        source_environment = None
+        if args.source_environment:
+            source_environment = json.loads(args.source_environment)
+
+        network_map = None
+        if args.network_map:
+            network_map = json.loads(args.network_map)
+        storage_mappings = cli_utils.get_storage_mappings_dict_from_args(args)
+
+        updated_properties = {}
+        if destination_environment:
+            updated_properties[
+                'destination_environment'] = destination_environment
+        if source_environment:
+            updated_properties['source_environment'] = source_environment
+        if storage_mappings:
+            updated_properties['storage_mappings'] = storage_mappings
+        if network_map:
+            updated_properties['network_map'] = network_map
+        if args.notes:
+            updated_properties['notes'] = args.notes
+
+        execution = self.app.client_manager.coriolis.replicas.update(
+            args.id, updated_properties)
+
+        return replica_executions.ReplicaExecutionDetailFormatter(
+        ).get_formatted_entity(execution)

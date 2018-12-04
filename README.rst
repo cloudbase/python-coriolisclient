@@ -158,6 +158,14 @@ The process of creating replicas is similar to starting migrations::
     --destination-environment "$DESTINATION_ENV" \
     --instance $VM_NAME
 
+Updating a replica
+------------------
+
+To update a replica::
+
+    coriolis replica update  $REPLICA_ID \
+    --destination-environment "$DESTINATION_ENV"
+
 Executing a replica
 -------------------
 
