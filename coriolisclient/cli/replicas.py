@@ -64,6 +64,7 @@ class ReplicaDetailFormatter(formatter.EntityFormatter):
             "origin_endpoint_id",
             "destination_endpoint_id",
             "destination_environment",
+            "source_environment",
             "network_map",
             "disk_storage_mappings",
             "storage_backend_mappings",
@@ -102,6 +103,7 @@ class ReplicaDetailFormatter(formatter.EntityFormatter):
                 obj.origin_endpoint_id,
                 obj.destination_endpoint_id,
                 self._format_destination_environment(obj),
+                getattr(obj, 'source_environment', None),
                 getattr(obj, 'network_map', None),
                 cli_utils.format_mapping(disk_mappings),
                 cli_utils.format_mapping(backend_mappings),
@@ -126,6 +128,10 @@ class CreateReplica(show.ShowOne):
         parser.add_argument('--destination-environment',
                             help='JSON encoded data related to the '
                             'destination\'s environment')
+        parser.add_argument('--source-environment',
+                            dest="source_environment",
+                            help='JSON encoded data related to the '
+                            'source\'s environment.')
         parser.add_argument('--network-map', dest='network_map', required=True,
                             help='JSON mapping between identifiers of '
                             'networks on the source and identifiers of '
@@ -143,6 +149,10 @@ class CreateReplica(show.ShowOne):
         destination_environment = None
         if args.destination_environment:
             destination_environment = json.loads(args.destination_environment)
+        source_environment = None
+        if args.source_environment:
+            source_environment = json.loads(args.source_environment)
+
         network_map = None
         if args.network_map:
             network_map = json.loads(args.network_map)
@@ -151,6 +161,7 @@ class CreateReplica(show.ShowOne):
         replica = self.app.client_manager.coriolis.replicas.create(
             args.origin_endpoint,
             args.destination_endpoint,
+            source_environment,
             destination_environment,
             args.instances,
             network_map=network_map,
