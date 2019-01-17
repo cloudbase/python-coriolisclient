@@ -79,3 +79,13 @@ class ReplicaManager(base.BaseManager):
 
         return replica_executions.ReplicaExecution(
             self, response.json().get("execution"), loaded=True)
+
+    def update(self, replica, updated_values):
+        data = {
+            "replica": updated_values
+        }
+        response = self.client.put(
+            '/replicas/%s' % base.getid(replica), json=data)
+
+        return replica_executions.ReplicaExecution(
+            self, response.json().get("execution"), loaded=True)
