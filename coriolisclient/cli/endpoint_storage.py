@@ -31,8 +31,7 @@ class EndpointStorageFormatter(formatter.EntityFormatter):
 
     def _get_formatted_data(self, obj):
         data = (obj.id,
-                obj.name,
-                )
+                obj.name)
         return data
 
 

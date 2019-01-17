@@ -144,7 +144,8 @@ class BaseManager(object):
         super(BaseManager, self).__init__()
         self.client = client
 
-    def _list(self, url, response_key=None, obj_class=None, json=None):
+    def _list(self, url, response_key=None, obj_class=None, json=None,
+              values_key='values'):
         """List the collection.
         :param url: a partial URL, e.g., '/servers'
         :param response_key: the key to be looked up in response dictionary,
@@ -167,7 +168,7 @@ class BaseManager(object):
         # NOTE(ja): keystone returns values as list as {'values': [ ... ]}
         #           unlike other services which just return the list...
         try:
-            data = data['values']
+            data = data[values_key]
         except (KeyError, TypeError):
             pass
 
