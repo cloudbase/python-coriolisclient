@@ -22,10 +22,16 @@ class Replica(base.Resource):
     _tasks = None
 
     @property
+    def source_environment(self):
+        source_env = self._info.get("source_environment")
+        if source_env is not None:
+            return common.SourceEnvironment(None, source_env, loaded=True)
+
+    @property
     def destination_environment(self):
         dest_env = self._info.get("destination_environment")
         if dest_env is not None:
-            return common.TargetEnvironment(None, dest_env, loaded=True)
+            return common.DestinationEnvironment(None, dest_env, loaded=True)
 
     @property
     def executions(self):

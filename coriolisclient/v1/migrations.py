@@ -21,10 +21,22 @@ class Migration(base.Resource):
     _tasks = None
 
     @property
+    def source_environment(self):
+        source_env = self._info.get("source_environment")
+        if source_env is not None:
+            return common.SourceEnvironment(None, source_env, loaded=True)
+
+    @property
     def destination_environment(self):
         dest_env = self._info.get("destination_environment")
         if dest_env is not None:
-            return common.TargetEnvironment(None, dest_env, loaded=True)
+            return common.DestinationEnvironment(None, dest_env, loaded=True)
+
+    @property
+    def transfer_result(self):
+        res = self._info.get("transfer_result")
+        if res is not None:
+            return common.TransferResult(None, res, loaded=True)
 
     @property
     def tasks(self):

@@ -78,12 +78,6 @@ class ReplicaDetailFormatter(formatter.EntityFormatter):
     def _format_instances(self, obj):
         return os.linesep.join(sorted(obj.instances))
 
-    def _format_destination_environment(self, obj):
-        if obj.destination_environment is not None:
-            return obj.destination_environment.to_dict()
-        else:
-            return ""
-
     def _format_execution(self, execution):
         return ("%(id)s %(status)s" % execution.to_dict())
 
@@ -102,9 +96,12 @@ class ReplicaDetailFormatter(formatter.EntityFormatter):
                 self._format_instances(obj),
                 obj.origin_endpoint_id,
                 obj.destination_endpoint_id,
-                self._format_destination_environment(obj),
-                getattr(obj, 'source_environment', None),
-                getattr(obj, 'network_map', None),
+                cli_utils.format_json_for_object_property(
+                    obj, prop_name="destination_environment"),
+                cli_utils.format_json_for_object_property(
+                    obj, 'source_environment'),
+                cli_utils.format_json_for_object_property(
+                    obj, 'network_map'),
                 cli_utils.format_mapping(disk_mappings),
                 cli_utils.format_mapping(backend_mappings),
                 default_storage,
