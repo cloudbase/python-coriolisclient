@@ -101,6 +101,54 @@ migrated instance and a custom worker image name::
     "migr_image_name": "Nano"}'
 
 
+Source environment
+------------------
+
+A source environment is an optional parameter that defines
+provider-specific source parameters
+
+Network map
+-----------
+
+The network map is a JSON mapping between identifiers of networks on the source
+platform, each being associated with the identifier of a network on the
+destination. The values to be mapped depend on the source and destination
+provider plugins, respectively (ex: it may be the name of a network, or the
+full ID)::
+
+
+
+    NETWORK_MAP={"VM Network Local": "public", "VM Network": "internal"}
+
+Default storage backend
+-----------------------
+
+Name of a storage backend on the destination platform to default to using::
+
+    DEFAULT_STORAGE_BACKEND="iscsi"
+
+
+Disk storage mapping
+--------------------
+The names of storage backends on the destination platform
+as seen by running `coriolis endpoint storage list
+$DEST_ENDPOINT_ID`. Values should be fomatted with '='
+(ex: "id#1=lvm)". Can be specified multiple times for
+multiple disks::
+
+    DISK_STORAGE_MAPPINGS="afsan1=lvm"
+
+Storage backend mapping
+-----------------------
+Mappings between names of source and destination
+storage backends as seen by running `coriolis endpoint
+storage list $DEST_ENDPOINT_ID`. Values should be
+fomatted with '=' (ex: "id#1=lvm)". Can be specified
+multiple times for multiple backends::
+
+    STORAGE_BACKEND_MAPPINGS="afsan1=lvm"
+
+
 Starting a migration
 --------------------
 
@@ -114,6 +162,11 @@ by their Coriolis endpoint IDs::
     --origin-endpoint $ENDPOINT_1_ID \
     --destination-endpoint $ENDPOINT_2_ID \
     --destination-environment "$DESTINATION_ENV" \
+    --network-map "$NETWORK_MAP" \
+    --source-environment "$SOURCE_ENVIRONMENT" \
+    --default-storage-backend $DEFAULT_BACKEND \
+    --disk-storage-mapping $DISK_STORAGE_MAPPING \
+    --storage-backend-mapping $STORAGE_BACKEND_MAPPINGS \
     --instance $VM_NAME
 
 List all migrations
@@ -156,6 +209,11 @@ The process of creating replicas is similar to starting migrations::
     --origin-endpoint $ENDPOINT_1_ID \
     --destination-endpoint $ENDPOINT_2_ID \
     --destination-environment "$DESTINATION_ENV" \
+    --network-map "$NETWORK_MAP" \
+    --source-environment "$SOURCE_ENVIRONMENT" \
+    --default-storage-backend $DEFAULT_BACKEND \
+    --disk-storage-mapping $DISK_STORAGE_MAPPING \
+    --storage-backend-mapping $STORAGE_BACKEND_MAPPINGS \
     --instance $VM_NAME
 
 Updating a replica
@@ -164,7 +222,12 @@ Updating a replica
 To update a replica::
 
     coriolis replica update  $REPLICA_ID \
-    --destination-environment "$DESTINATION_ENV"
+    --destination-environment "$DESTINATION_ENV" \
+    --network-map "$NETWORK_MAP" \
+    --source-environment "$SOURCE_ENVIRONMENT" \
+    --default-storage-backend $DEFAULT_BACKEND \
+    --disk-storage-mapping $DISK_STORAGE_MAPPING \
+    --storage-backend-mapping $STORAGE_BACKEND_MAPPINGS \
 
 Executing a replica
 -------------------
