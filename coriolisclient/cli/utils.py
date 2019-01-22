@@ -14,6 +14,9 @@
 # limitations under the License.
 
 
+import json
+
+
 def add_storage_mappings_arguments_to_parser(parser):
     """ Given an `argparse.ArgumentParser` instance, add the arguments required
     for the 'storage_mappings' field for both Migrations and Replicas:
@@ -96,3 +99,18 @@ def parse_storage_mappings(storage_mappings):
 
     return (
         storage_mappings.get("default"), backend_mappings, disk_mappings)
+
+
+def format_json_for_object_property(obj, prop_name):
+    """ Returns the property given by `prop_name` of the given
+    API object as a nicely-formatted JSON string (if it exists) """
+    prop = getattr(obj, prop_name, None)
+    if prop is None:
+        # NOTE: return an empty JSON object string to
+        # clearly-indicate it's a JSON
+        return "{}"
+
+    if not isinstance(prop, dict) and hasattr(prop, 'to_dict'):
+        prop = prop.to_dict()
+
+    return json.dumps(prop, indent=2)

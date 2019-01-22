@@ -33,5 +33,13 @@ class TasksExecution(base.Resource):
     pass
 
 
-class TargetEnvironment(base.Resource):
+class SourceEnvironment(base.Resource):
+    pass
+
+
+class DestinationEnvironment(base.Resource):
+    pass
+
+
+class TransferResult(base.Resource):
     pass

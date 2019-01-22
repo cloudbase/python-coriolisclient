@@ -73,12 +73,6 @@ class MigrationDetailFormatter(formatter.EntityFormatter):
     def _format_instances(self, obj):
         return os.linesep.join(sorted(obj.instances))
 
-    def _format_destination_environment(self, obj):
-        if obj.destination_environment is not None:
-            return obj.destination_environment.to_dict()
-        else:
-            return ""
-
     def _format_progress_update(self, progress_update):
         return (
             "%(created_at)s %(message)s" % progress_update)
@@ -124,14 +118,17 @@ class MigrationDetailFormatter(formatter.EntityFormatter):
                 self._format_instances(obj),
                 obj.origin_endpoint_id,
                 obj.destination_endpoint_id,
-                self._format_destination_environment(obj),
-                getattr(obj, 'source_environment', None),
-                getattr(obj, 'network_map', None),
+                cli_utils.format_json_for_object_property(
+                    obj, prop_name="destination_environment"),
+                cli_utils.format_json_for_object_property(
+                    obj, 'source_environment'),
+                cli_utils.format_json_for_object_property(obj, 'network_map'),
                 cli_utils.format_mapping(disk_mappings),
                 cli_utils.format_mapping(backend_mappings),
                 default_storage,
                 self._format_tasks(obj),
-                obj.transfer_result
+                cli_utils.format_json_for_object_property(
+                    obj, 'transfer_result')
                 ]
 
         if "instances_data" in self.columns:
