@@ -62,7 +62,7 @@ class InstancesDetailFormatter(formatter.EntityFormatter):
         data = [
             obj.id,
             obj.name,
-            obj.instance_name or "",
+            obj.to_dict().get("instance_name", obj.name),
             obj.flavor_name or "",
             obj.memory_mb,
             obj.num_cpu,
