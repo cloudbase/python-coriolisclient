@@ -12,11 +12,14 @@
 # implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
 """
 Command-line interface sub-commands related to endpoints.
 """
+
 import base64
 from builtins import bytes
+import json
 
 from cliff import lister
 from cliff import show
@@ -55,10 +58,16 @@ class InstancesDetailFormatter(formatter.EntityFormatter):
             "Memory MB",
             "Cores",
             "OS Type",
-            "Devices"
+            "Controllers",
+            "Disks",
+            "Network Interfaces",
+            "CDRoms",
+            "Floppies",
+            "Serial Ports",
         ]
 
     def _get_formatted_data(self, obj):
+        devices = obj.devices
         data = [
             obj.id,
             obj.name,
@@ -67,7 +76,12 @@ class InstancesDetailFormatter(formatter.EntityFormatter):
             obj.memory_mb,
             obj.num_cpu,
             obj.os_type,
-            obj.devices
+            json.dumps(devices.get("controllers", []), indent=2),
+            json.dumps(devices.get("disks", []), indent=2),
+            json.dumps(devices.get("nics", []), indent=2),
+            json.dumps(devices.get("cdroms", []), indent=2),
+            json.dumps(devices.get("floppies", []), indent=2),
+            json.dumps(devices.get("serial_ports", []), indent=2)
         ]
 
         return data
