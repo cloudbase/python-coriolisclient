@@ -14,6 +14,8 @@
 # limitations under the License.
 
 from coriolisclient import base
+from coriolisclient import exceptions
+from coriolisclient.cli.utils import validate_uuid
 
 
 class ConnectionInfo(base.Resource):
@@ -67,3 +69,21 @@ class EndpointManager(base.BaseManager):
             json={'validate-connection': None}).json()
         validate_data = data["validate-connection"]
         return validate_data.get("valid"), validate_data.get("message")
+
+    def get_endpoint_id_for_name(self, endpoint):
+        """ Gets the UUID of the endpoint from the parsed name """
+        if validate_uuid(endpoint):
+            return endpoint
+        else:
+            return self._get_endpoint_id_for_name(endpoint)
+
+    def _get_endpoint_id_for_name(self, endpoint_name):
+        obj_list = self.list()
+        id_matches = [n.id for n in obj_list if n.name == endpoint_name]
+        matches = len(id_matches)
+        if matches == 1:
+            return id_matches[0]
+        elif matches > 1:
+            raise exceptions.NoUniqueEndpointNameMatch(endpoint_name)
+        else:
+            raise exceptions.EndpointIDNotFound(endpoint_name)

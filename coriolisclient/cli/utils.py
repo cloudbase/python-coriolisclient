@@ -15,6 +15,7 @@
 
 
 import json
+import uuid
 
 
 def add_storage_mappings_arguments_to_parser(parser):
@@ -114,3 +115,20 @@ def format_json_for_object_property(obj, prop_name):
         prop = prop.to_dict()
 
     return json.dumps(prop, indent=2)
+
+
+def validate_uuid_string(uuid_obj, uuid_version=4):
+    """ Checks whether the provided string is a valid UUID string
+
+        :param uuid_obj: A string or stringable object containing the UUID
+        :param uuid_version: The UUID version to be used
+    """
+    uuid_string = str(uuid_obj).lower()
+    try:
+        uuid.UUID(uuid_string, version=uuid_version)
+    except ValueError:
+        # If it's a value error, then the string
+        # is not a valid hex code for a UUID.
+        return False
+
+    return True

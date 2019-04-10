@@ -50,3 +50,19 @@ class EndpointConnectionValidationFailed(CoriolisException):
     def __init__(self, validation_message):
         super(EndpointConnectionValidationFailed, self).__init__(
             "Connection validation failed. Details: %s" % validation_message)
+
+
+class NoUniqueEndpointNameMatch(CoriolisException):
+    """Raised for multiple existing endpoint names found"""
+
+    def __init__(self, cli_arg):
+        super(NoUniqueEndpointNameMatch, self).__init__(
+            "More than one endpoint exists with the name '%s'." % cli_arg)
+
+
+class EndpointIDNotFound(CoriolisException):
+    """Raised when couldn't find endpoint ID that matches endpoint name"""
+
+    def __init__(self, cli_arg):
+        super(EndpointIDNotFound, self).__init__(
+            "No endpoint found for '%s'" % cli_arg)

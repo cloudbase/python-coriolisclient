@@ -53,6 +53,8 @@ class ListEndpointNetwork(lister.Lister):
         else:
             environment = None
 
+        endpoints = self.app.client_manager.coriolis.endpoints
+        endpoint_id = endpoints.get_endpoint_id_for_name(args.endpoint)
         en = self.app.client_manager.coriolis.endpoint_networks
-        obj_list = en.list(args.endpoint, environment)
+        obj_list = en.list(endpoint_id, environment)
         return EndpointNetworkFormatter().list_objects(obj_list)

@@ -154,10 +154,15 @@ class CreateReplica(show.ShowOne):
         if args.network_map:
             network_map = json.loads(args.network_map)
         storage_mappings = cli_utils.get_storage_mappings_dict_from_args(args)
+        endpoints = self.app.client_manager.coriolis.endpoints
+        origin_endpoint_id = endpoints.get_endpoint_id_for_name(
+            args.origin_endpoint)
+        destination_endpoint_id = endpoints.get_endpoint_id_for_name(
+            args.destination_endpoint)
 
         replica = self.app.client_manager.coriolis.replicas.create(
-            args.origin_endpoint,
-            args.destination_endpoint,
+            origin_endpoint_id,
+            destination_endpoint_id,
             source_environment,
             destination_environment,
             args.instances,
