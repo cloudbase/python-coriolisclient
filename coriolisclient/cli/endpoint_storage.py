@@ -50,7 +50,10 @@ class ListEndpointStorage(lister.Lister):
         environment = None
         if args.environment:
             environment = json.loads(args.environment)
+
+        endpoints = self.app.client_manager.coriolis.endpoints
+        endpoint_id = endpoints.get_endpoint_id_for_name(args.endpoint)
         es = self.app.client_manager.coriolis.endpoint_storage
-        obj_list = es.list(args.endpoint, environment=environment)
+        obj_list = es.list(endpoint_id, environment=environment)
 
         return EndpointStorageFormatter().list_objects(obj_list)

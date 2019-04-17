@@ -58,7 +58,9 @@ class ListEndpointDestinationOptions(lister.Lister):
         if args.options:
             options = args.options
 
+        endpoints = self.app.client_manager.coriolis.endpoints
+        endpoint_id = endpoints.get_endpoint_id_for_name(args.endpoint)
         edo = self.app.client_manager.coriolis.endpoint_destination_options
         obj_list = edo.list(
-            args.endpoint, environment=environment, option_names=options)
+            endpoint_id, environment=environment, option_names=options)
         return EndpointDestinationOptionFormatter().list_objects(obj_list)

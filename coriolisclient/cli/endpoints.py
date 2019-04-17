@@ -173,7 +173,9 @@ class ShowEndpoint(show.ShowOne):
         return parser
 
     def take_action(self, args):
-        endpoint = self.app.client_manager.coriolis.endpoints.get(args.id)
+        client = self.app.client_manager.coriolis.endpoints
+        endpoint_id = client.get_endpoint_id_for_name(args.id)
+        endpoint = client.get(endpoint_id)
         return EndpointDetailFormatter().get_formatted_entity(endpoint)
 
 
@@ -186,7 +188,9 @@ class DeleteEndpoint(command.Command):
         return parser
 
     def take_action(self, args):
-        self.app.client_manager.coriolis.endpoints.delete(args.id)
+        client = self.app.client_manager.coriolis.endpoints
+        endpoint_id = client.get_endpoint_id_for_name(args.id)
+        client.delete(endpoint_id)
 
 
 class ListEndpoint(lister.Lister):
@@ -211,6 +215,7 @@ class EndpointValidateConnection(command.Command):
 
     def take_action(self, args):
         endpoints = self.app.client_manager.coriolis.endpoints
-        valid, message = endpoints.validate_connection(args.id)
+        endpoint_id = endpoints.get_endpoint_id_for_name(args.id)
+        valid, message = endpoints.validate_connection(endpoint_id)
         if not valid:
             raise exceptions.EndpointConnectionValidationFailed(message)

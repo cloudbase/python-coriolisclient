@@ -104,8 +104,10 @@ class ListEndpointInstance(lister.Lister):
         return parser
 
     def take_action(self, args):
+        endpoints = self.app.client_manager.coriolis.endpoints
+        endpoint_id = endpoints.get_endpoint_id_for_name(args.endpoint)
         ei = self.app.client_manager.coriolis.endpoint_instances
-        obj_list = ei.list(args.endpoint, args.marker, args.limit, args.name)
+        obj_list = ei.list(endpoint_id, args.marker, args.limit, args.name)
         return EndpointInstanceFormatter().list_objects(obj_list)
 
 
@@ -120,8 +122,10 @@ class ShowEndpointInstance(show.ShowOne):
         return parser
 
     def take_action(self, args):
+        endpoints = self.app.client_manager.coriolis.endpoints
+        endpoint_id = endpoints.get_endpoint_id_for_name(args.endpoint)
         ei = self.app.client_manager.coriolis.endpoint_instances
         obj = ei.get(
-            args.endpoint,
+            endpoint_id,
             base64.b64encode(bytes(args.instance, 'utf-8')).decode())
         return InstancesDetailFormatter().get_formatted_entity(obj)
