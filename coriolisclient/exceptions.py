@@ -43,7 +43,7 @@ class HTTPAuthError(HTTPError):
 
     """Raised for 401 Unauthorized responses from the server."""
     def __init__(self, message, status_code=401):
-        super(HTTPError, self).__init__(message, status_code)
+        super(HTTPAuthError, self).__init__(message, status_code)
 
 
 class EndpointConnectionValidationFailed(CoriolisException):
@@ -57,7 +57,9 @@ class NoUniqueEndpointNameMatch(CoriolisException):
 
     def __init__(self, cli_arg):
         super(NoUniqueEndpointNameMatch, self).__init__(
-            "More than one endpoint exists with the name '%s'." % cli_arg)
+            "More than one endpoint exists with the name '%s'. "
+            "Please use an ID to be more specific." % (
+                cli_arg))
 
 
 class EndpointIDNotFound(CoriolisException):
