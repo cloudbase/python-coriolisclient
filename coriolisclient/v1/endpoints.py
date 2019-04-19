@@ -15,7 +15,7 @@
 
 from coriolisclient import base
 from coriolisclient import exceptions
-from coriolisclient.cli.utils import validate_uuid
+from coriolisclient.cli import utils
 
 
 class ConnectionInfo(base.Resource):
@@ -72,7 +72,7 @@ class EndpointManager(base.BaseManager):
 
     def get_endpoint_id_for_name(self, endpoint):
         """ Gets the UUID of the endpoint from the parsed name """
-        if validate_uuid(endpoint):
+        if utils.validate_uuid_string(endpoint):
             return endpoint
         else:
             return self._get_endpoint_id_for_name(endpoint)
