@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import base64
+
 from six.moves.urllib import parse as urlparse
 
 from coriolisclient import base
@@ -47,6 +49,7 @@ class EndpointInstanceManager(base.BaseManager):
         return self._list(url, 'instances')
 
     def get(self, endpoint, instance_id):
+        encoded_instance = base64.b64encode(instance_id.encode()).decode()
         url = '/endpoints/%s/instances/%s' % (
-            base.getid(endpoint), instance_id)
+            base.getid(endpoint), encoded_instance)
         return self._get(url, 'instance')
