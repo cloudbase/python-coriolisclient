@@ -14,6 +14,7 @@
 # limitations under the License.
 
 import base64
+from builtins import bytes
 
 from six.moves.urllib import parse as urlparse
 
@@ -49,7 +50,8 @@ class EndpointInstanceManager(base.BaseManager):
         return self._list(url, 'instances')
 
     def get(self, endpoint, instance_id):
-        encoded_instance = base64.b64encode(instance_id.encode()).decode()
+        encoded_instance = base64.b64encode(
+            bytes(instance_id, 'utf-8')).decode()
         url = '/endpoints/%s/instances/%s' % (
             base.getid(endpoint), encoded_instance)
         return self._get(url, 'instance')

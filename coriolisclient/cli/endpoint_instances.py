@@ -17,8 +17,6 @@
 Command-line interface sub-commands related to endpoints.
 """
 
-import base64
-from builtins import bytes
 import json
 
 from cliff import lister
@@ -126,6 +124,5 @@ class ShowEndpointInstance(show.ShowOne):
         endpoint_id = endpoints.get_endpoint_id_for_name(args.endpoint)
         ei = self.app.client_manager.coriolis.endpoint_instances
         obj = ei.get(
-            endpoint_id,
-            base64.b64encode(bytes(args.instance, 'utf-8')).decode())
+            endpoint_id, args.instance)
         return InstancesDetailFormatter().get_formatted_entity(obj)
