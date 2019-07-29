@@ -14,6 +14,7 @@
 # limitations under the License.
 
 from coriolisclient import base
+from coriolisclient.cli import utils as cli_utils
 
 
 class Providers(base.Resource):
@@ -25,6 +26,14 @@ class Providers(base.Resource):
             for (k, v) in self._info.items()]
         return providers_list
 
+    @property
+    def provider_schemas(self):
+        schemas = [
+            {"type": k,
+             "schema": cli_utils.format_json_for_object_property(self, k)}
+            for (k, v) in self._info.items()]
+        return schemas
+
 
 class ProvidersManager(base.BaseManager):
     resource_class = Providers
@@ -34,3 +43,7 @@ class ProvidersManager(base.BaseManager):
 
     def list(self):
         return self._get('/providers', 'providers')
+
+    def schemas_list(self, provider_name, provider_type):
+        url = '/providers/%s/schemas/%s' % (provider_name, provider_type)
+        return self._get(url, 'schemas')

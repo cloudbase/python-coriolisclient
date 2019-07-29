@@ -50,6 +50,14 @@ There are two types of providers: origin and destination. For example, when
 migrating a VM from VMware vSphere to OpenStack, ``wmware_vsphere`` is the
 origin and ``openstack`` the destination.
 
+Listing providers::
+
+    coriolis provider list
+
+Listing provider schema::
+
+    coriolis provider schema list $PLATFORM $PROVIDER_TYPE
+
 
 Endpoints
 ---------
