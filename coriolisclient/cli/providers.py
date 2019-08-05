@@ -41,6 +41,12 @@ PROVIDERS_TYPE_FEATURE_MAP = {
     512: "Listing Available Options"
 }
 
+PROVIDER_SCHEMA_TYPE_MAP = {
+    "connection": 16,
+    "destination": 1,
+    "source": 2
+}
+
 
 class ProvidersFormatter(formatter.EntityFormatter):
     """ Formats dict-like entities with keys 'name' and 'types'.
@@ -65,6 +71,15 @@ class ProvidersFormatter(formatter.EntityFormatter):
         return data
 
 
+class ProviderSchemasFormatter(formatter.EntityFormatter):
+    """ Formats dict-like entities with keys 'type' and 'schema'. """
+
+    columns = ("Schema Type", "Schema")
+
+    def _get_formatted_data(self, obj):
+        return (obj['type'], obj['schema'])
+
+
 class ListProvider(lister.Lister):
     """ List available providers """
 
@@ -76,3 +91,23 @@ class ListProvider(lister.Lister):
         pvs = self.app.client_manager.coriolis.providers
         obj_list = pvs.list().providers_list
         return ProvidersFormatter().list_objects(obj_list)
+
+
+class ListProviderSchemas(lister.Lister):
+    """ List provider schemas by provider type """
+
+    def get_parser(self, prog_name):
+        parser = super(ListProviderSchemas, self).get_parser(prog_name)
+        parser.add_argument('platform', help='The platform\'s name')
+        parser.add_argument(
+            'type',
+            help="Provider type. Accepted values: %s" % (
+                 list(PROVIDER_SCHEMA_TYPE_MAP.keys())))
+        return parser
+
+    def take_action(self, args):
+        pvs = self.app.client_manager.coriolis.providers
+        obj = pvs.schemas_list(
+            args.platform,
+            PROVIDER_SCHEMA_TYPE_MAP[args.type]).provider_schemas
+        return ProviderSchemasFormatter().list_objects(obj)
