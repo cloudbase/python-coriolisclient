@@ -99,13 +99,21 @@ class ListEndpointInstance(lister.Lister):
         parser.add_argument(
             '--name',
             help='Filter results based on regular expression search')
+        parser.add_argument(
+            '--env',
+            help="JSON=encoded environment options for listing instances.")
         return parser
 
     def take_action(self, args):
         endpoints = self.app.client_manager.coriolis.endpoints
         endpoint_id = endpoints.get_endpoint_id_for_name(args.endpoint)
         ei = self.app.client_manager.coriolis.endpoint_instances
-        obj_list = ei.list(endpoint_id, args.marker, args.limit, args.name)
+        env = None
+        if args.env:
+            env = json.loads(args.env)
+
+        obj_list = ei.list(
+            endpoint_id, env, args.marker, args.limit, args.name)
         return EndpointInstanceFormatter().list_objects(obj_list)
 
 
@@ -117,12 +125,18 @@ class ShowEndpointInstance(show.ShowOne):
             'endpoint', help='The endpoint ID.')
         parser.add_argument(
             'instance', help='The instance name.')
+        parser.add_argument(
+            '--env',
+            help="JSON=encoded environment options for showing instances.")
         return parser
 
     def take_action(self, args):
         endpoints = self.app.client_manager.coriolis.endpoints
         endpoint_id = endpoints.get_endpoint_id_for_name(args.endpoint)
+        if args.env:
+            env = json.loads(args.env)
         ei = self.app.client_manager.coriolis.endpoint_instances
         obj = ei.get(
-            endpoint_id, args.instance)
+            endpoint_id, args.instance, env)
+        env = None
         return InstancesDetailFormatter().get_formatted_entity(obj)
