@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from six.moves.urllib import parse as urlparse
+
 from coriolisclient import base
 from coriolisclient.v1 import common
 from coriolisclient.v1 import replica_executions
@@ -86,12 +88,15 @@ class ReplicaManager(base.BaseManager):
         return replica_executions.ReplicaExecution(
             self, response.json().get("execution"), loaded=True)
 
-    def update(self, replica, updated_values):
+    def update(self, replica, updated_values, force=False):
         data = {
             "replica": updated_values
         }
-        response = self.client.put(
-            '/replicas/%s' % base.getid(replica), json=data)
+        url = '/replicas/%s' % base.getid(replica)
+        if force:
+            url = '%s?force=true' % url
+
+        response = self.client.put(url, json=data)
 
         return replica_executions.ReplicaExecution(
             self, response.json().get("execution"), loaded=True)

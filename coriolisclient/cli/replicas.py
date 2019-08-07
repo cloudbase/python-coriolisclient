@@ -248,6 +248,13 @@ class UpdateReplica(show.ShowOne):
                                  'networks on the destination.')
         parser.add_argument('--notes', dest='notes',
                             help='Notes about the replica.')
+        parser.add_argument('--force',
+                            help="Perform a forced update of a replica. If "
+                                 "set, errors on updating the Replica's source"
+                                 " parameters will be ignored. This may lead "
+                                 "to an inconsistent Replica if misused.",
+                            action='store_true',
+                            default=False)
 
         cli_utils.add_storage_mappings_arguments_to_parser(parser)
 
@@ -278,9 +285,8 @@ class UpdateReplica(show.ShowOne):
             updated_properties['network_map'] = network_map
         if args.notes:
             updated_properties['notes'] = args.notes
-
         execution = self.app.client_manager.coriolis.replicas.update(
-            args.id, updated_properties)
+            args.id, updated_properties, args.force)
 
         return replica_executions.ReplicaExecutionDetailFormatter(
         ).get_formatted_entity(execution)
