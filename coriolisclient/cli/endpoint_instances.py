@@ -133,10 +133,11 @@ class ShowEndpointInstance(show.ShowOne):
     def take_action(self, args):
         endpoints = self.app.client_manager.coriolis.endpoints
         endpoint_id = endpoints.get_endpoint_id_for_name(args.endpoint)
+        ei = self.app.client_manager.coriolis.endpoint_instances
+        env = None
         if args.env:
             env = json.loads(args.env)
-        ei = self.app.client_manager.coriolis.endpoint_instances
+
         obj = ei.get(
             endpoint_id, args.instance, env)
-        env = None
         return InstancesDetailFormatter().get_formatted_entity(obj)
