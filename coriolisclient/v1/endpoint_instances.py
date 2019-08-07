@@ -14,6 +14,7 @@
 # limitations under the License.
 
 import base64
+import json
 
 from six.moves.urllib import parse as urlparse
 
@@ -32,7 +33,9 @@ class EndpointInstanceManager(base.BaseManager):
     def __init__(self, api):
         super(EndpointInstanceManager, self).__init__(api)
 
-    def list(self, endpoint, marker=None, limit=None, name=None):
+    def list(
+            self, endpoint, env=None, marker=None,
+            limit=None, name=None):
 
         query = {}
         if marker is not None:
@@ -41,6 +44,11 @@ class EndpointInstanceManager(base.BaseManager):
             query['limit'] = limit
         if name is not None:
             query["name"] = name
+        if env is not None:
+            if not isinstance(env, dict):
+                raise ValueError("'env' param must be a dict")
+            query['env'] = base64.b64encode(
+                json.dumps(env).encode()).decode()
 
         url = '/endpoints/%s/instances' % base.getid(endpoint)
         if query:
@@ -48,9 +56,18 @@ class EndpointInstanceManager(base.BaseManager):
 
         return self._list(url, 'instances')
 
-    def get(self, endpoint, instance_id):
+    def get(self, endpoint, instance_id, env=None):
         encoded_instance = base64.b64encode(
             instance_id.encode()).decode()
         url = '/endpoints/%s/instances/%s' % (
             base.getid(endpoint), encoded_instance)
+
+        if env is not None:
+            if not isinstance(env, dict):
+                raise ValueError("'env' param must be a dict")
+
+            encoded_env = base64.b64encode(
+                json.dumps(env).encode()).decode()
+            url = "%s?env=%s" % (url, encoded_env)
+
         return self._get(url, 'instance')
