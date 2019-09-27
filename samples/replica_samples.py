@@ -260,7 +260,7 @@ def main():
 
     # create a Migration from the Replica:
     migration = coriolis.migrations.create_from_replica(
-        test_replica, clone_disks=True, skip_os_morphing=False)
+        test_replica.id, clone_disks=True, skip_os_morphing=False)
     migration = wait_for_replica_migration(coriolis, migration)
     print("Migrated VM info is: %s" % (
         json.dumps(migration.transfer_result.to_dict(), indent=4)))
