@@ -4,14 +4,13 @@ through Coriolis' endpoints API.
 """
 
 import json
-import jsonschema
 
+import jsonschema
 from barbicanclient import client as barbican_client
 from keystoneauth1.identity import v3
 from keystoneauth1 import session as ksession
 
 from coriolisclient import client as coriolis_client
-from coriolisclient import exceptions as coriolis_exceptions
 
 
 CORIOLIS_CONNECTION_INFO = {
@@ -76,7 +75,7 @@ def get_schema_for_plugin(coriolis, platform_type, schema_type):
     }
 
     return coriolis.providers.schemas_list(
-        platform_type, provider_schema_type_map[schema_type]).as_dict()
+        platform_type, provider_schema_type_map[schema_type]).to_dict()
 
 
 def check_mapped_networks_exist(coriolis, destination_endpoint, network_map,
@@ -175,16 +174,16 @@ def main():
     barbican = barbican_client.Client(session=session)
 
     # fetch and validate options for Azure:
-    oci_schema = get_schema_for_plugin(
-        'coriolis', 'oci', 'destination')
-    # NOTE: this parameter validation is also done in ay API
-    # call involving the OCI destination options:
-    jsonschema.validate(OCI_DESTINATION_OPTIONS, oci_schema)
+    azure_schema = get_schema_for_plugin(
+        'coriolis', 'azure', 'source')
+    # NOTE: this parameter validation is also done in any API
+    # call involving the Azure source options:
+    jsonschema.validate(AZURE_SOURCE_OPTIONS, azure_schema)
 
     # fetch and validate options schema for OCI:
     oci_schema = get_schema_for_plugin(
         'coriolis', 'oci', 'destination')
-    # NOTE: this parameter validation is also done in ay API
+    # NOTE: this parameter validation is also done in any API
     # call involving the OCI destination options:
     jsonschema.validate(OCI_DESTINATION_OPTIONS, oci_schema)
 

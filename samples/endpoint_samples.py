@@ -8,7 +8,6 @@ from keystoneauth1.identity import v3
 from keystoneauth1 import session as ksession
 
 from coriolisclient import client as coriolis_client
-from coriolisclient import exceptions as coriolis_exceptions
 
 
 CORIOLIS_CONNECTION_INFO = {
@@ -44,7 +43,7 @@ def get_schema_for_plugin(coriolis, platform_type, schema_type):
     }
 
     return coriolis.providers.schemas_list(
-        platform_type, provider_schema_type_map[schema_type]).as_dict()
+        platform_type, provider_schema_type_map[schema_type]).to_dict()
 
 
 def store_barbican_secret_for_coriolis(
@@ -60,9 +59,9 @@ def store_barbican_secret_for_coriolis(
     secret = barbican.secrets.create(
         name=name, payload=payload,
         payload_content_type='application/json')
-    secret_href = secret.store()
+    secret_ref = secret.store()
 
-    return secret_href
+    return secret_ref
 
 
 def create_endpoint(coriolis, name, platform_type, connection_info,
@@ -76,16 +75,16 @@ def create_endpoint(coriolis, name, platform_type, connection_info,
     :return: new coriolisclient.v1.Endpoint instance
     """
     # check provider type is installed server-side:
-    providers_dict = coriolis.providers.list().as_dict()
+    providers_dict = coriolis.providers.list().to_dict()
     if platform_type not in providers_dict:
         raise ValueError(
             'platform_type must be one of %s' % providers_dict.keys())
 
     # if Barbican is available, store the connection info in it:
     if barbican:
-        secret_href = store_barbican_secret_for_coriolis(
+        secret_ref = store_barbican_secret_for_coriolis(
             barbican, connection_info, name='Coriolis Endpoint %s' % name)
-        connection_info = {'secret_href': secret_href}
+        connection_info = {'secret_ref': secret_ref}
 
     # create the endpoint:
     endpoint = coriolis.endpoints.create(
@@ -96,13 +95,14 @@ def create_endpoint(coriolis, name, platform_type, connection_info,
 
 def get_endpoint_connection_info(coriolis, barbican, endpoint):
     """ Returns the connection info for the given endpoint. """
-    endpoint = coriolis.endpoints.get(endpoint)
+    endpoint_conn_info = coriolis.endpoints.get(endpoint).to_dict().get(
+        'connection_info')
 
-    if 'secret_href' not in endpoint.connection_info:
+    if 'secret_ref' not in endpoint_conn_info:
         # this endpoint is not using Barbican for secret storage:
-        return endpoint.connection_info
+        return endpoint_conn_info
 
-    secret = barbican.secrets.get(endpoint.connection_info['secret_href'])
+    secret = barbican.secrets.get(endpoint_conn_info['secret_ref'])
 
     return json.loads(secret.payload)
 
@@ -118,30 +118,6 @@ def validate_endpoint(coriolis, endpoint, raise_on_error=True):
         raise Exception("Endpoint validation failed: %s" % error_msg)
 
     return (is_valid, error_msg)
-
-
-def get_replicas_for_endpoint(coriolis, endpoint,
-                              as_source=True, as_target=True):
-    """ Returns all Replicas with the given endpoint as source/target. """
-    endpoint = coriolis.endpoints.get(endpoint)
-
-    found = []
-    for replica in coriolis.replicas.list():
-        if as_source and replica.origin_endpoint_id == endpoint.id:
-            found.append(replica)
-
-        if as_target and replica.destination_endpoint_id == endpoint.id:
-            found.append(replica)
-
-    return found
-
-
-def delete_endpoint(coriolis, endpoint, force=False):
-    """ Removes a given endpoint object/ID. """
-    if not force and get_replicas_for_endpoint(coriolis, endpoint):
-        raise Exception('Endpoint still has existing Replicas associated.')
-
-    coriolis.endpoints.delete(endpoint)
 
 
 def main():
@@ -172,12 +148,5 @@ def main():
     print("Endpoint '%s' connection info is: %s" % (
         endpoint.id, endpoint_connection_info))
 
-    # see all Replicas away from the endpoint:
-    endpoint_replicas = get_replicas_for_endpoint(
-        coriolis, endpoint, as_source=True, as_target=False)
-    print(
-        "Endpoint '%s' is used as a source for the following Replicas: %s" % (
-            endpoint.id, [replica.id for replica in endpoint_replicas]))
-
     # delete the endpoint:
-    delete_endpoint(coriolis, endpoint, force=True)
+    coriolis.endpoints.delete(endpoint)
