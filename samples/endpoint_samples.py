@@ -1,6 +1,7 @@
-""" Module showcasing various perations for Coriolis endpoints. """
+""" Module showcasing various operations for Coriolis endpoints. """
 
 import json
+import jsonschema
 
 from barbicanclient import client as barbican_client
 from keystoneauth1.identity import v3
@@ -149,6 +150,13 @@ def main():
 
     coriolis = coriolis_client.Client(session=session)
     barbican = barbican_client.Client(session=session)
+
+    # fetch and validate schema for OCI and validate the connection parameters:
+    oci_schema = get_schema_for_plugin(
+        'coriolis', 'oci', 'connection')
+    # NOTE: this validation is also done server-side by calling
+    # `coriolis.endpoints.validate_connection()`
+    jsonschema.validate(OCI_CONNECTION_INFO, oci_schema)
 
     # create the endppoint:
     endpoint = create_endpoint(
