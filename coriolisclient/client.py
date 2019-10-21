@@ -15,6 +15,7 @@
 import logging
 
 from keystoneauth1 import adapter
+from keystoneauth1.exceptions.catalog import EndpointNotFound
 
 from coriolisclient.v1 import endpoint_destination_options
 from coriolisclient.v1 import endpoint_instances
@@ -22,6 +23,7 @@ from coriolisclient.v1 import endpoint_networks
 from coriolisclient.v1 import endpoint_source_options
 from coriolisclient.v1 import endpoint_storage
 from coriolisclient.v1 import endpoints
+from coriolisclient.v1 import logging as coriolis_logging
 from coriolisclient.v1 import migrations
 from coriolisclient.v1 import providers
 from coriolisclient.v1 import replica_executions
@@ -51,6 +53,7 @@ class _HTTPClient(adapter.Adapter):
 class Client(object):
     def __init__(self, session=None, *args, **kwargs):
         httpclient = _HTTPClient(session=session, *args, **kwargs)
+
         self.endpoints = endpoints.EndpointManager(httpclient)
         self.endpoint_instances = endpoint_instances.EndpointInstanceManager(
             httpclient)
@@ -70,3 +73,4 @@ class Client(object):
             httpclient)
         self.replica_executions = replica_executions.ReplicaExecutionManager(
             httpclient)
+        self.logging = coriolis_logging.CoriolisLogDownloadManager(httpclient)

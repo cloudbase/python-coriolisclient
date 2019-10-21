@@ -42,6 +42,7 @@ class HTTPClientError(HTTPError):
 class HTTPAuthError(HTTPError):
 
     """Raised for 401 Unauthorized responses from the server."""
+
     def __init__(self, message, status_code=401):
         super(HTTPAuthError, self).__init__(message, status_code)
 
@@ -68,3 +69,11 @@ class EndpointIDNotFound(CoriolisException):
     def __init__(self, cli_arg):
         super(EndpointIDNotFound, self).__init__(
             "No endpoint found for '%s'" % cli_arg)
+
+
+class LoggingEndpointNotFound(CoriolisException):
+    """Raised when logging endpoint could not be found in service catalogue"""
+
+    def __init__(self, *args, **kw):
+        super(EndpointIDNotFound, self).__init__(
+            "no logging endpoint found in service catalogue")
