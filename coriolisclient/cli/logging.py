@@ -49,7 +49,7 @@ _MAPPED_LOG_LEVELS = {
     "DEBUG": 7,
 }
 
-_DEFAULT_LOG_LEVEL = _MAPPED_LOG_LEVELS["INFO"]
+_DEFAULT_LOG_LEVEL = "INFO"
 
 
 class LogsFormatter(formatter.EntityFormatter):
