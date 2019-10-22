@@ -61,24 +61,29 @@ class MigrationManager(base.BaseManager):
     def create(self, origin_endpoint_id, destination_endpoint_id,
                source_environment, destination_environment, instances,
                network_map=None, storage_mappings=None,
-               skip_os_morphing=False):
+               skip_os_morphing=False, replication_count=None,
+               shutdown_instances=None):
         if not network_map:
             network_map = destination_environment.get('network_map', {})
         if not storage_mappings:
             storage_mappings = destination_environment.get(
                 'storage_mappings', {})
 
-        data = {"migration": {
-            "origin_endpoint_id": origin_endpoint_id,
-            "destination_endpoint_id": destination_endpoint_id,
-            "destination_environment": destination_environment,
-            "instances": instances,
-            "skip_os_morphing": skip_os_morphing,
-            "network_map": network_map,
-            "storage_mappings": storage_mappings}
-        }
+        data = {
+            "migration": {
+                "origin_endpoint_id": origin_endpoint_id,
+                "destination_endpoint_id": destination_endpoint_id,
+                "destination_environment": destination_environment,
+                "instances": instances,
+                "skip_os_morphing": skip_os_morphing,
+                "network_map": network_map,
+                "storage_mappings": storage_mappings}}
         if source_environment is not None:
             data['migration']['source_environment'] = source_environment
+        if shutdown_instances is not None:
+            data['migration']['shutdown_instances'] = shutdown_instances
+        if replication_count is not None:
+            data['migration']['replication_count'] = replication_count
 
         return self._post('/migrations', data, 'migration')
 

@@ -58,6 +58,8 @@ class MigrationDetailFormatter(formatter.EntityFormatter):
             "instances",
             "origin_endpoint_id",
             "destination_endpoint_id",
+            "replication_count",
+            "shutdown_instances",
             "destination_environment",
             "source_environment",
             "network_map",
@@ -120,6 +122,8 @@ class MigrationDetailFormatter(formatter.EntityFormatter):
                 self._format_instances(obj),
                 obj.origin_endpoint_id,
                 obj.destination_endpoint_id,
+                getattr(obj, 'replication_count', None),
+                getattr(obj, 'shutdown_instances', False),
                 cli_utils.format_json_for_object_property(
                     obj, prop_name="destination_environment"),
                 cli_utils.format_json_for_object_property(
@@ -167,6 +171,15 @@ class CreateMigration(show.ShowOne):
                             help='Skip the OS morphing process',
                             action='store_true',
                             default=False)
+        parser.add_argument('--replication-count',
+                            type=int,
+                            help='Number of times to perform a replica sync '
+                                 'before deploying the migrated instance.')
+        parser.add_argument('--shutdown-instances',
+                            action='store_true',
+                            help='Whether or not to shut down the instance on '
+                                 'the source platform before performing the '
+                                 'final Replica sync.')
 
         cli_utils.add_storage_mappings_arguments_to_parser(parser)
 
@@ -197,7 +210,9 @@ class CreateMigration(show.ShowOne):
             args.instances,
             network_map=network_map,
             storage_mappings=storage_mappings,
-            skip_os_morphing=args.skip_os_morphing)
+            skip_os_morphing=args.skip_os_morphing,
+            replication_count=args.replication_count,
+            shutdown_instances=args.shutdown_instances)
 
         return MigrationDetailFormatter().get_formatted_entity(migration)
 
