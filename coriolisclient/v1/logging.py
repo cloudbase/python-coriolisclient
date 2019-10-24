@@ -86,7 +86,12 @@ class LoggingClient(object):
                 while True:
                     msg = await ws.recv()
                     as_dict = json.loads(msg)
-                    print(as_dict["message"])
+                    if app_name is None:
+                        app = "\033[2m\033[1m%s\x1b[0m" % as_dict["app_name"]
+                        spacing = " " * (max((22-len(as_dict["app_name"]), 1)))
+                        print("%s>>%s%s" % (app, spacing, as_dict["message"]))
+                    else:
+                        print(as_dict["message"])
 
         try:
             asyncio.get_event_loop().run_until_complete(nested())
