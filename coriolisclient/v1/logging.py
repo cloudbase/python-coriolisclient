@@ -16,10 +16,12 @@
 import asyncio
 import datetime
 import json
+
 import requests
 import websockets
-from six.moves.urllib import parse as urlparse
+
 from keystoneauth1.exceptions.catalog import EndpointNotFound
+from six.moves.urllib import parse as urlparse
 
 from coriolisclient import base
 from coriolisclient import exceptions

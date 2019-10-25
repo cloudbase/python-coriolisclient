@@ -87,14 +87,14 @@ class DownloadCoriolisLog(command.Command):
         parser.add_argument(
             '--start-time',
             help="The start date of the log. This can be a unix timestamp"
-            " or a period written as one of the following:"
-            " 1s, 1m, 1h, 1d, 1w",
+                 " or a period written as one of the following:"
+                 " 1s, 1m, 1h, 1d, 1w",
             default=None)
         parser.add_argument(
             '--end-time',
             help="The end date of the log. This can be a unix timestamp"
-            " or a period written as one of the following:"
-            " 1s, 1m, 1h, 1d, 1w",
+                 " or a period written as one of the following:"
+                 " 1s, 1m, 1h, 1d, 1w",
             default=None)
         parser.add_argument(
             '--out-file',
