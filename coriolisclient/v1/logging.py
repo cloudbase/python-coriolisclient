@@ -16,6 +16,7 @@
 import asyncio
 import datetime
 import json
+import logging
 
 import requests
 import websockets
@@ -26,6 +27,8 @@ from six.moves.urllib import parse as urlparse
 from coriolisclient import base
 from coriolisclient import exceptions
 
+
+LOG = logging.getLogger(__name__)
 _LOGGING_ENDPOINT_NAME = "coriolis-logger"
 
 
@@ -34,7 +37,12 @@ class LoggingClient(object):
     def __init__(self, client, endpoint_name_override=None):
         self._cli = client
         self._ep_name = endpoint_name_override or _LOGGING_ENDPOINT_NAME
-        self._ep_url = self._get_endpoint_url(self._ep_name)
+        self._ep_url = None
+        try:
+            self._ep_url = self._get_endpoint_url(self._ep_name)
+        except Exception as ex:
+            LOG.warn(
+                "Unable to determine logging endpoint: %s", str(ex))
 
     @property
     def _token(self):
@@ -63,6 +71,8 @@ class LoggingClient(object):
                 continue
             args[i] = query_args[i]
 
+        if not self._ep_url:
+            self._ep_url = self._get_endpoint_url(self._ep_name)
         url = "%s/%s" % (self._ep_url, resource)
         if len(args):
             url += "?" + urlparse.urlencode(args)
