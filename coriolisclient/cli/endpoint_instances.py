@@ -21,7 +21,9 @@ import json
 
 from cliff import lister
 from cliff import show
+
 from coriolisclient.cli import formatter
+from coriolisclient.cli import utils as cli_utils
 
 
 class EndpointInstanceFormatter(formatter.EntityFormatter):
@@ -99,18 +101,17 @@ class ListEndpointInstance(lister.Lister):
         parser.add_argument(
             '--name',
             help='Filter results based on regular expression search')
-        parser.add_argument(
-            '--env',
-            help="JSON=encoded environment options for listing instances.")
+
+        cli_utils.add_args_for_json_option_to_parser(parser, 'environment')
+
         return parser
 
     def take_action(self, args):
         endpoints = self.app.client_manager.coriolis.endpoints
         endpoint_id = endpoints.get_endpoint_id_for_name(args.endpoint)
         ei = self.app.client_manager.coriolis.endpoint_instances
-        env = None
-        if args.env:
-            env = json.loads(args.env)
+        env = cli_utils.get_option_value_from_args(
+            args, 'environment', error_on_no_value=False)
 
         obj_list = ei.list(
             endpoint_id, env, args.marker, args.limit, args.name)
@@ -125,18 +126,17 @@ class ShowEndpointInstance(show.ShowOne):
             'endpoint', help='The endpoint ID.')
         parser.add_argument(
             'instance', help='The instance name.')
-        parser.add_argument(
-            '--env',
-            help="JSON=encoded environment options for showing instances.")
+
+        cli_utils.add_args_for_json_option_to_parser(parser, 'environment')
+
         return parser
 
     def take_action(self, args):
         endpoints = self.app.client_manager.coriolis.endpoints
         endpoint_id = endpoints.get_endpoint_id_for_name(args.endpoint)
         ei = self.app.client_manager.coriolis.endpoint_instances
-        env = None
-        if args.env:
-            env = json.loads(args.env)
+        env = cli_utils.get_option_value_from_args(
+            args, 'environment', error_on_no_value=False)
 
         obj = ei.get(
             endpoint_id, args.instance, env)

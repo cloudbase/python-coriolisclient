@@ -77,7 +77,7 @@ Creating an endpoint::
     --name $ENDPOINT_NAME \
     --provider $ENDPOINT_PROVIDER \
     --description $DESCRIPTION \
-    --connection $JSON_ENCODED_CONNECTION_DATA
+    --connection{-file,} $JSON_ENCODED_CONNECTION_{FILE,STRING}
     (or --connection-secret $BARBICAN_SECRET_URL in case Barbican secrets are used)
 
 Listing the existing endpoints::
@@ -169,9 +169,9 @@ by their Coriolis endpoint IDs::
     coriolis migration create \
     --origin-endpoint $ENDPOINT_1_ID \
     --destination-endpoint $ENDPOINT_2_ID \
-    --destination-environment "$DESTINATION_ENV" \
-    --network-map "$NETWORK_MAP" \
-    --source-environment "$SOURCE_ENVIRONMENT" \
+    --source-environment{-file,} "$SOURCE_ENVIRONMENT_{FILE,STRING}" \
+    --destination-environment{-file,} "$DESTINATION_ENV_{FILE,STRING}" \
+    --network-map{-file,} "$NETWORK_MAP_{FILE,STRING}" \
     --default-storage-backend $DEFAULT_BACKEND \
     --disk-storage-mapping $DISK_STORAGE_MAPPING \
     --storage-backend-mapping $STORAGE_BACKEND_MAPPINGS \
@@ -216,9 +216,9 @@ The process of creating replicas is similar to starting migrations::
     coriolis replica create \
     --origin-endpoint $ENDPOINT_1_ID \
     --destination-endpoint $ENDPOINT_2_ID \
-    --destination-environment "$DESTINATION_ENV" \
-    --network-map "$NETWORK_MAP" \
-    --source-environment "$SOURCE_ENVIRONMENT" \
+    --source-environment{-file,} "$SOURCE_ENVIRONMENT_{FILE,STRING}" \
+    --destination-environment{-file,} "$DESTINATION_ENV_{FILE,STRING}" \
+    --network-map{-file,} "$NETWORK_MAP_{FILE,STRING}" \
     --default-storage-backend $DEFAULT_BACKEND \
     --disk-storage-mapping $DISK_STORAGE_MAPPING \
     --storage-backend-mapping $STORAGE_BACKEND_MAPPINGS \
@@ -230,9 +230,9 @@ Updating a replica
 To update a replica::
 
     coriolis replica update  $REPLICA_ID \
-    --destination-environment "$DESTINATION_ENV" \
-    --network-map "$NETWORK_MAP" \
-    --source-environment "$SOURCE_ENVIRONMENT" \
+    --source-environment{-file,} "$SOURCE_ENVIRONMENT_{FILE,STRING}" \
+    --destination-environment{-file,} "$DESTINATION_ENV_{FILE,STRING}" \
+    --network-map{-file,} "$NETWORK_MAP_{FILE,STRING}" \
     --default-storage-backend $DEFAULT_BACKEND \
     --disk-storage-mapping $DISK_STORAGE_MAPPING \
     --storage-backend-mapping $STORAGE_BACKEND_MAPPINGS \

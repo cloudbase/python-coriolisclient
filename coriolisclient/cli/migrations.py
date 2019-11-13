@@ -151,22 +151,10 @@ class CreateMigration(show.ShowOne):
                             help='The origin endpoint id')
         parser.add_argument('--destination-endpoint', required=True,
                             help='The destination endpoint id')
-        parser.add_argument('--destination-environment',
-                            help='JSON encoded data related to the '
-                            'destination\'s environment')
         parser.add_argument('--instance', action='append', required=True,
                             dest="instances",
                             help='An instances to be migrated, can be '
                             'specified multiple times')
-        parser.add_argument('--network-map', required=True,
-                            dest="network_map",
-                            help='JSON mapping between identifiers of '
-                            'networks on the source and identifiers of '
-                            'networks on the destination.')
-        parser.add_argument('--source-environment',
-                            dest="source_environment",
-                            help='JSON encoded data related to the '
-                            'source\'s environment.')
         parser.add_argument('--skip-os-morphing',
                             help='Skip the OS morphing process',
                             action='store_true',
@@ -179,22 +167,24 @@ class CreateMigration(show.ShowOne):
                             action='store_true',
                             help='Whether or not to shut down the instance on '
                                  'the source platform before performing the '
-                                 'final Replica sync.')
+                                 'final Replica sync')
 
+        cli_utils.add_args_for_json_option_to_parser(
+            parser, 'destination-environment')
+        cli_utils.add_args_for_json_option_to_parser(parser, 'network-map')
+        cli_utils.add_args_for_json_option_to_parser(
+            parser, 'source-environment')
         cli_utils.add_storage_mappings_arguments_to_parser(parser)
 
         return parser
 
     def take_action(self, args):
-        destination_environment = None
-        if args.destination_environment:
-            destination_environment = json.loads(args.destination_environment)
-        source_environment = None
-        if args.source_environment:
-            source_environment = json.loads(args.source_environment)
-        network_map = None
-        if args.network_map:
-            network_map = json.loads(args.network_map)
+        destination_environment = cli_utils.get_option_value_from_args(
+            args, 'destination-environment')
+        source_environment = cli_utils.get_option_value_from_args(
+            args, 'source-environment')
+        network_map = cli_utils.get_option_value_from_args(
+            args, 'network-map')
         storage_mappings = cli_utils.get_storage_mappings_dict_from_args(args)
         endpoints = self.app.client_manager.coriolis.endpoints
         origin_endpoint_id = endpoints.get_endpoint_id_for_name(

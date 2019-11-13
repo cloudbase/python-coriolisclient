@@ -14,6 +14,7 @@
 # limitations under the License.
 
 
+import argparse
 import json
 import uuid
 
@@ -132,3 +133,55 @@ def validate_uuid_string(uuid_obj, uuid_version=4):
         return False
 
     return True
+
+
+def add_args_for_json_option_to_parser(parser, option_name):
+    """ Given an `argparse.ArgumentParser` instance, dynamically add a group of
+    arguments for the option for both an '--option-name' and
+    '--option-name-file'.
+    """
+    option_name = option_name.replace('_', '-')
+    option_label_name = option_name.replace('-', ' ')
+    arg_group = parser.add_mutually_exclusive_group()
+    arg_group.add_argument('--%s' % option_name,
+                           help='JSON encoded %s data' % option_label_name)
+    arg_group.add_argument('--%s-file' % option_name,
+                           type=argparse.FileType('r'),
+                           help='Relative/full path to a file containing the '
+                                '%s data in JSON format' % option_label_name)
+    return parser
+
+
+def get_option_value_from_args(args, option_name, error_on_no_value=True):
+    """ Returns a dict with the value from of the option from the given
+    arguments as set up by calling `add_args_for_json_option_to_parser`
+    ('--option-name' and '--option-name-file')
+    """
+    value = None
+    raw_value = None
+    option_name = option_name.replace('-', '_')
+    option_label_name = option_name.replace('_', ' ')
+    option_file_name = "%s_file" % option_name
+    option_arg_name = "--%s" % option_name.replace('_', '-')
+
+    raw_arg = getattr(args, option_name)
+    file_arg = getattr(args, option_file_name)
+    if raw_arg:
+        raw_value = raw_arg
+    elif file_arg:
+        with file_arg as fin:
+            raw_value = fin.read()
+
+    if not value and raw_value:
+        try:
+            value = json.loads(raw_value)
+        except ValueError as ex:
+            raise ValueError(
+                "Error while parsing %s JSON: %s" % (
+                    option_label_name, str(ex)))
+
+    if not value and error_on_no_value:
+        raise ValueError(
+            "No '%s[-file]' parameter was provided." % option_arg_name)
+
+    return value

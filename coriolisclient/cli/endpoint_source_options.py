@@ -15,7 +15,9 @@
 import json
 
 from cliff import lister
+
 from coriolisclient.cli import formatter
+from coriolisclient.cli import utils as cli_utils
 
 
 class EndpointSourceOptionFormatter(formatter.EntityFormatter):
@@ -41,22 +43,20 @@ class ListEndpointSourceOptions(lister.Lister):
         parser = super(ListEndpointSourceOptions, self).get_parser(
             prog_name)
         parser.add_argument('endpoint', help='The endpoint\'s id')
-        parser.add_argument('--environment',
-                            help='JSON encoded endpoint environment data')
         parser.add_argument(
             '--options', help="Names of parameters to get options for.",
             nargs='+', default=[])
+
+        cli_utils.add_args_for_json_option_to_parser(parser, 'environment')
+
         return parser
 
     def take_action(self, args):
-        if args.environment:
-            environment = json.loads(args.environment)
-        else:
-            environment = None
-
         options = []
         if args.options:
             options = args.options
+        environment = cli_utils.get_option_value_from_args(
+            args, 'environment', error_on_no_value=False)
 
         endpoints = self.app.client_manager.coriolis.endpoints
         endpoint_id = endpoints.get_endpoint_id_for_name(args.endpoint)
