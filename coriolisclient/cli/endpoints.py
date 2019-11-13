@@ -15,6 +15,8 @@
 """
 Command-line interface sub-commands related to endpoints.
 """
+
+import argparse
 import json
 
 from cliff import command
@@ -23,6 +25,49 @@ from cliff import show
 
 from coriolisclient import exceptions
 from coriolisclient.cli import formatter
+
+
+def add_connection_info_args_to_parser(parser):
+    """ Given an `argparse.ArgumentParser` instance, add the arguments required
+    for the 'connection_info' field for both endpoint creation and updates.
+    """
+    conn_info_group = parser.add_mutually_exclusive_group()
+    conn_info_group.add_argument('--connection',
+                                 help='JSON encoded connection data')
+    conn_info_group.add_argument('--connection-file',
+                                 type=argparse.FileType('r'),
+                                 help='Relative/full path to a file containing'
+                                      ' the connection info in JSON format')
+    conn_info_group.add_argument('--connection-secret',
+                                 help='The url of the Barbican secret '
+                                      'containing the JSON connection info')
+    return parser
+
+
+def get_connnection_info_from_args(args):
+    """ Returns a dict with the connection info from the arguments. """
+    conn_info = None
+    raw_conn_info = None
+    if args.connection:
+        raw_conn_info = args.connection
+    elif args.connection_file:
+        with args.connection_file as fin:
+            raw_conn_info = fin.read()
+    elif args.connection_secret:
+        conn_info = {"secret_ref": args.connection_secret}
+
+    if not conn_info and raw_conn_info:
+        try:
+            conn_info = json.loads(raw_conn_info)
+        except ValueError as ex:
+            raise ValueError(
+                "Error while parsing connection info JSON: %s" % str(ex))
+
+    if not conn_info:
+        raise ValueError(
+            "No '--connection[-file/secret]' parameter provided.")
+
+    return conn_info
 
 
 class EndpointFormatter(formatter.EntityFormatter):
@@ -82,15 +127,11 @@ class CreateEndpoint(show.ShowOne):
                             'vmware_vsphere, openstack')
         parser.add_argument('--description',
                             help='A description for this endpoint')
-        parser.add_argument('--connection',
-                            help='JSON encoded connection data')
-        parser.add_argument('--connection-secret',
-                            help='The url of the Barbican secret containing '
-                            'the connection info')
         parser.add_argument('--skip-validation', dest='skip_validation',
                             action='store_true',
                             help='Whether to skip validating the connection '
                             'when creating the endpoint.')
+        add_connection_info_args_to_parser(parser)
 
         return parser
 
@@ -100,12 +141,7 @@ class CreateEndpoint(show.ShowOne):
                 "Please specify either --connection or "
                 "--connection-secret, but not both")
 
-        conn_info = None
-        if args.connection_secret:
-            conn_info = {"secret_ref": args.connection_secret}
-        if args.connection:
-            conn_info = json.loads(args.connection)
-
+        conn_info = get_connnection_info_from_args(args)
         endpoint = self.app.client_manager.coriolis.endpoints.create(
             args.name,
             args.provider,
@@ -131,11 +167,6 @@ class UpdateEndpoint(show.ShowOne):
                             help='The endpoints\'s name')
         parser.add_argument('--description',
                             help='A description for this endpoint')
-        parser.add_argument('--connection',
-                            help='JSON encoded connection data')
-        parser.add_argument('--connection-secret',
-                            help='The url of the Barbican secret containing '
-                            'the connection info')
         return parser
 
     def take_action(self, args):
@@ -144,12 +175,7 @@ class UpdateEndpoint(show.ShowOne):
                 "Please specify either --connection or "
                 "--connection-secret, but not both")
 
-        conn_info = None
-        if args.connection_secret:
-            conn_info = {"secret_ref": args.connection_secret}
-        if args.connection:
-            conn_info = json.loads(args.connection)
-
+        conn_info = get_connnection_info_from_args(args)
         updated_values = {}
         if args.name is not None:
             updated_values["name"] = args.name
