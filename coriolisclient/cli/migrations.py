@@ -155,6 +155,23 @@ class CreateMigration(show.ShowOne):
                             dest="instances",
                             help='An instances to be migrated, can be '
                             'specified multiple times')
+        parser.add_argument('--user-script-global', action='append',
+                            required=False,
+                            dest="global_scripts",
+                            help='A script that will run for a particular '
+                            'os_type. This option can be used multiple '
+                            'times. Use: linux=/path/to/script.sh or '
+                            'windows=/path/to/script.ps1')
+        parser.add_argument('--user-script-instance', action='append',
+                            required=False,
+                            dest="instance_scripts",
+                            help='A script that will run for a particular '
+                            'instance specified by the --instance option. '
+                            'This option can be used multiple times. '
+                            'Use: "instance_name"=/path/to/script.sh.'
+                            ' This option overwrites any OS specific script '
+                            'specified in --user-script-global for this '
+                            'instance')
         parser.add_argument('--skip-os-morphing',
                             help='Skip the OS morphing process',
                             action='store_true',
@@ -191,6 +208,8 @@ class CreateMigration(show.ShowOne):
             args.origin_endpoint)
         destination_endpoint_id = endpoints.get_endpoint_id_for_name(
             args.destination_endpoint)
+        user_scripts = cli_utils.compose_user_scripts(
+            args.global_scripts, args.instance_scripts)
 
         migration = self.app.client_manager.coriolis.migrations.create(
             origin_endpoint_id,
@@ -202,7 +221,8 @@ class CreateMigration(show.ShowOne):
             storage_mappings=storage_mappings,
             skip_os_morphing=args.skip_os_morphing,
             replication_count=args.replication_count,
-            shutdown_instances=args.shutdown_instances)
+            shutdown_instances=args.shutdown_instances,
+            user_scripts=user_scripts)
 
         return MigrationDetailFormatter().get_formatted_entity(migration)
 
@@ -225,16 +245,36 @@ class CreateMigrationFromReplica(show.ShowOne):
                             help='Skip the OS morphing process',
                             action='store_true',
                             default=False)
+        parser.add_argument('--user-script-global', action='append',
+                            required=False,
+                            dest="global_scripts",
+                            help='A script that will run for a particular '
+                            'os_type. This option can be used multiple '
+                            'times. Use: linux=/path/to/script.sh or '
+                            'windows=/path/to/script.ps1')
+        parser.add_argument('--user-script-instance', action='append',
+                            required=False,
+                            dest="instance_scripts",
+                            help='A script that will run for a particular '
+                            'instance specified by the --instance option. '
+                            'This option can be used multiple times. '
+                            'Use: "instance_name"=/path/to/script.sh.'
+                            ' This option overwrites any OS specific script '
+                            'specified in --user-script-global for this '
+                            'instance')
 
         return parser
 
     def take_action(self, args):
         m = self.app.client_manager.coriolis.migrations
+        user_scripts = cli_utils.compose_user_scripts(
+            args.global_scripts, args.instance_scripts)
         migration = m.create_from_replica(
             args.replica,
             args.clone_disks,
             args.force,
-            args.skip_os_morphing)
+            args.skip_os_morphing,
+            user_scripts=user_scripts)
 
         return MigrationDetailFormatter().get_formatted_entity(migration)
 
