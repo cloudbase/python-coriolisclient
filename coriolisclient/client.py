@@ -17,6 +17,7 @@ import logging
 from keystoneauth1 import adapter
 from keystoneauth1.exceptions.catalog import EndpointNotFound
 
+from coriolisclient.v1 import diagnostics
 from coriolisclient.v1 import endpoint_destination_options
 from coriolisclient.v1 import endpoint_instances
 from coriolisclient.v1 import endpoint_networks
@@ -74,3 +75,4 @@ class Client(object):
         self.replica_executions = replica_executions.ReplicaExecutionManager(
             httpclient)
         self.logging = coriolis_logging.CoriolisLogDownloadManager(httpclient)
+        self.diagnostics = diagnostics.DiagnosticsManager(httpclient)
