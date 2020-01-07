@@ -16,7 +16,10 @@
 
 import argparse
 import json
+import os
 import uuid
+
+from coriolisclient import constants
 
 
 def add_storage_mappings_arguments_to_parser(parser):
@@ -185,3 +188,34 @@ def get_option_value_from_args(args, option_name, error_on_no_value=True):
             "No '%s[-file]' parameter was provided." % option_arg_name)
 
     return value
+
+
+def compose_user_scripts(global_scripts, instance_scripts):
+    ret = {
+        "global":{},
+        "instances": {}
+    }
+    global_scripts = global_scripts or []
+    instance_scripts = instance_scripts or []
+    for glb in global_scripts:
+        split = glb.split("=", 1)
+        if len(split) != 2:
+            continue
+        if split[0] not in constants.OS_LIST:
+            raise ValueError(
+                "Invalid OS %s. Available options are: %s" % (
+                    split[0], ", ".join(constants.OS_LIST)))
+        if os.path.isfile(split[1]) is False:
+            raise ValueError("Could not find %s" % split[1])
+        with open(split[1]) as sc:
+            ret["global"][split[0]] = sc.read()
+    
+    for inst in instance_scripts:
+        split = inst.split("=", 1)
+        if len(split) != 2:
+            continue
+        if os.path.isfile(split[1]) is False:
+            raise ValueError("Could not find %s" % split[1])
+        with open(split[1]) as sc:
+            ret["instances"][split[0]] = sc.read()
+    return ret

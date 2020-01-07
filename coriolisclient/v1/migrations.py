@@ -62,7 +62,7 @@ class MigrationManager(base.BaseManager):
                source_environment, destination_environment, instances,
                network_map=None, storage_mappings=None,
                skip_os_morphing=False, replication_count=None,
-               shutdown_instances=None):
+               shutdown_instances=None, user_scripts=None):
         if not network_map:
             network_map = destination_environment.get('network_map', {})
         if not storage_mappings:
@@ -77,7 +77,8 @@ class MigrationManager(base.BaseManager):
                 "instances": instances,
                 "skip_os_morphing": skip_os_morphing,
                 "network_map": network_map,
-                "storage_mappings": storage_mappings}}
+                "storage_mappings": storage_mappings,
+                "user_scripts": user_scripts}}
         if source_environment is not None:
             data['migration']['source_environment'] = source_environment
         if shutdown_instances is not None:
@@ -88,12 +89,13 @@ class MigrationManager(base.BaseManager):
         return self._post('/migrations', data, 'migration')
 
     def create_from_replica(self, replica_id, clone_disks=True, force=False,
-                            skip_os_morphing=False):
+                            skip_os_morphing=False, user_scripts=None):
         data = {"migration": {
             "replica_id": replica_id,
             "clone_disks": clone_disks,
             "force": force,
-            "skip_os_morphing": skip_os_morphing}}
+            "skip_os_morphing": skip_os_morphing,
+            "user_scripts": user_scripts}}
         return self._post('/migrations', data, 'migration')
 
     def delete(self, migration):
