@@ -43,8 +43,8 @@ PROVIDERS_TYPE_FEATURE_MAP = {
 
 PROVIDER_SCHEMA_TYPE_MAP = {
     "connection": 16,
-    "destination": 1,
-    "source": 2
+    "destination": 4,
+    "source": 8
 }
 
 
@@ -107,6 +107,10 @@ class ListProviderSchemas(lister.Lister):
 
     def take_action(self, args):
         pvs = self.app.client_manager.coriolis.providers
+        if args.type not in PROVIDER_SCHEMA_TYPE_MAP:
+            raise ValueError(
+                "Unknown provider type '%s'. Supported types are: %s" % (
+                    (args.type, list(PROVIDER_SCHEMA_TYPE_MAP.keys()))))
         obj = pvs.schemas_list(
             args.platform,
             PROVIDER_SCHEMA_TYPE_MAP[args.type]).provider_schemas
