@@ -241,11 +241,11 @@ class UpdateReplica(show.ShowOne):
 
     def take_action(self, args):
         destination_environment = cli_utils.get_option_value_from_args(
-            args, 'destination-environment')
+            args, 'destination-environment', error_on_no_value=False)
         source_environment = cli_utils.get_option_value_from_args(
-            args, 'source-environment')
+            args, 'source-environment', error_on_no_value=False)
         network_map = cli_utils.get_option_value_from_args(
-            args, 'network-map')
+            args, 'network-map', error_on_no_value=False)
         storage_mappings = cli_utils.get_storage_mappings_dict_from_args(args)
 
         updated_properties = {}
@@ -260,6 +260,11 @@ class UpdateReplica(show.ShowOne):
             updated_properties['network_map'] = network_map
         if args.notes:
             updated_properties['notes'] = args.notes
+
+        if not updated_properties:
+            raise ValueError(
+                "No options provided for update. Please run `coriolis help "
+                "replica update` for details on accepted parameters.")
 
         execution = self.app.client_manager.coriolis.replicas.update(
             args.id, updated_properties)
