@@ -52,7 +52,7 @@ class ListEndpointNetwork(lister.Lister):
 
     def take_action(self, args):
         environment = cli_utils.get_option_value_from_args(
-            args, 'environment')
+            args, 'environment', error_on_no_value=False)
 
         endpoints = self.app.client_manager.coriolis.endpoints
         endpoint_id = endpoints.get_endpoint_id_for_name(args.endpoint)
