@@ -26,6 +26,9 @@ from coriolisclient.v1 import endpoint_source_minion_pool_options
 from coriolisclient.v1 import endpoint_source_options
 from coriolisclient.v1 import endpoint_storage
 from coriolisclient.v1 import endpoints
+from coriolisclient.v1 import licensing
+from coriolisclient.v1 import licensing_appliances
+from coriolisclient.v1 import licensing_reservations
 from coriolisclient.v1 import logging as coriolis_logging
 from coriolisclient.v1 import migrations
 from coriolisclient.v1 import minion_pools
@@ -94,3 +97,8 @@ class Client(object):
         self.services = services.ServiceManager(httpclient)
         self.logging = coriolis_logging.CoriolisLogDownloadManager(httpclient)
         self.diagnostics = diagnostics.DiagnosticsManager(httpclient)
+        self.licensing = licensing.LicensingManager(httpclient)
+        self.licensing_appliances = (
+            licensing_appliances.LicensingAppliancesManager(httpclient))
+        self.licensing_reservations = (
+            licensing_reservations.LicensingReservationsManager(httpclient))
