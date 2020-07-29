@@ -44,7 +44,7 @@ def add_connection_info_args_to_parser(parser):
     return parser
 
 
-def get_connnection_info_from_args(args):
+def get_connnection_info_from_args(args, raise_if_none=True):
     """ Returns a dict with the connection info from the arguments. """
     conn_info = None
     raw_conn_info = None
@@ -63,7 +63,7 @@ def get_connnection_info_from_args(args):
             raise ValueError(
                 "Error while parsing connection info JSON: %s" % str(ex))
 
-    if not conn_info:
+    if not conn_info and raise_if_none:
         raise ValueError(
             "No '--connection[-file/secret]' parameter provided.")
 
@@ -76,7 +76,7 @@ class EndpointFormatter(formatter.EntityFormatter):
                "Name",
                "Type",
                "Description",
-               )
+               "Mapped Region IDs")
 
     def _get_sorted_list(self, obj_list):
         return sorted(obj_list, key=lambda o: o.created_at)
@@ -86,6 +86,7 @@ class EndpointFormatter(formatter.EntityFormatter):
                 obj.name,
                 obj.type,
                 obj.description or "",
+                obj.mapped_regions or [],
                 )
         return data
 
@@ -99,6 +100,8 @@ class EndpointDetailFormatter(formatter.EntityFormatter):
             "type",
             "description",
             "connection_info",
+            "mapped_regions",
+            "created_at",
             "last_updated",
         ]
 
@@ -108,6 +111,7 @@ class EndpointDetailFormatter(formatter.EntityFormatter):
                 obj.type,
                 obj.description or "",
                 obj.connection_info.to_dict(),
+                obj.mapped_regions or [],
                 obj.created_at,
                 obj.updated_at,
                 ]
@@ -131,6 +135,10 @@ class CreateEndpoint(show.ShowOne):
                             action='store_true',
                             help='Whether to skip validating the connection '
                             'when creating the endpoint.')
+        parser.add_argument('--coriolis-region', action='append',
+                            dest='regions', required=True,
+                            help="ID of a region the endpoint should be  "
+                            "associated with. Can be supplied multiple times.")
         add_connection_info_args_to_parser(parser)
 
         return parser
@@ -146,7 +154,8 @@ class CreateEndpoint(show.ShowOne):
             args.name,
             args.provider,
             conn_info,
-            args.description)
+            args.description,
+            regions=args.regions)
 
         if not args.skip_validation:
             valid, message = (
@@ -167,6 +176,14 @@ class UpdateEndpoint(show.ShowOne):
                             help='The endpoints\'s name')
         parser.add_argument('--description',
                             help='A description for this endpoint')
+        parser.add_argument('--coriolis-region', action='append',
+                            dest='regions',
+                            help="ID of a region the endpoint should be  "
+                                 "associated with. Can be supplied multiple "
+                                 "times. Update will override all existing "
+                                 "region associations with the one(s) provided"
+                                 " if at least one region is given.")
+        add_connection_info_args_to_parser(parser)
         return parser
 
     def take_action(self, args):
@@ -175,7 +192,7 @@ class UpdateEndpoint(show.ShowOne):
                 "Please specify either --connection or "
                 "--connection-secret, but not both")
 
-        conn_info = get_connnection_info_from_args(args)
+        conn_info = get_connnection_info_from_args(args, raise_if_none=False)
         updated_values = {}
         if args.name is not None:
             updated_values["name"] = args.name
@@ -183,6 +200,8 @@ class UpdateEndpoint(show.ShowOne):
             updated_values["description"] = args.description
         if conn_info:
             updated_values["connection_info"] = conn_info
+        if args.regions:
+            updated_values["mapped_regions"] = args.regions
 
         endpoint = self.app.client_manager.coriolis.endpoints.update(
             args.id, updated_values)

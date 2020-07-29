@@ -12,6 +12,7 @@
 # implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
 import logging
 
 from keystoneauth1 import adapter
@@ -27,9 +28,12 @@ from coriolisclient.v1 import endpoints
 from coriolisclient.v1 import logging as coriolis_logging
 from coriolisclient.v1 import migrations
 from coriolisclient.v1 import providers
+from coriolisclient.v1 import regions
 from coriolisclient.v1 import replica_executions
 from coriolisclient.v1 import replica_schedules
 from coriolisclient.v1 import replicas
+from coriolisclient.v1 import services
+
 
 LOG = logging.getLogger(__name__)
 
@@ -74,5 +78,7 @@ class Client(object):
             httpclient)
         self.replica_executions = replica_executions.ReplicaExecutionManager(
             httpclient)
+        self.regions = regions.RegionManager(httpclient)
+        self.services = services.ServiceManager(httpclient)
         self.logging = coriolis_logging.CoriolisLogDownloadManager(httpclient)
         self.diagnostics = diagnostics.DiagnosticsManager(httpclient)

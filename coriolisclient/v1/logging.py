@@ -52,10 +52,10 @@ class LoggingClient(object):
         try:
             url = self._cli.get_endpoint(service_type=name)
             if url is None:
-                raise EndpointNotFound
+                raise EndpointNotFound()
             return url.rstrip("/")
         except EndpointNotFound:
-            raise exceptions.LoggingEndpointNotFound
+            raise exceptions.LoggingEndpointNotFound()
 
     @property
     def _auth_headers(self):
