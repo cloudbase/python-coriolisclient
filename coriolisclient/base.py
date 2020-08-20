@@ -24,20 +24,18 @@ import six
 from oslo_utils import strutils
 
 
-def getid(obj):
+def getid(obj, possible_fields=["uuid", "id"]):
     """Return id if argument is a Resource.
     Abstracts the common pattern of allowing both an object or an object's ID
     (UUID) as a parameter when dealing with relationships.
     """
-    try:
-        if obj.uuid:
-            return obj.uuid
-    except AttributeError:
-        pass
-    try:
-        return obj.id
-    except AttributeError:
-        return obj
+    if not possible_fields:
+        possible_fields = ["id"]
+
+    for key in possible_fields:
+        if hasattr(obj, key):
+            return getattr(obj, key)
+    return obj
 
 
 class Resource(object):

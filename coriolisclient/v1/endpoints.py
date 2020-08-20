@@ -41,15 +41,16 @@ class EndpointManager(base.BaseManager):
     def get(self, endpoint):
         return self._get('/endpoints/%s' % base.getid(endpoint), 'endpoint')
 
-    def create(self, name, endpoint_type, connection_info, description):
+    def create(
+            self, name, endpoint_type, connection_info,
+            description, regions):
         data = {
             "endpoint": {
                 "name": name,
                 "type": endpoint_type,
                 "description": description,
                 "connection_info": connection_info,
-            }
-        }
+                "mapped_regions": regions}}
 
         return self._post('/endpoints', data, 'endpoint')
 
