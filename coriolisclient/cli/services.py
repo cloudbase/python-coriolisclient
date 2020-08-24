@@ -54,10 +54,10 @@ class ServiceFormatter(formatter.EntityFormatter):
 def _add_service_enablement_args_to_parser(parser):
     """ Adds an arg group for mutually exclusive --enabled/--disabled args. """
     group = parser.add_mutually_exclusive_group()
-    group.add_argument('--enabled', action='store_true', default=False,
-                       help="Mark service as enabled.")
-    group.add_argument('--disabled', action='store_true', default=False,
-                       help="Mark service as disabled.")
+    group.add_argument('--enabled', action='store_true', dest='enabled',
+                       default=None, help="Mark service as enabled.")
+    group.add_argument('--disabled', action='store_false', dest='enabled',
+                       default=None, help="Mark service as disabled.")
 
 
 class CreateService(show.ShowOne):
@@ -105,8 +105,9 @@ class UpdateService(show.ShowOne):
         return parser
 
     def take_action(self, args):
-        updated_values = {
-            "enabled": args.enabled}
+        updated_values = {}
+        if args.enabled is not None:
+            updated_values['enabled'] = args.enabled
         if args.regions:
             updated_values["mapped_regions"] = args.regions
         service = self.app.client_manager.coriolis.services.update(
