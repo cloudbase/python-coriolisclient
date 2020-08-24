@@ -36,12 +36,12 @@ class RegionManager(base.BaseManager):
 
     def create(self, name, description="", enabled=True):
         data = {
-            "region": {
-                "name": name,
-                "description": description,
-                "enabled": enabled}}
+            "name": name,
+            "description": description}
+        if enabled is not None:
+            data['enabled'] = enabled
 
-        return self._post('/regions', data, 'region')
+        return self._post('/regions', {'region': data}, 'region')
 
     def update(self, region, updated_values):
         data = {

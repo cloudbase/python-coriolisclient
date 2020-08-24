@@ -52,10 +52,10 @@ class RegionFormatter(formatter.EntityFormatter):
 def _add_region_enablement_args_to_parser(parser):
     """ Adds an arg group for mutually exclusive --enabled/--disabled args. """
     group = parser.add_mutually_exclusive_group()
-    group.add_argument('--enabled', action='store_true', default=False,
-                       help="Mark region as enabled.")
-    group.add_argument('--disabled', action='store_true', default=False,
-                       help="Mark region as disabled.")
+    group.add_argument('--enabled', action='store_true', dest='enabled',
+                       default=None, help="Mark region as enabled.")
+    group.add_argument('--disabled', action='store_false', dest='enabled',
+                       default=None, help="Mark region as disabled.")
 
 
 class CreateRegion(show.ShowOne):
@@ -93,8 +93,9 @@ class UpdateRegion(show.ShowOne):
         return parser
 
     def take_action(self, args):
-        updated_values = {
-            "enabled": args.enabled}
+        updated_values = {}
+        if args.enabled is not None:
+            updated_values["enabled"] = args.enabled
         if args.name:
             updated_values["name"] = args.name
         if args.description:

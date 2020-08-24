@@ -36,14 +36,14 @@ class ServiceManager(base.BaseManager):
 
     def create(self, host, binary, topic, regions, enabled=True):
         data = {
-            "service": {
-                "host": host,
-                "binary": binary,
-                "topic": topic,
-                "enabled": enabled,
-                "mapped_regions": regions}}
+            "host": host,
+            "binary": binary,
+            "topic": topic,
+            "mapped_regions": regions}
+        if enabled is not None:
+            data['enabled'] = enabled
 
-        return self._post('/services', data, 'service')
+        return self._post('/services', {'service': data}, 'service')
 
     def update(self, service, updated_values):
         data = {
