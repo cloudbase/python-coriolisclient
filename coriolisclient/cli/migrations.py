@@ -12,10 +12,11 @@
 # implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
 """
 Command-line interface sub-commands related to migrations.
 """
-import json
+
 import os
 
 from cliff import command
@@ -57,7 +58,10 @@ class MigrationDetailFormatter(formatter.EntityFormatter):
             "reservation_id",
             "instances",
             "origin_endpoint_id",
+            "origin_minion_pool_id",
             "destination_endpoint_id",
+            "destination_minion_pool_id",
+            "instance_osmorphing_minion_pool_mappings",
             "replication_count",
             "shutdown_instances",
             "destination_environment",
@@ -121,7 +125,11 @@ class MigrationDetailFormatter(formatter.EntityFormatter):
                 obj.reservation_id,
                 self._format_instances(obj),
                 obj.origin_endpoint_id,
+                obj.origin_minion_pool_id,
                 obj.destination_endpoint_id,
+                obj.destination_minion_pool_id,
+                cli_utils.format_json_for_object_property(
+                    obj, 'instance_osmorphing_minion_pool_mappings'),
                 getattr(obj, 'replication_count', None),
                 getattr(obj, 'shutdown_instances', False),
                 cli_utils.format_json_for_object_property(
@@ -192,6 +200,10 @@ class CreateMigration(show.ShowOne):
         cli_utils.add_args_for_json_option_to_parser(
             parser, 'source-environment')
         cli_utils.add_storage_mappings_arguments_to_parser(parser)
+        cli_utils.add_minion_pool_args_to_parser(
+            parser, include_origin_pool_arg=True,
+            include_destination_pool_arg=True,
+            include_osmorphing_pool_mappings_arg=True)
 
         return parser
 
@@ -210,6 +222,11 @@ class CreateMigration(show.ShowOne):
             args.destination_endpoint)
         user_scripts = cli_utils.compose_user_scripts(
             args.global_scripts, args.instance_scripts)
+        instance_osmorphing_minion_pool_mappings = None
+        if args.instance_osmorphing_minion_pool_mappings:
+            instance_osmorphing_minion_pool_mappings = {
+                mp['instance_id']: mp['pool_id']
+                for mp in args.instance_osmorphing_minion_pool_mappings}
 
         migration = self.app.client_manager.coriolis.migrations.create(
             origin_endpoint_id,
@@ -222,6 +239,10 @@ class CreateMigration(show.ShowOne):
             skip_os_morphing=args.skip_os_morphing,
             replication_count=args.replication_count,
             shutdown_instances=args.shutdown_instances,
+            origin_minion_pool_id=args.origin_minion_pool_id,
+            destination_minion_pool_id=args.destination_minion_pool_id,
+            instance_osmorphing_minion_pool_mappings=(
+                instance_osmorphing_minion_pool_mappings),
             user_scripts=user_scripts)
 
         return MigrationDetailFormatter().get_formatted_entity(migration)
@@ -262,6 +283,10 @@ class CreateMigrationFromReplica(show.ShowOne):
                             ' This option overwrites any OS specific script '
                             'specified in --user-script-global for this '
                             'instance')
+        cli_utils.add_minion_pool_args_to_parser(
+            parser, include_origin_pool_arg=False,
+            include_destination_pool_arg=False,
+            include_osmorphing_pool_mappings_arg=True)
 
         return parser
 
@@ -269,12 +294,20 @@ class CreateMigrationFromReplica(show.ShowOne):
         m = self.app.client_manager.coriolis.migrations
         user_scripts = cli_utils.compose_user_scripts(
             args.global_scripts, args.instance_scripts)
+        instance_osmorphing_minion_pool_mappings = None
+        if args.instance_osmorphing_minion_pool_mappings:
+            instance_osmorphing_minion_pool_mappings = {
+                mp['instance_id']: mp['pool_id']
+                for mp in args.instance_osmorphing_minion_pool_mappings}
+
         migration = m.create_from_replica(
             args.replica,
             args.clone_disks,
             args.force,
             args.skip_os_morphing,
-            user_scripts=user_scripts)
+            user_scripts=user_scripts,
+            instance_osmorphing_minion_pool_mappings=(
+                instance_osmorphing_minion_pool_mappings))
 
         return MigrationDetailFormatter().get_formatted_entity(migration)
 

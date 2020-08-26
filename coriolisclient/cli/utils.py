@@ -219,3 +219,40 @@ def compose_user_scripts(global_scripts, instance_scripts):
         with open(split[1]) as sc:
             ret["instances"][split[0]] = sc.read()
     return ret
+
+
+def add_minion_pool_args_to_parser(
+        parser, include_origin_pool_arg=True,
+        include_destination_pool_arg=True,
+        include_osmorphing_pool_mappings_arg=True):
+    if include_origin_pool_arg:
+        parser.add_argument(
+            '--origin-minion-pool-id',
+            help='The ID of a pre-existing Coriolis minion pool associated '
+                 'with the origin Coriolis endpoint to use for disk syncing. '
+                 'The pool must contain Linux machines.')
+    if include_destination_pool_arg:
+        parser.add_argument(
+            '--destination-minion-pool-id',
+            help='The ID of a pre-existing Coriolis minion pool associated '
+                 'with the target Coriolis endpoint to use for disk syncing. '
+                 'The pool must contain Linux machines.')
+    if include_osmorphing_pool_mappings_arg:
+        # NOTE: arparse will just call whatever 'type=' was supplied on a value
+        # so we can pass in a single-arg function to have it modify the value:
+        def _split_pool_mapping_arg(arg):
+            instance_id, pool_id = arg.split('=')
+            return {
+                "instance_id": instance_id.strip('\'"'),
+                "pool_id": pool_id.strip('\'"')}
+
+        parser.add_argument(
+            '--osmorphing-minion-pool-mapping', action='append',
+            dest="instance_osmorphing_minion_pool_mappings",
+            type=_split_pool_mapping_arg,
+            help='Mapping between the identifier of an instance and a '
+                 'pre-existing Coriolis minion pool to be used for its '
+                 'OSMorphing. The minion pool must contain machines of the '
+                 'same OS type and which are compatible with OSMorphing '
+                 'the guest OS of each afferent instance. The mappings must '
+                 'be of the form "INSTANCE_IDENTIFIER=MINION_POOL_ID".')

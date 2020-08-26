@@ -62,7 +62,9 @@ class MigrationManager(base.BaseManager):
                source_environment, destination_environment, instances,
                network_map=None, storage_mappings=None,
                skip_os_morphing=False, replication_count=None,
-               shutdown_instances=None, user_scripts=None):
+               shutdown_instances=None, user_scripts=None,
+               origin_minion_pool_id=None, destination_minion_pool_id=None,
+               instance_osmorphing_minion_pool_mappings=None):
         if not network_map:
             network_map = destination_environment.get('network_map', {})
         if not storage_mappings:
@@ -85,17 +87,29 @@ class MigrationManager(base.BaseManager):
             data['migration']['shutdown_instances'] = shutdown_instances
         if replication_count is not None:
             data['migration']['replication_count'] = replication_count
+        if origin_minion_pool_id is not None:
+            data['migration']['origin_minion_pool_id'] = origin_minion_pool_id
+        if destination_minion_pool_id is not None:
+            data['migration']['destination_minion_pool_id'] = (
+                destination_minion_pool_id)
+        if instance_osmorphing_minion_pool_mappings:
+            data['migration']['instance_osmorphing_minion_pool_mappings'] = (
+                instance_osmorphing_minion_pool_mappings)
 
         return self._post('/migrations', data, 'migration')
 
     def create_from_replica(self, replica_id, clone_disks=True, force=False,
-                            skip_os_morphing=False, user_scripts=None):
+                            skip_os_morphing=False, user_scripts=None,
+                            instance_osmorphing_minion_pool_mappings=None):
         data = {"migration": {
             "replica_id": replica_id,
             "clone_disks": clone_disks,
             "force": force,
             "skip_os_morphing": skip_os_morphing,
             "user_scripts": user_scripts}}
+        if instance_osmorphing_minion_pool_mappings is not None:
+            data['migration']['instance_osmorphing_minion_pool_mappings'] = (
+                instance_osmorphing_minion_pool_mappings)
         return self._post('/migrations', data, 'migration')
 
     def delete(self, migration):

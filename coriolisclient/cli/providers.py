@@ -15,6 +15,7 @@
 """
 Command-line interface sub-commands related to providers.
 """
+import json
 import logging
 
 from cliff import lister
@@ -38,13 +39,15 @@ PROVIDERS_TYPE_FEATURE_MAP = {
     64: "OSMorphing",
     128: "Listing Networks",
     256: "Listing VM Flavors",
-    512: "Listing Available Options"
+    512: "Listing Available Options",
+    524288: "Minion Pool Operations"
 }
 
 PROVIDER_SCHEMA_TYPE_MAP = {
     "connection": 16,
     "destination": 4,
-    "source": 8
+    "source": 8,
+    "minion_pool": 524288
 }
 
 
@@ -66,8 +69,7 @@ class ProvidersFormatter(formatter.EntityFormatter):
                 features.append(PROVIDERS_TYPE_FEATURE_MAP[typ])
             else:
                 LOG.debug("Unknown provider type: '%s'", typ)
-        data = (obj['name'],
-                ", ".join(features))
+        data = (obj['name'], ", ".join(features))
         return data
 
 
@@ -77,7 +79,9 @@ class ProviderSchemasFormatter(formatter.EntityFormatter):
     columns = ("Schema Type", "Schema")
 
     def _get_formatted_data(self, obj):
-        return (obj['type'], obj['schema'])
+        return (
+            obj['type'],
+            json.dumps(obj['schema'], indent=4))
 
 
 class ListProvider(lister.Lister):

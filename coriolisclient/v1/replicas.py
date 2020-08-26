@@ -55,7 +55,9 @@ class ReplicaManager(base.BaseManager):
 
     def create(self, origin_endpoint_id, destination_endpoint_id,
                source_environment, destination_environment, instances,
-               network_map=None, storage_mappings=None):
+               network_map=None, storage_mappings=None,
+               origin_minion_pool_id=None, destination_minion_pool_id=None,
+                instance_osmorphing_minion_pool_mappings=None):
         if not network_map:
             network_map = destination_environment.get('network_map', {})
         if not storage_mappings:
@@ -73,6 +75,15 @@ class ReplicaManager(base.BaseManager):
         }
         if source_environment:
             data['replica']['source_environment'] = source_environment
+        if origin_minion_pool_id is not None:
+            data['replica']['origin_minion_pool_id'] = origin_minion_pool_id
+        if destination_minion_pool_id is not None:
+            data['replica']['destination_minion_pool_id'] = (
+                destination_minion_pool_id)
+        if instance_osmorphing_minion_pool_mappings:
+            data['replica']['instance_osmorphing_minion_pool_mappings'] = (
+                instance_osmorphing_minion_pool_mappings)
+
         return self._post('/replicas', data, 'replica')
 
     def delete(self, replica):
