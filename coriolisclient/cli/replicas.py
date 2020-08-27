@@ -31,7 +31,7 @@ class ReplicaFormatter(formatter.EntityFormatter):
 
     columns = ("ID",
                "Instances",
-               "Last tasks execution",
+               "Last Execution Status",
                "Created",
                )
 
@@ -47,7 +47,7 @@ class ReplicaFormatter(formatter.EntityFormatter):
     def _get_formatted_data(self, obj):
         data = (obj.id,
                 "\n".join(obj.instances),
-                self._format_last_execution(obj),
+                obj.last_execution_status,
                 obj.created_at,
                 )
         return data
