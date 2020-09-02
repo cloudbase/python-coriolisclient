@@ -125,9 +125,9 @@ class CreateReplica(show.ShowOne):
         parser.add_argument('--destination-endpoint', required=True,
                             help='The destination endpoint id')
         parser.add_argument('--instance', action='append', required=True,
-                            dest="instances",
-                            help='An instances to be migrated, can be '
-                            'specified multiple times')
+                            dest="instances", metavar="INSTANCE_IDENTIFIER",
+                            help='The identifier of a source instance to be '
+                                 'replicated. Can be specified multiple times')
 
         cli_utils.add_args_for_json_option_to_parser(
             parser, 'destination-environment')
