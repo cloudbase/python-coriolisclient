@@ -152,9 +152,9 @@ class CreateMigration(show.ShowOne):
         parser.add_argument('--destination-endpoint', required=True,
                             help='The destination endpoint id')
         parser.add_argument('--instance', action='append', required=True,
-                            dest="instances",
-                            help='An instances to be migrated, can be '
-                            'specified multiple times')
+                            dest="instances", metavar="INSTANCE_IDENTIFIER",
+                            help='The identifier of a source instance to be '
+                                 'migrated. Can be specified multiple times')
         parser.add_argument('--user-script-global', action='append',
                             required=False,
                             dest="global_scripts",
