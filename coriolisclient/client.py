@@ -16,13 +16,13 @@
 import logging
 
 from keystoneauth1 import adapter
-from keystoneauth1.exceptions.catalog import EndpointNotFound
 
 from coriolisclient.v1 import diagnostics
+from coriolisclient.v1 import endpoint_destination_minion_pool_options
 from coriolisclient.v1 import endpoint_destination_options
 from coriolisclient.v1 import endpoint_instances
-from coriolisclient.v1 import endpoint_minion_pool_options
 from coriolisclient.v1 import endpoint_networks
+from coriolisclient.v1 import endpoint_source_minion_pool_options
 from coriolisclient.v1 import endpoint_source_options
 from coriolisclient.v1 import endpoint_storage
 from coriolisclient.v1 import endpoints
@@ -70,8 +70,11 @@ class Client(object):
         self.endpoint_destination_options = (
             endpoint_destination_options.EndpointDestinationOptionsManager(
                 httpclient))
-        self.endpoint_minion_pool_options = (
-            endpoint_minion_pool_options.EndpointMinionPoolOptionsManager(
+        self.endpoint_source_minion_pool_options = (
+            endpoint_source_minion_pool_options.EndpointSourceMinionPoolOptionsManager(
+                httpclient))
+        self.endpoint_destination_minion_pool_options = (
+            endpoint_destination_minion_pool_options.EndpointDestinationMinionPoolOptionsManager(
                 httpclient))
         self.endpoint_source_options = (
             endpoint_source_options.EndpointSourceOptionsManager(httpclient))

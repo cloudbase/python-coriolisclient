@@ -30,13 +30,11 @@ class MinionPoolFormatter(formatter.EntityFormatter):
     columns = ("ID",
                "Pool Name",
                "Endpoint",
+               "Pool Platform",
                "OS Type",
                "Notes",
                "Pool Status",
-               "Minimum Minions",
-               "Maximum Minions",
-               "Minion Max Idle Time",
-               "Minion Retention Strategy")
+               "Minions")
 
     def _get_sorted_list(self, obj_list):
         return sorted(obj_list, key=lambda o: o.created_at)
@@ -45,13 +43,11 @@ class MinionPoolFormatter(formatter.EntityFormatter):
         data = (obj.id,
                 obj.pool_name,
                 obj.endpoint_id,
+                obj.pool_platform,
                 obj.pool_os_type,
                 obj.notes,
                 obj.pool_status,
-                obj.minimum_minions,
-                obj.maximum_minions,
-                obj.minion_max_idle_time,
-                obj.minion_retention_strategy)
+                obj.minimum_minions)
 
         return data
 
@@ -60,6 +56,7 @@ class MinionPoolDetailFormatter(formatter.EntityFormatter):
 
     columns = ("ID",
                "Pool Name",
+               "Pool Platform",
                "OS Type",
                "Notes",
                "Endpoint",
@@ -78,6 +75,7 @@ class MinionPoolDetailFormatter(formatter.EntityFormatter):
     def _get_formatted_data(self, obj):
         data = (obj.id,
                 obj.pool_name,
+                obj.pool_platform,
                 obj.pool_os_type,
                 obj.notes,
                 obj.endpoint_id,
@@ -104,6 +102,9 @@ class CreateMinionPool(show.ShowOne):
                             help='A name for the new minion pool.')
         parser.add_argument('--pool-os-type', required=True,
                             help='The OS type for the minions of the pool.')
+        parser.add_argument('--pool-platform', required=True,
+                            help='The type of the minion pool ("source" or '
+                                 "destination"').')
         parser.add_argument('--notes', dest='notes',
                             help='Notes about the replica.')
         parser.add_argument('--pool-endpoint', required=True,
@@ -132,8 +133,8 @@ class CreateMinionPool(show.ShowOne):
         environment_options = cli_utils.get_option_value_from_args(
             args, 'environment-options', error_on_no_value=True)
         minion_pool = self.app.client_manager.coriolis.minion_pools.create(
-            args.name, endpoint_id, args.pool_os_type, environment_options,
-            minimum_minions=args.minimum_minions,
+            args.name, endpoint_id, args.pool_platform, args.pool_os_type,
+            environment_options, minimum_minions=args.minimum_minions,
             maximum_minions=args.maximum_minions,
             minion_max_idle_time=args.minion_max_idle_time,
             minion_retention_strategy=args.minion_retention_strategy,
@@ -160,11 +161,11 @@ class UpdateMinionPool(show.ShowOne):
         parser.add_argument('--maximum-minions', type=int, default=None,
                             help='Maximum number of minions machines '
                                  'for the minion pool.')
-        parser.add_argument('--minion-max-idle-time', type=int, default=None,
+        parser.add_argument('--minion-max-idle-time', type=int,
                             help='Number of idle seconds for minions before '
                                 'being shelved based on the selected '
                                 '--minion-retention-strategy')
-        parser.add_argument('--minion-retention-strategy', default='delete',
+        parser.add_argument('--minion-retention-strategy',
                             help='Action to take when scaling down the number '
                                  'machines within the pool.')
         cli_utils.add_args_for_json_option_to_parser(
@@ -175,7 +176,7 @@ class UpdateMinionPool(show.ShowOne):
     def take_action(self, args):
         updated_values = {}
         if args.name:
-            updated_values["name"] = args.name
+            updated_values["pool_name"] = args.name
         if args.pool_os_type:
             updated_values["pool_os_type"] = args.pool_os_type
         if args.minimum_minions is not None:

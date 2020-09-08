@@ -12,7 +12,6 @@
 # implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-import json
 
 from cliff import lister
 
@@ -20,7 +19,8 @@ from coriolisclient.cli import formatter
 from coriolisclient.cli import utils as cli_utils
 
 
-class EndpointMinionPoolOptionsFormatter(formatter.EntityFormatter):
+class EndpointDestinationMinionPoolOptionsFormatter(
+        formatter.EntityFormatter):
 
     columns = ("Option Name",
                "Possible Values",
@@ -36,12 +36,13 @@ class EndpointMinionPoolOptionsFormatter(formatter.EntityFormatter):
         return data
 
 
-class ListEndpointMinionPoolOptions(lister.Lister):
-    """ List endpoint destination environment options. """
+class ListEndpointDestinationMinionPoolOptions(lister.Lister):
+    """ List endpoint destination minion pool options. """
 
     def get_parser(self, prog_name):
-        parser = super(ListEndpointMinionPoolOptions, self).get_parser(
-            prog_name)
+        parser = super(
+            ListEndpointDestinationMinionPoolOptions, self).get_parser(
+                prog_name)
         parser.add_argument('endpoint', help='The endpoint\'s id')
         parser.add_argument(
             '--options', help="Names of parameters to get options for.",
@@ -60,7 +61,9 @@ class ListEndpointMinionPoolOptions(lister.Lister):
 
         endpoints = self.app.client_manager.coriolis.endpoints
         endpoint_id = endpoints.get_endpoint_id_for_name(args.endpoint)
-        empo = self.app.client_manager.coriolis.endpoint_minion_pool_options
-        obj_list = empo.list(
+        empdo = (
+            self.app.client_manager.coriolis.endpoint_destination_minion_pool_options)
+        obj_list = empdo.list(
             endpoint_id, environment=environment, option_names=options)
-        return EndpointMinionPoolOptionsFormatter().list_objects(obj_list)
+        return EndpointDestinationMinionPoolOptionsFormatter().list_objects(
+            obj_list)

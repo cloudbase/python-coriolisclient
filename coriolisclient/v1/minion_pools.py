@@ -35,12 +35,14 @@ class MinionPoolManager(base.BaseManager):
             '/minion_pools/%s' % base.getid(minion_pool), 'minion_pool')
 
     def create(
-            self, name, endpoint, pool_os_type, environment_options,
+            self, name, endpoint, pool_platform, pool_os_type,
+            environment_options,
             minimum_minions=None, maximum_minions=None,
             minion_max_idle_time=None, minion_retention_strategy=None,
             notes=None):
         data = {
             "pool_name": name,
+            "pool_platform": pool_platform,
             "pool_os_type": pool_os_type,
             "endpoint_id": base.getid(endpoint),
             "environment_options": environment_options}

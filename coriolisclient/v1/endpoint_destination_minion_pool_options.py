@@ -19,18 +19,19 @@ import json
 from coriolisclient import base
 
 
-class EndpointMinionPoolOption(base.Resource):
+class EndpointDestinationMinionPoolOption(base.Resource):
     pass
 
 
-class EndpointMinionPoolOptionsManager(base.BaseManager):
-    resource_class = EndpointMinionPoolOption
+class EndpointDestinationMinionPoolOptionsManager(base.BaseManager):
+    resource_class = EndpointDestinationMinionPoolOption
 
     def __init__(self, api):
-        super(EndpointMinionPoolOptionsManager, self).__init__(api)
+        super(EndpointDestinationMinionPoolOptionsManager, self).__init__(api)
 
     def list(self, endpoint, environment=None, option_names=None):
-        url = '/endpoints/%s/minion-pool-options' % base.getid(endpoint)
+        url = '/endpoints/%s/destination-minion-pool-options' % (
+            base.getid(endpoint))
 
         if environment:
             encoded_env = base64.b64encode(
@@ -45,4 +46,4 @@ class EndpointMinionPoolOptionsManager(base.BaseManager):
                 json.dumps(option_names).encode()).decode()
             url = '%s%soptions=%s' % (url, sep, encoded_option_names)
 
-        return self._list(url, 'minion_pool_options')
+        return self._list(url, 'destination_minion_pool_options')

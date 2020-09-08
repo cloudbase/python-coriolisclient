@@ -40,14 +40,16 @@ PROVIDERS_TYPE_FEATURE_MAP = {
     128: "Listing Networks",
     256: "Listing VM Flavors",
     512: "Listing Available Options",
-    524288: "Minion Pool Operations"
+    524288: "Source Minion Pool Operations",
+    1048576: "Destination Minion Pool Operations"
 }
 
 PROVIDER_SCHEMA_TYPE_MAP = {
     "connection": 16,
     "destination": 4,
     "source": 8,
-    "minion_pool": 524288
+    "source_minion_pool": 524288,
+    "destination_minion_pool": 1048576
 }
 
 
