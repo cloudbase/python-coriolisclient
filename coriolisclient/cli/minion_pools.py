@@ -262,11 +262,15 @@ class TearDownSharedMinionPoolResources(show.ShowOne):
         parser = super(
             TearDownSharedMinionPoolResources, self).get_parser(prog_name)
         parser.add_argument('id', help='The minion pool\'s id.')
+        parser.add_argument('--force', action='store_true', default=False,
+                            help='Perform a forced teardown of the minion '
+                                 'pool\'s shared resources.')
         return parser
 
     def take_action(self, args):
         mps = self.app.client_manager.coriolis.minion_pools
-        execution = mps.tear_down_shared_resources(args.id)
+        execution = mps.tear_down_shared_resources(
+            args.id, force=args.force)
         return minion_pool_executions.MinionPoolExecutionDetailFormatter(
             ).get_formatted_entity(execution)
 
@@ -292,11 +296,14 @@ class DeallocateMinionPoolMachines(show.ShowOne):
         parser = super(DeallocateMinionPoolMachines, self).get_parser(
             prog_name)
         parser.add_argument('id', help='The minion pool\'s id.')
+        parser.add_argument('--force', action='store_true', default=False,
+                            help='Perform a forced deallocation of the minion '
+                                 'pool\'s machines.')
         return parser
 
     def take_action(self, args):
         mps = self.app.client_manager.coriolis.minion_pools
-        execution = mps.deallocate_machines(args.id)
+        execution = mps.deallocate_machines(args.id, force=args.force)
 
         return minion_pool_executions.MinionPoolExecutionDetailFormatter(
             ).get_formatted_entity(execution)

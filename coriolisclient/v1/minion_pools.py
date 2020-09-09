@@ -77,10 +77,10 @@ class MinionPoolManager(base.BaseManager):
         return minion_pool_executions.MinionPoolExecution(
             self, response.json().get("execution"), loaded=True)
 
-    def tear_down_shared_resources(self, minion_pool):
+    def tear_down_shared_resources(self, minion_pool, force=False):
         response = self.client.post(
             '/minion_pools/%s/actions' % base.getid(minion_pool),
-            json={'tear-down-shared-resources': None})
+            json={'tear-down-shared-resources': {'force': force}})
 
         return minion_pool_executions.MinionPoolExecution(
             self, response.json().get("execution"), loaded=True)
@@ -93,10 +93,10 @@ class MinionPoolManager(base.BaseManager):
         return minion_pool_executions.MinionPoolExecution(
             self, response.json().get("execution"), loaded=True)
 
-    def deallocate_machines(self, minion_pool):
+    def deallocate_machines(self, minion_pool, force=False):
         response = self.client.post(
             '/minion_pools/%s/actions' % base.getid(minion_pool),
-            json={'deallocate-machines': None})
+            json={'deallocate-machines': {'force': force}})
 
         return minion_pool_executions.MinionPoolExecution(
             self, response.json().get("execution"), loaded=True)
