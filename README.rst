@@ -73,7 +73,7 @@ deployment.
 
 Creating an endpoint::
 
-    coriolis endpoint create \ 
+    coriolis endpoint create \
     --name $ENDPOINT_NAME \
     --provider $ENDPOINT_PROVIDER \
     --description $DESCRIPTION \
@@ -93,8 +93,200 @@ Listing the instances on an endpoint::
     coriolis endpoint instance list $ENDPOINT_ID
 
 
+Coriolis Worker Service Management
+-----------------------
+
+The Coriolis Worker Services (which are the Coriolis components which
+actually interact with the source/destination platforms to perform the
+various operations required for the requested VM transfers) can be
+scaled out horizontally across multiple environments to improve load
+balance and reliability. (especially during DRaaS operations)
+
+
+The Worker Services will register themselves on startup, and are primarily
+identified by their hostnames (which must be unique)::
+
+    coriolis service list
+    coriolis service show $SERVICE_ID
+
+
+Worker Services can be enabled/disabled by the Coriolis Administrator as
+needed by running the following::
+
+    coriolis service update --enabled/--disabled $SERVICE_ID
+
+A disabled Worker Service will no longer have tasks allocated to it by the
+Coriolis scheduler, and thus can be brought down for updates/maintenance.
+
+
+Coriolis Regions
+----------------
+
+There are cases where only certain Worker Services can operate on certain
+platforms, such as:
+
+- DRaaS operations with multiple Worker Services deployed on both platforms
+- performing a transfer from a public cloud platform to a private one
+  where the data path is unidirectional
+
+Coriolis offers the ability to group both the source/destination platforms,
+and the Worker Services which should be able to access them into so-called
+'Coriolis Regions'.
+Coriolis Regions are solely meant for categorisation purposes, and can be
+defined freely at the Coriolis Administrator's leisure.
+
+Example of region-related oprations include::
+
+    coriolis region create \
+        --enabled/disabled \
+        --description "This a Coriolis region for public clouds"
+        Public
+    coriolis region show $REGION_ID
+    coriolis region update \
+        --enabled/disabled \
+        --description "This is the Region's new description." \
+        --name "This is the Region's new name." \
+        $REGION_ID
+
+
+Regions can then be associated with Coriolis Endpoints and Coriolis Services
+as seen fit for the Coriolis deployment at hand using the following::
+
+    coriolis endpoint update \
+        --coriolis-region $REGION_1_ID \
+        --coriolis-region $REGION_2_ID \
+        $ENDPOINT_ID
+    coriolis service update \
+        --coriolis-region $REGION_2_ID \
+        --coriolis-region $REGION_3_ID \
+        $WORKER_SERVICE_ID
+
+
+The above will associate the given Coriolis Endpoint with two regions, and the
+given Coriolis Worker Service with one of the two Regions.
+
+In the above setup, the following properties will hold true:
+
+- any operation performed on the Coriolis Endpoint in question (e.g. listing
+  environment options, Migrating or Performing DRaaS to/from that endpoint)
+  will be scheduled on a Coriolis Worker Service which is associated to one
+  of the Regions the endpoint is associated with
+- the Coriolis Worker Service in question will be used for operations relating
+  to any Endpoint which is associated to the Coriolis Region '$REGION_2_ID'
+  or '$REGION_3_ID'
+- if a Coriolis Endpoint has no regions associated to it whatsoever, then any
+  operations perfoemd on the Endpoint can be scheduled on any Coriolis Worker
+  Service, regardless of the Worker Service's Region associations
+
+
+Minion Machine Pools
+--------------------
+
+Coriolis relies on temporary machines it deploys on the source/target platforms
+to perform various actions during transfer operations, such as export/import
+the disk data of VMs being migrated, or performing the OSMorphing process.
+(where a temporary VM modifes a transferred machine's VM image to ensure it
+will boot properly on the target platform)
+
+By default, Coriolis automatically creates and cleans up all of the temporary
+reources it needs throughout the duration of the transfer, thus only limiting
+resources usage to the duration of the transfer itself, but at the cost of some
+time overhead for the actual creation/cleanup of the temporary resources.
+
+In cases where resource usage limitations are not a factor, or where the time
+cost outweighs the resource allocation costs, Coriolis offers the ability to
+pre-allocate temporary resources on source/destination platforms into so-called
+'minion pools'.
+
+For most plugins, the set of parameters related to Minion Pool Machines are
+usually shared with the Destination Environment parameters so as to allow
+for the dynamic selection of whether or not to use a minion pool or perform
+creation/cleanup of temporary resources as usual.
+
+Minion pools can be created through the following::
+
+    coriolis minion pool create \
+        --pool-endpoint $ENDPOINT_ID \
+        --pool-platform source \
+        --pool-os-type linux \
+        # Options can be obtained by running the following command:
+        # coriolis endpoint minion pool source/destination options list $EID
+        --environment-options '{"plugin-specific": "env options"}' \
+        --minimum-minions 3 \
+        --notes "Some options notes on the pool." \
+        $POOL_NAME
+
+The available parameters for minion pools include:
+
+- ``--pool-endpoint``: the ID of the Coriolis Endpoint for the pool.
+  The Endpoint must be for a platform whose Provider Plugin supports Minon Pool
+  management.
+- ``--pool-platform``: whether or not this should be used as a source or
+  destination Minion Pool.
+  The distinction is in place due to source pools requirings pecial
+  setup steps to allow them to export VM data, while destination pools are
+  specially deployed to import VM data to the destination paltform and/or
+  perform OSMorphing.
+- ``--pool-os-type``: the OS type ('linux', 'windows', or otherwise) for the
+  Minion Pool. Source Minion Pools require them to be of OS type Linux in order
+  to be able to run the data exports during VM transfers.
+- ``--environment-options``: JSON data with platform-specific environment
+  options for the Minion Pool. These will usually allow for the selection of
+  properties such as the image to be used for the temporary machines. Care
+  should be taken to pick properties which match the declared ``--pool-os-type``
+- ``--minimum-minions``: strictly positive number of Minion Machines the pool
+  should contain once allocated.
+
+Additional operations on minion pools include::
+
+    # inspect existing pools:
+    coriolis minion pool list
+    coriolis minion pool show $POOL_ID
+
+    # create a Pool Execution to set up pool VM shared resources for the specific
+    # platform and pool type it was configured as (e.g. a shared virtual network)
+    coriolis minion pool set up shared resources $POOL_ID
+
+    # view and manage Minion Pool Executions:
+    coriolis minion pool execution list $POOL_ID
+    coriolis minion pool execution show $POOL_ID $EXECUTION_ID
+
+    # allocate minion pool machines:
+    coriolis minion pool allocate machines $POOL_ID
+
+    # use a Minion Pool for a Replica or Migration
+    coriolis replica/migration create \
+        # NOTE: additional required parameters listed in their
+        # respective sections further below.
+        --instance $INSTANCE1 --instance $INSTANCE2 \
+        --origin-minion-pool-id $SOURCE_POOL_ID \
+        --destination-minion-pool-id $TARGET_POOL_1_ID \
+        --osmorphing-minion-pool-mapping $INSTANCE1=$TARGET_POOL_2_ID
+
+    # deallocate Minion Pool machines:
+    coriolis minion pool deallocate machines $POOL_ID
+
+    # tear down pool shared resources:
+    coriolis minion pool tear down shared resources $POOL_ID
+
+    # update a Minion Pool (can be done only if the pool has had its
+    # machines deallocated and its shared resources torn down)
+    coriolis minion pool update \
+        # NOTE: all the paramters for 'minion pool create' can be modified except
+        # for the selected minion pool `--pool-endpoint` and `--pool-platform`.
+        --arguments-to-update ... \
+        $POOL_ID
+
+    # delete a minion pool (only if all of its machines/resources were torn down)
+    coriolis minion pool delete $POOL_ID
+
+Once created, Minion Pools can then be used when creating Migrations or Replica
+jobs using the ``--origin-minion-pool-id``, ``--destination-minion-pool-id``,
+and ``--osmorphing-minion-pool-mapping`` arguments as shown in their respective
+sections.
+
 Destination environment
-------------------
+-----------------------
 
 A destination environment defines a set of provider specific parameters that
 override both the global configuration and built-in defaults of the Coriolis
@@ -168,13 +360,16 @@ by their Coriolis endpoint IDs::
 
     coriolis migration create \
     --origin-endpoint $ENDPOINT_1_ID \
+    --origin-minion-pool-id $OPTIONAL_SOURCE_MINION_POOL_ID \
     --destination-endpoint $ENDPOINT_2_ID \
+    --destination-minion-pool-id $OPTIONAL_DESTINATION_MINION_POOL_ID \
     --source-environment{-file,} "$SOURCE_ENVIRONMENT_{FILE,STRING}" \
     --destination-environment{-file,} "$DESTINATION_ENV_{FILE,STRING}" \
     --network-map{-file,} "$NETWORK_MAP_{FILE,STRING}" \
     --default-storage-backend $DEFAULT_BACKEND \
     --disk-storage-mapping $DISK_STORAGE_MAPPING \
     --storage-backend-mapping $STORAGE_BACKEND_MAPPINGS \
+    --osmorphing-minion-pool-mapping $VM_NAME=$OPTIONS_DESTINATION_MINION_POOL \
     --instance $VM_NAME
 
 List all migrations
@@ -215,13 +410,16 @@ The process of creating replicas is similar to starting migrations::
 
     coriolis replica create \
     --origin-endpoint $ENDPOINT_1_ID \
+    --origin-minion-pool-id $OPTIONAL_SOURCE_MINION_POOL_ID \
     --destination-endpoint $ENDPOINT_2_ID \
+    --destination-minion-pool-id $OPTIONAL_DESTINATION_MINION_POOL_ID \
     --source-environment{-file,} "$SOURCE_ENVIRONMENT_{FILE,STRING}" \
     --destination-environment{-file,} "$DESTINATION_ENV_{FILE,STRING}" \
     --network-map{-file,} "$NETWORK_MAP_{FILE,STRING}" \
     --default-storage-backend $DEFAULT_BACKEND \
     --disk-storage-mapping $DISK_STORAGE_MAPPING \
     --storage-backend-mapping $STORAGE_BACKEND_MAPPINGS \
+    --osmorphing-minion-pool-mapping $VM_NAME=$OPTIONS_DESTINATION_MINION_POOL \
     --instance $VM_NAME
 
 Updating a replica
@@ -230,12 +428,15 @@ Updating a replica
 To update a replica::
 
     coriolis replica update  $REPLICA_ID \
+    --origin-minion-pool-id $OPTIONAL_SOURCE_MINION_POOL_ID \
+    --destination-minion-pool-id $OPTIONAL_DESTINATION_MINION_POOL_ID \
     --source-environment{-file,} "$SOURCE_ENVIRONMENT_{FILE,STRING}" \
     --destination-environment{-file,} "$DESTINATION_ENV_{FILE,STRING}" \
     --network-map{-file,} "$NETWORK_MAP_{FILE,STRING}" \
     --default-storage-backend $DEFAULT_BACKEND \
     --disk-storage-mapping $DISK_STORAGE_MAPPING \
     --storage-backend-mapping $STORAGE_BACKEND_MAPPINGS \
+    --osmorphing-minion-pool-mapping $VM_NAME=$OPTIONS_DESTINATION_MINION_POOL
 
 Executing a replica
 -------------------
@@ -286,7 +487,12 @@ Deploying a replica
 
 Replicas can be deployed into full VMs with::
 
-    coriolis migration deploy replica $REPLICA_ID
+    coriolis migration deploy replica \
+        --destination-minion-pool-id $OPTIONAL_DESTINATION_MINION_POOL_ID \
+        --origin-minion-pool-id $OPTIONAL_SOURCE_MINION_POOL_ID \
+        # NOTE: these fully override the OSMorphing pool selections on the Replica:
+        --osmorphing-minion-pool-mapping $VM_NAME=$OPTIONS_DESTINATION_MINION_POOL \
+        $REPLICA_ID
 
 As this process may take some time, it is useful to know that it can be
 interacted with just like a regular migration (i.e. coriolis migration
@@ -312,7 +518,7 @@ Deleting replica target disks
 To delete a replica's target disks::
 
     coriolis replica disks delete $REPLICA_ID
-    
+
 Creating replica execution schedule
 -----------------------------------
 
@@ -321,36 +527,36 @@ To create a schedule for the execution of a replica, with UTC time::
     coriolis replica schedule create \
     $REPLICA_ID \
     -M $MINUTE -H $HOUR -d $DAY -m $MONTH
-    
+
 Listing all replica execution schedules
 ---------------------------------------
 
 To list the currently existing schedules of a replica::
 
     coriolis replica schedule list $REPLICA_ID
-    
+
 Showing a replica execution schedule
 ------------------------------------
 
 To retrieve the current status of a replica execution schedule::
 
     coriolis replica schedule show  $REPLICA_ID $SCHEDULE_ID
-    
+
 Deleting a replica execution schedule
 -------------------------------------
 
 To delete a replica execution schedule::
 
     coriolis replica schedule delete  $REPLICA_ID $SCHEDULE_ID
-    
+
 Updating a replica execution schedule
 -------------------------------------
 
 To update a replica execution schedule::
 
-    coriolis replica schedule update  $REPLICA_ID $SCHEDULE_ID \ 
-    -M $MINUTE -H $HOUR -w $WEEK_DAY \ 
- 
+    coriolis replica schedule update  $REPLICA_ID $SCHEDULE_ID \
+    -M $MINUTE -H $HOUR -w $WEEK_DAY \
+
 
 Python API
 ----------

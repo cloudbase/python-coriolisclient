@@ -12,9 +12,11 @@
 # implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
 """
 Command-line interface sub-commands related to replicas.
 """
+
 import json
 import os
 
@@ -63,7 +65,10 @@ class ReplicaDetailFormatter(formatter.EntityFormatter):
             "reservation_id",
             "instances",
             "origin_endpoint_id",
+            "origin_minion_pool_id",
             "destination_endpoint_id",
+            "destination_minion_pool_id",
+            "instance_osmorphing_minion_pool_mappings",
             "destination_environment",
             "source_environment",
             "network_map",
@@ -97,7 +102,11 @@ class ReplicaDetailFormatter(formatter.EntityFormatter):
                 obj.reservation_id,
                 self._format_instances(obj),
                 obj.origin_endpoint_id,
+                obj.origin_minion_pool_id,
                 obj.destination_endpoint_id,
+                obj.destination_minion_pool_id,
+                cli_utils.format_json_for_object_property(
+                    obj, 'instance_osmorphing_minion_pool_mappings'),
                 cli_utils.format_json_for_object_property(
                     obj, prop_name="destination_environment"),
                 cli_utils.format_json_for_object_property(
@@ -107,8 +116,7 @@ class ReplicaDetailFormatter(formatter.EntityFormatter):
                 cli_utils.format_mapping(disk_mappings),
                 cli_utils.format_mapping(backend_mappings),
                 default_storage,
-                self._format_executions(obj.executions),
-                ]
+                self._format_executions(obj.executions)]
 
         if "instances-data" in self.columns:
             data.append(obj.info)
@@ -134,6 +142,10 @@ class CreateReplica(show.ShowOne):
         cli_utils.add_args_for_json_option_to_parser(parser, 'network-map')
         cli_utils.add_args_for_json_option_to_parser(
             parser, 'source-environment')
+        cli_utils.add_minion_pool_args_to_parser(
+            parser, include_origin_pool_arg=True,
+            include_destination_pool_arg=True,
+            include_osmorphing_pool_mappings_arg=True)
 
         cli_utils.add_storage_mappings_arguments_to_parser(parser)
 
@@ -152,6 +164,11 @@ class CreateReplica(show.ShowOne):
             args.origin_endpoint)
         destination_endpoint_id = endpoints.get_endpoint_id_for_name(
             args.destination_endpoint)
+        instance_osmorphing_minion_pool_mappings = None
+        if args.instance_osmorphing_minion_pool_mappings:
+            instance_osmorphing_minion_pool_mappings = {
+                mp['instance_id']: mp['pool_id']
+                for mp in args.instance_osmorphing_minion_pool_mappings}
 
         replica = self.app.client_manager.coriolis.replicas.create(
             origin_endpoint_id,
@@ -160,7 +177,11 @@ class CreateReplica(show.ShowOne):
             destination_environment,
             args.instances,
             network_map=network_map,
-            storage_mappings=storage_mappings)
+            storage_mappings=storage_mappings,
+            origin_minion_pool_id=args.origin_minion_pool_id,
+            destination_minion_pool_id=args.destination_minion_pool_id,
+            instance_osmorphing_minion_pool_mappings=(
+                instance_osmorphing_minion_pool_mappings))
 
         return ReplicaDetailFormatter().get_formatted_entity(replica)
 
@@ -236,6 +257,10 @@ class UpdateReplica(show.ShowOne):
         cli_utils.add_args_for_json_option_to_parser(
             parser, 'source-environment')
         cli_utils.add_storage_mappings_arguments_to_parser(parser)
+        cli_utils.add_minion_pool_args_to_parser(
+            parser, include_origin_pool_arg=True,
+            include_destination_pool_arg=True,
+            include_osmorphing_pool_mappings_arg=True)
 
         return parser
 
@@ -260,6 +285,20 @@ class UpdateReplica(show.ShowOne):
             updated_properties['network_map'] = network_map
         if args.notes:
             updated_properties['notes'] = args.notes
+        if args.origin_minion_pool_id is not None:
+            # NOTE: allow for unsetting by specifying an empty string:
+            updated_properties['origin_minion_pool_id'] = (
+                args.origin_minion_pool_id or None)
+        if args.destination_minion_pool_id is not None:
+            # NOTE: allow for unsetting by specifying an empty string:
+            updated_properties['destination_minion_pool_id'] = (
+                args.destination_minion_pool_id or None)
+        if args.instance_osmorphing_minion_pool_mappings:
+            instance_osmorphing_minion_pool_mappings = {
+                mp['instance_id']: mp['pool_id']
+                for mp in args.instance_osmorphing_minion_pool_mappings}
+            updated_properties['instance_osmorphing_minion_pool_mappings'] = (
+                instance_osmorphing_minion_pool_mappings)
 
         if not updated_properties:
             raise ValueError(

@@ -1,4 +1,4 @@
-# Copyright (c) 2017 Cloudbase Solutions Srl
+# Copyright (c) 2020 Cloudbase Solutions Srl
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -19,7 +19,8 @@ from coriolisclient.cli import formatter
 from coriolisclient.cli import utils as cli_utils
 
 
-class EndpointDestinationOptionFormatter(formatter.EntityFormatter):
+class EndpointDestinationMinionPoolOptionsFormatter(
+        formatter.EntityFormatter):
 
     columns = ("Option Name",
                "Possible Values",
@@ -35,12 +36,13 @@ class EndpointDestinationOptionFormatter(formatter.EntityFormatter):
         return data
 
 
-class ListEndpointDestinationOptions(lister.Lister):
-    """ List endpoint destination environment options. """
+class ListEndpointDestinationMinionPoolOptions(lister.Lister):
+    """ List endpoint destination minion pool options. """
 
     def get_parser(self, prog_name):
-        parser = super(ListEndpointDestinationOptions, self).get_parser(
-            prog_name)
+        parser = super(
+            ListEndpointDestinationMinionPoolOptions, self).get_parser(
+                prog_name)
         parser.add_argument('endpoint', help='The endpoint\'s id')
         parser.add_argument(
             '--options', help="Names of parameters to get options for.",
@@ -59,7 +61,9 @@ class ListEndpointDestinationOptions(lister.Lister):
 
         endpoints = self.app.client_manager.coriolis.endpoints
         endpoint_id = endpoints.get_endpoint_id_for_name(args.endpoint)
-        edo = self.app.client_manager.coriolis.endpoint_destination_options
-        obj_list = edo.list(
+        empdo = (
+            self.app.client_manager.coriolis.endpoint_destination_minion_pool_options)
+        obj_list = empdo.list(
             endpoint_id, environment=environment, option_names=options)
-        return EndpointDestinationOptionFormatter().list_objects(obj_list)
+        return EndpointDestinationMinionPoolOptionsFormatter().list_objects(
+            obj_list)

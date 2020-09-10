@@ -16,17 +16,20 @@
 import logging
 
 from keystoneauth1 import adapter
-from keystoneauth1.exceptions.catalog import EndpointNotFound
 
 from coriolisclient.v1 import diagnostics
+from coriolisclient.v1 import endpoint_destination_minion_pool_options
 from coriolisclient.v1 import endpoint_destination_options
 from coriolisclient.v1 import endpoint_instances
 from coriolisclient.v1 import endpoint_networks
+from coriolisclient.v1 import endpoint_source_minion_pool_options
 from coriolisclient.v1 import endpoint_source_options
 from coriolisclient.v1 import endpoint_storage
 from coriolisclient.v1 import endpoints
 from coriolisclient.v1 import logging as coriolis_logging
 from coriolisclient.v1 import migrations
+from coriolisclient.v1 import minion_pools
+from coriolisclient.v1 import minion_pool_executions
 from coriolisclient.v1 import providers
 from coriolisclient.v1 import regions
 from coriolisclient.v1 import replica_executions
@@ -67,11 +70,20 @@ class Client(object):
         self.endpoint_destination_options = (
             endpoint_destination_options.EndpointDestinationOptionsManager(
                 httpclient))
+        self.endpoint_source_minion_pool_options = (
+            endpoint_source_minion_pool_options.EndpointSourceMinionPoolOptionsManager(
+                httpclient))
+        self.endpoint_destination_minion_pool_options = (
+            endpoint_destination_minion_pool_options.EndpointDestinationMinionPoolOptionsManager(
+                httpclient))
         self.endpoint_source_options = (
             endpoint_source_options.EndpointSourceOptionsManager(httpclient))
         self.endpoint_storage = endpoint_storage.EndpointStorageManager(
             httpclient)
         self.migrations = migrations.MigrationManager(httpclient)
+        self.minion_pools = minion_pools.MinionPoolManager(httpclient)
+        self.minion_pool_executions = (
+            minion_pool_executions.MinionPoolExecutionManager(httpclient))
         self.providers = providers.ProvidersManager(httpclient)
         self.replicas = replicas.ReplicaManager(httpclient)
         self.replica_schedules = replica_schedules.ReplicaScheduleManager(
