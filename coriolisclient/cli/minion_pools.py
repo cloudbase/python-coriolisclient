@@ -44,12 +44,12 @@ class MinionPoolFormatter(formatter.EntityFormatter):
 
     def _get_formatted_data(self, obj):
         data = (obj.id,
-                obj.pool_name,
+                obj.name,
                 obj.endpoint_id,
-                obj.pool_platform,
-                obj.pool_os_type,
+                obj.platform,
+                obj.os_type,
                 obj.notes,
-                obj.pool_status,
+                obj.status,
                 obj.minimum_minions)
 
         return data
@@ -81,30 +81,29 @@ class MinionPoolDetailFormatter(formatter.EntityFormatter):
         return (
             "%(level)s %(created_at)s %(message)s" % event)
 
-    def _format_pool_events(self, pool_dict):
+    def _format_pool_events(self, events):
         return ("%(ls)s" % {"ls": os.linesep}).join(
             [self._format_pool_event(e) for e in
-             sorted(pool_dict.get("events", []),
-                    key=lambda e: (e["created_at"]))])
+             sorted(events, key=lambda e: (e["created_at"]))])
 
     def _format_progress_update(self, progress_update):
         return (
             "%(created_at)s %(message)s" % progress_update)
 
-    def _format_progress_updates(self, pool_dict):
+    def _format_progress_updates(self, progress_updates):
         return ("%(ls)s" % {"ls": os.linesep}).join(
             [self._format_progress_update(p) for p in
-             sorted(pool_dict.get("progress_updates", []),
+             sorted(progress_updates,
                     key=lambda p: (p["current_step"], p["created_at"]))])
 
     def _get_formatted_data(self, obj):
         data = (obj.id,
-                obj.pool_name,
-                obj.pool_platform,
-                obj.pool_os_type,
+                obj.name,
+                obj.platform,
+                obj.os_type,
                 obj.notes,
                 obj.endpoint_id,
-                obj.pool_status,
+                obj.status,
                 obj.minimum_minions,
                 obj.maximum_minions,
                 obj.minion_max_idle_time,
@@ -112,9 +111,9 @@ class MinionPoolDetailFormatter(formatter.EntityFormatter):
                 cli_utils.format_json_for_object_property(
                     obj, prop_name="environment_options"),
                 cli_utils.format_json_for_object_property(
-                    obj, prop_name="pool_shared_resources"),
+                    obj, prop_name="shared_resources"),
                 self._format_pool_events(obj.events),
-                self._format_progress_updates(obj),
+                self._format_progress_updates(obj.progress_updates),
                 cli_utils.format_json_for_object_property(
                     obj, prop_name="minion_machines"))
         return data
@@ -133,7 +132,7 @@ class CreateMinionPool(show.ShowOne):
                             help='The type of the minion pool ("source" or '
                                  "destination"').')
         parser.add_argument('--notes', dest='notes',
-                            help='Notes about the replica.')
+                            help='Notes about the minion pool.')
         parser.add_argument('--pool-endpoint', required=True,
                             help='ID/Name of the Coriolis Endpoint to create '
                                  'the pool for.')
@@ -181,7 +180,7 @@ class UpdateMinionPool(show.ShowOne):
         parser.add_argument('--pool-os-type',
                             help='The OS type for the minions of the pool.')
         parser.add_argument('--notes', dest='notes',
-                            help='Notes about the replica.')
+                            help='Notes about the minion pool.')
         parser.add_argument('--minimum-minions', type=int, default=None,
                             help='Minimum number of minions machines '
                                  'for the minion pool.')
@@ -203,9 +202,9 @@ class UpdateMinionPool(show.ShowOne):
     def take_action(self, args):
         updated_values = {}
         if args.name:
-            updated_values["pool_name"] = args.name
+            updated_values["name"] = args.name
         if args.pool_os_type:
-            updated_values["pool_os_type"] = args.pool_os_type
+            updated_values["os_type"] = args.pool_os_type
         if args.minimum_minions is not None:
             updated_values["minimum_minions"] = args.minimum_minions
         if args.maximum_minions is not None:
