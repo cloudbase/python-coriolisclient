@@ -12,9 +12,12 @@
 # implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
 """
 Command-line interface sub-commands related to minion_pools.
 """
+
+import os
 
 from cliff import command
 from cliff import lister
@@ -67,10 +70,32 @@ class MinionPoolDetailFormatter(formatter.EntityFormatter):
                "Minion Retention Strategy",
                "Environment Options",
                "Shared Resources",
+               "Events",
+               "Progress Updates",
                "Minion Machines")
 
     def _get_sorted_list(self, obj_list):
         return sorted(obj_list, key=lambda o: o.created_at)
+
+    def _format_pool_event(self, event):
+        return (
+            "%(level)s %(created_at)s %(message)s" % event)
+
+    def _format_pool_events(self, pool_dict):
+        return ("%(ls)s" % {"ls": os.linesep}).join(
+            [self._format_pool_event(e) for e in
+             sorted(pool_dict.get("events", []),
+                    key=lambda e: (e["created_at"]))])
+
+    def _format_progress_update(self, progress_update):
+        return (
+            "%(created_at)s %(message)s" % progress_update)
+
+    def _format_progress_updates(self, pool_dict):
+        return ("%(ls)s" % {"ls": os.linesep}).join(
+            [self._format_progress_update(p) for p in
+             sorted(pool_dict.get("progress_updates", []),
+                    key=lambda p: (p["current_step"], p["created_at"]))])
 
     def _get_formatted_data(self, obj):
         data = (obj.id,
@@ -88,6 +113,8 @@ class MinionPoolDetailFormatter(formatter.EntityFormatter):
                     obj, prop_name="environment_options"),
                 cli_utils.format_json_for_object_property(
                     obj, prop_name="pool_shared_resources"),
+                self._format_pool_events(obj.events),
+                self._format_progress_updates(obj),
                 cli_utils.format_json_for_object_property(
                     obj, prop_name="minion_machines"))
         return data
