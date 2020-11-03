@@ -39,13 +39,14 @@ class MinionPoolManager(base.BaseManager):
             environment_options,
             minimum_minions=None, maximum_minions=None,
             minion_max_idle_time=None, minion_retention_strategy=None,
-            notes=None):
+            notes=None, skip_allocation=False):
         data = {
             "pool_name": name,
             "pool_platform": pool_platform,
             "pool_os_type": pool_os_type,
             "endpoint_id": base.getid(endpoint),
-            "environment_options": environment_options}
+            "environment_options": environment_options,
+            "skip_allocation": skip_allocation}
         if minimum_minions is not None:
             data['minimum_minions'] = minimum_minions
         if maximum_minions is not None:

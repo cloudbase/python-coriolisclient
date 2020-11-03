@@ -148,6 +148,13 @@ class CreateMinionPool(show.ShowOne):
         parser.add_argument('--minion-retention-strategy', default='delete',
                             help='Action to take when scaling down the number '
                                  'machines within the pool.')
+        parser.add_argument('--skip-allocation', action='store_true',
+                            default=False,
+                            help="Whether or not to skip allocating the minion"
+                                 " pool's resources upfront. The pool "
+                                 "allocation will need to be manually "
+                                 "triggered before the pool can be used.")
+
         cli_utils.add_args_for_json_option_to_parser(
             parser, "environment-options")
         return parser
@@ -163,7 +170,7 @@ class CreateMinionPool(show.ShowOne):
             maximum_minions=args.maximum_minions,
             minion_max_idle_time=args.minion_max_idle_time,
             minion_retention_strategy=args.minion_retention_strategy,
-            notes=args.notes)
+            notes=args.notes, skip_allocation=args.skip_allocation)
 
         return MinionPoolDetailFormatter().get_formatted_entity(minion_pool)
 
