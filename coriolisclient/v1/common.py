@@ -13,7 +13,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import base64
+import json
+
 from coriolisclient import base
+from coriolisclient import exceptions
 
 
 class ProgressUpdate(base.Resource):
@@ -43,3 +47,12 @@ class DestinationEnvironment(base.Resource):
 
 class TransferResult(base.Resource):
     pass
+
+
+def encode_base64_param(param, is_json=False):
+    try:
+        if is_json:
+            param = json.dumps(param)
+        return base64.urlsafe_b64encode(param.encode()).decode()
+    except Exception as ex:
+        raise exceptions.CoriolisException(str(ex))
