@@ -24,7 +24,6 @@ from cliff import lister
 from cliff import show
 
 from coriolisclient.cli import formatter
-from coriolisclient.cli import minion_pool_executions
 from coriolisclient.cli import utils as cli_utils
 
 
@@ -265,71 +264,33 @@ class ListMinionPools(lister.Lister):
         return MinionPoolFormatter().list_objects(minion_pool_list)
 
 
-class SetUpSharedMinionPoolResources(show.ShowOne):
-    """ Set up shared resources for a Minion Pool. """
+class AllocateMinionPool(show.ShowOne):
+    """ Allocates a Minion Pool. """
 
     def get_parser(self, prog_name):
-        parser = super(SetUpSharedMinionPoolResources, self).get_parser(
-            prog_name)
+        parser = super(AllocateMinionPool, self).get_parser(prog_name)
         parser.add_argument('id', help='The minion pool\'s id.')
         return parser
 
     def take_action(self, args):
         mps = self.app.client_manager.coriolis.minion_pools
-        execution = mps.set_up_shared_resources(args.id)
-        return minion_pool_executions.MinionPoolExecutionDetailFormatter(
-            ).get_formatted_entity(execution)
+        execution = mps.allocate_minion_pool(args.id)
+        return MinionPoolDetailFormatter().get_formatted_entity(execution)
 
-
-class TearDownSharedMinionPoolResources(show.ShowOne):
-    """ Tears down shared resources for a Minion Pool. """
+class DeallocateMinionPool(show.ShowOne):
+    """ Deallocates a Minion Pool. """
 
     def get_parser(self, prog_name):
-        parser = super(
-            TearDownSharedMinionPoolResources, self).get_parser(prog_name)
-        parser.add_argument('id', help='The minion pool\'s id.')
-        parser.add_argument('--force', action='store_true', default=False,
-                            help='Perform a forced teardown of the minion '
-                                 'pool\'s shared resources.')
-        return parser
-
-    def take_action(self, args):
-        mps = self.app.client_manager.coriolis.minion_pools
-        execution = mps.tear_down_shared_resources(
-            args.id, force=args.force)
-        return minion_pool_executions.MinionPoolExecutionDetailFormatter(
-            ).get_formatted_entity(execution)
-
-
-class AllocateMinionPoolMachines(show.ShowOne):
-    """ Allocates a Minion Pool's machines. """
-
-    def get_parser(self, prog_name):
-        parser = super(AllocateMinionPoolMachines, self).get_parser(prog_name)
-        parser.add_argument('id', help='The minion pool\'s id.')
-        return parser
-
-    def take_action(self, args):
-        mps = self.app.client_manager.coriolis.minion_pools
-        execution = mps.allocate_machines(args.id)
-        return minion_pool_executions.MinionPoolExecutionDetailFormatter(
-            ).get_formatted_entity(execution)
-
-class DeallocateMinionPoolMachines(show.ShowOne):
-    """ Deallocates a Minion Pool's machines. """
-
-    def get_parser(self, prog_name):
-        parser = super(DeallocateMinionPoolMachines, self).get_parser(
+        parser = super(DeallocateMinionPool, self).get_parser(
             prog_name)
         parser.add_argument('id', help='The minion pool\'s id.')
         parser.add_argument('--force', action='store_true', default=False,
                             help='Perform a forced deallocation of the minion '
-                                 'pool\'s machines.')
+                                 'pool.')
         return parser
 
     def take_action(self, args):
         mps = self.app.client_manager.coriolis.minion_pools
-        execution = mps.deallocate_machines(args.id, force=args.force)
+        execution = mps.deallocate_minion_pool(args.id, force=args.force)
 
-        return minion_pool_executions.MinionPoolExecutionDetailFormatter(
-            ).get_formatted_entity(execution)
+        return MinionPoolDetailFormatter().get_formatted_entity(execution)

@@ -14,7 +14,6 @@
 # limitations under the License.
 
 from coriolisclient import base
-from coriolisclient.v1 import minion_pool_executions
 
 
 class MinionPool(base.Resource):
@@ -28,11 +27,12 @@ class MinionPoolManager(base.BaseManager):
         super(MinionPoolManager, self).__init__(api)
 
     def list(self):
-        return self._list('/minion_pools', 'minion_pools')
+        return self._list('/minion_pools', response_key='minion_pools')
 
     def get(self, minion_pool):
         return self._get(
-            '/minion_pools/%s' % base.getid(minion_pool), 'minion_pool')
+            '/minion_pools/%s' % base.getid(minion_pool),
+            response_key='minion_pool')
 
     def create(
             self, name, endpoint, pool_platform, pool_os_type,
@@ -57,46 +57,25 @@ class MinionPoolManager(base.BaseManager):
         if notes:
             data['notes'] = notes
 
-        return self._post('/minion_pools', {'minion_pool': data}, 'minion_pool')
+        return self._post(
+            '/minion_pools', {'minion_pool': data},
+            response_key='minion_pool')
 
     def update(self, minion_pool, updated_values):
         data = {
-            "minion_pool": updated_values
-        }
+            "minion_pool": updated_values}
         return self._put(
             '/minion_pools/%s' % base.getid(minion_pool), data, 'minion_pool')
 
     def delete(self, minion_pool):
         return self._delete('/minion_pools/%s' % base.getid(minion_pool))
 
-    def set_up_shared_resources(self, minion_pool):
-        response = self.client.post(
+    def allocate_minion_pool(self, minion_pool):
+        return self._post(
             '/minion_pools/%s/actions' % base.getid(minion_pool),
-            json={'set-up-shared-resources': None})
+            {'allocate': None}, response_key='minion_pool')
 
-        return minion_pool_executions.MinionPoolExecution(
-            self, response.json().get("execution"), loaded=True)
-
-    def tear_down_shared_resources(self, minion_pool, force=False):
-        response = self.client.post(
+    def deallocate_minion_pool(self, minion_pool, force=False):
+        return self._post(
             '/minion_pools/%s/actions' % base.getid(minion_pool),
-            json={'tear-down-shared-resources': {'force': force}})
-
-        return minion_pool_executions.MinionPoolExecution(
-            self, response.json().get("execution"), loaded=True)
-
-    def allocate_machines(self, minion_pool):
-        response = self.client.post(
-            '/minion_pools/%s/actions' % base.getid(minion_pool),
-            json={'allocate-machines': None})
-
-        return minion_pool_executions.MinionPoolExecution(
-            self, response.json().get("execution"), loaded=True)
-
-    def deallocate_machines(self, minion_pool, force=False):
-        response = self.client.post(
-            '/minion_pools/%s/actions' % base.getid(minion_pool),
-            json={'deallocate-machines': {'force': force}})
-
-        return minion_pool_executions.MinionPoolExecution(
-            self, response.json().get("execution"), loaded=True)
+            {'deallocate': {'force': force}}, response_key='minion_pool')
