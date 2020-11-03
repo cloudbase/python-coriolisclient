@@ -13,10 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import base64
-import json
-
 from coriolisclient import base
+from coriolisclient.v1 import common
 
 
 class EndpointSourceMinionPoolOption(base.Resource):
@@ -33,16 +31,15 @@ class EndpointSourceMinionPoolOptionsManager(base.BaseManager):
         url = '/endpoints/%s/source-minion-pool-options' % base.getid(endpoint)
 
         if environment:
-            encoded_env = base64.b64encode(
-                json.dumps(environment).encode()).decode()
+            encoded_env = common.encode_base64_param(environment, is_json=True)
             url = '%s?env=%s' % (url, encoded_env)
 
         if option_names:
             sep = "?"
             if environment:
                 sep = "&"
-            encoded_option_names = base64.b64encode(
-                json.dumps(option_names).encode()).decode()
+            encoded_option_names = common.encode_base64_param(
+                option_names, is_json=True)
             url = '%s%soptions=%s' % (url, sep, encoded_option_names)
 
         return self._list(url, 'source_minion_pool_options')
