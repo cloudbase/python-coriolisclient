@@ -125,14 +125,14 @@ class CreateMinionPool(show.ShowOne):
 
         parser.add_argument('name',
                             help='A name for the new minion pool.')
-        parser.add_argument('--pool-os-type', required=True,
+        parser.add_argument('--os-type', required=True,
                             help='The OS type for the minions of the pool.')
-        parser.add_argument('--pool-platform', required=True,
+        parser.add_argument('--platform', required=True,
                             help='The type of the minion pool ("source" or '
                                  "destination"').')
         parser.add_argument('--notes', dest='notes',
                             help='Notes about the minion pool.')
-        parser.add_argument('--pool-endpoint', required=True,
+        parser.add_argument('--endpoint', required=True,
                             help='ID/Name of the Coriolis Endpoint to create '
                                  'the pool for.')
         parser.add_argument('--minimum-minions', type=int, default=None,
@@ -161,11 +161,11 @@ class CreateMinionPool(show.ShowOne):
 
     def take_action(self, args):
         endpoints = self.app.client_manager.coriolis.endpoints
-        endpoint_id = endpoints.get_endpoint_id_for_name(args.pool_endpoint)
+        endpoint_id = endpoints.get_endpoint_id_for_name(args.endpoint)
         environment_options = cli_utils.get_option_value_from_args(
             args, 'environment-options', error_on_no_value=True)
         minion_pool = self.app.client_manager.coriolis.minion_pools.create(
-            args.name, endpoint_id, args.pool_platform, args.pool_os_type,
+            args.name, endpoint_id, args.platform, args.os_type,
             environment_options, minimum_minions=args.minimum_minions,
             maximum_minions=args.maximum_minions,
             minion_max_idle_time=args.minion_max_idle_time,
@@ -183,7 +183,7 @@ class UpdateMinionPool(show.ShowOne):
         parser.add_argument('id', help='The Minion Pools\'s ID.')
         parser.add_argument('--name',
                             help='New name for the new minion pool.')
-        parser.add_argument('--pool-os-type',
+        parser.add_argument('--os-type',
                             help='The OS type for the minions of the pool.')
         parser.add_argument('--notes', dest='notes',
                             help='Notes about the minion pool.')
@@ -195,8 +195,8 @@ class UpdateMinionPool(show.ShowOne):
                                  'for the minion pool.')
         parser.add_argument('--minion-max-idle-time', type=int,
                             help='Number of idle seconds for minions before '
-                                'being shelved based on the selected '
-                                '--minion-retention-strategy')
+                                 'being shelved based on the selected '
+                                 '--minion-retention-strategy')
         parser.add_argument('--minion-retention-strategy',
                             help='Action to take when scaling down the number '
                                  'machines within the pool.')
@@ -209,8 +209,8 @@ class UpdateMinionPool(show.ShowOne):
         updated_values = {}
         if args.name:
             updated_values["name"] = args.name
-        if args.pool_os_type:
-            updated_values["os_type"] = args.pool_os_type
+        if args.os_type:
+            updated_values["os_type"] = args.os_type
         if args.minimum_minions is not None:
             updated_values["minimum_minions"] = args.minimum_minions
         if args.maximum_minions is not None:
