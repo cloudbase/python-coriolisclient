@@ -132,7 +132,7 @@ class CreateMinionPool(show.ShowOne):
                                  "destination"').')
         parser.add_argument('--notes', dest='notes',
                             help='Notes about the minion pool.')
-        parser.add_argument('--endpoint', required=True,
+        parser.add_argument('--endpoint-id', required=True,
                             help='ID/Name of the Coriolis Endpoint to create '
                                  'the pool for.')
         parser.add_argument('--minimum-minions', type=int, default=None,
@@ -161,7 +161,7 @@ class CreateMinionPool(show.ShowOne):
 
     def take_action(self, args):
         endpoints = self.app.client_manager.coriolis.endpoints
-        endpoint_id = endpoints.get_endpoint_id_for_name(args.endpoint)
+        endpoint_id = endpoints.get_endpoint_id_for_name(args.endpoint_id)
         environment_options = cli_utils.get_option_value_from_args(
             args, 'environment-options', error_on_no_value=True)
         minion_pool = self.app.client_manager.coriolis.minion_pools.create(
@@ -281,8 +281,23 @@ class AllocateMinionPool(show.ShowOne):
 
     def take_action(self, args):
         mps = self.app.client_manager.coriolis.minion_pools
-        execution = mps.allocate_minion_pool(args.id)
-        return MinionPoolDetailFormatter().get_formatted_entity(execution)
+        minion_pool = mps.allocate_minion_pool(args.id)
+        return MinionPoolDetailFormatter().get_formatted_entity(minion_pool)
+
+
+class RefreshMinionPool(show.ShowOne):
+    """ Refreshs a Minion Pool. """
+
+    def get_parser(self, prog_name):
+        parser = super(RefreshMinionPool, self).get_parser(prog_name)
+        parser.add_argument('id', help='The minion pool\'s id.')
+        return parser
+
+    def take_action(self, args):
+        mps = self.app.client_manager.coriolis.minion_pools
+        minion_pool = mps.refresh_minion_pool(args.id)
+        return MinionPoolDetailFormatter().get_formatted_entity(minion_pool)
+
 
 class DeallocateMinionPool(show.ShowOne):
     """ Deallocates a Minion Pool. """
@@ -298,6 +313,6 @@ class DeallocateMinionPool(show.ShowOne):
 
     def take_action(self, args):
         mps = self.app.client_manager.coriolis.minion_pools
-        execution = mps.deallocate_minion_pool(args.id, force=args.force)
+        minion_pool = mps.deallocate_minion_pool(args.id, force=args.force)
 
-        return MinionPoolDetailFormatter().get_formatted_entity(execution)
+        return MinionPoolDetailFormatter().get_formatted_entity(minion_pool)

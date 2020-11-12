@@ -76,6 +76,11 @@ class MinionPoolManager(base.BaseManager):
             '/minion_pools/%s/actions' % base.getid(minion_pool),
             {'allocate': None}, response_key='minion_pool')
 
+    def refresh_minion_pool(self, minion_pool):
+        return self._post(
+            '/minion_pools/%s/actions' % base.getid(minion_pool),
+            {'refresh': None}, response_key='minion_pool')
+
     def deallocate_minion_pool(self, minion_pool, force=False):
         return self._post(
             '/minion_pools/%s/actions' % base.getid(minion_pool),
