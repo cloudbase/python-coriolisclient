@@ -75,5 +75,13 @@ class LoggingEndpointNotFound(CoriolisException):
     """Raised when logging endpoint could not be found in service catalogue"""
 
     def __init__(self, *args, **kw):
-        super(EndpointIDNotFound, self).__init__(
+        super(LoggingEndpointNotFound, self).__init__(
             "no logging endpoint found in service catalogue")
+
+
+class LicensingEndpointNotFound(CoriolisException):
+
+    def __init__(self, endpoint_id):
+        super(LicensingEndpointNotFound, self).__init__(
+            "Provided licensing endpoint: '%s' not found in the service "
+            "catalogue" % endpoint_id)
