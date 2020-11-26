@@ -136,7 +136,7 @@ class CreateEndpoint(show.ShowOne):
                             help='Whether to skip validating the connection '
                             'when creating the endpoint.')
         parser.add_argument('--coriolis-region', action='append',
-                            dest='regions', required=True,
+                            dest='regions', default=[],
                             help="ID of a region the endpoint should be  "
                             "associated with. Can be supplied multiple times.")
         add_connection_info_args_to_parser(parser)
@@ -177,7 +177,7 @@ class UpdateEndpoint(show.ShowOne):
         parser.add_argument('--description',
                             help='A description for this endpoint')
         parser.add_argument('--coriolis-region', action='append',
-                            dest='regions',
+                            dest='regions', default=[],
                             help="ID of a region the endpoint should be  "
                                  "associated with. Can be supplied multiple "
                                  "times. Update will override all existing "

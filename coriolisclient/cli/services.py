@@ -72,7 +72,7 @@ class CreateService(show.ShowOne):
         parser.add_argument('--topic', required=True,
                             help='The messaging topic for the new service.')
         parser.add_argument('--coriolis-region', action='append',
-                            dest='regions', required=True,
+                            dest='regions', default=[],
                             help="ID of a region the service should be  "
                             "associated with. Can be supplied multiple times.")
         _add_service_enablement_args_to_parser(parser)
@@ -94,7 +94,7 @@ class UpdateService(show.ShowOne):
 
         parser.add_argument('id', help='The service\'s ID.')
         parser.add_argument('--coriolis-region', action='append',
-                            dest='regions',
+                            dest='regions', default=[],
                             help="ID of a region the service should be  "
                                  "associated with. Can be supplied multiple "
                                  "times. Update will override all existing "
@@ -108,7 +108,7 @@ class UpdateService(show.ShowOne):
         updated_values = {}
         if args.enabled is not None:
             updated_values['enabled'] = args.enabled
-        if args.regions:
+        if args.regions is not None:
             updated_values["mapped_regions"] = args.regions
         service = self.app.client_manager.coriolis.services.update(
             args.id, updated_values)
