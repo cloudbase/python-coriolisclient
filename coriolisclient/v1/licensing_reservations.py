@@ -30,17 +30,17 @@ class LicensingReservationsManager(base.BaseManager):
 
     def list(self, appliance_id):
         url = '/appliances/%s/reservations' % appliance_id
-        data = self._licensing_cli._get(url, response_key='reservations')
+        data = self._licensing_cli.get(url, response_key='reservations')
         return [self.resource_class(self, res, loaded=True)
                 for res in data if res]
 
     def show(self, appliance_id, reservation_id):
         url = '/appliances/%s/reservations/%s' % (appliance_id, reservation_id)
-        data = self._licensing_cli._get(url, response_key='reservation')
+        data = self._licensing_cli.get(url, response_key='reservation')
         return self.resource_class(self, data, loaded=True)
 
     def refresh(self, appliance_id, reservation_id):
         url = '/appliances/%s/reservations/%s/refresh' % (
             appliance_id, reservation_id)
-        data = self._licensing_cli._post(url, response_key='reservation')
+        data = self._licensing_cli.post(url, response_key='reservation')
         return self.resource_class(self, data, loaded=True)

@@ -30,16 +30,16 @@ class LicensingAppliancesManager(base.BaseManager):
 
     def list(self):
         url = '/appliances'
-        data = self._licensing_cli._get(url, response_key='appliances')
+        data = self._licensing_cli.get(url, response_key='appliances')
         return [self.resource_class(self, app, loaded=True)
                 for app in data if app]
 
     def show(self, appliance_id):
         url = '/appliances/%s' % appliance_id
-        data = self._licensing_cli._get(url, response_key='appliance')
+        data = self._licensing_cli.get(url, response_key='appliance')
         return self.resource_class(self, data, loaded=True)
 
     def create(self):
         url = '/appliances'
-        data = self._licensing_cli._post(url, response_key='apppliance')
+        data = self._licensing_cli.post(url, response_key='apppliance')
         return self.resource_class(self, data, loaded=True)

@@ -33,18 +33,19 @@ class LicensingClient(object):
 
     def __init__(self, client, endpoint_name_override=None):
         self._cli = client
-        self._endpoint_name = \
-            endpoint_name_override or _LICENSING_ENDPOINT_NAME
-        self._endpoint_url = None
-        try:
-            self._endpoint_url = self._get_endpoint_url(self._endpoint_name)
-        except Exception as ex:
-            LOG.warning("Unable to determine licensing endpoint: %s" % str(ex))
-            raise exceptions.LicensingEndpointNotFound(self._endpoint_name)
+        self._endpoint_name = _LICENSING_ENDPOINT_NAME
+        if endpoint_name_override:
+            self._endpoint_name = endpoint_name_override
 
-    def _get_endpoint_url(self, endpoint_name):
-        url = self._cli.get_endpoint(service_type=endpoint_name)
-        return url.rstrip('/')
+    def _get_licensing_endpoint_url(self):
+        endpoint_url = None
+        try:
+            endpoint_url = self._cli.get_endpoint(
+                service_type=self._endpoint_name)
+        except Exception as ex:
+            LOG.warning("Unable to determine licensing endpoint: %s", str(ex))
+            raise exceptions.LicensingEndpointNotFound(self._endpoint_name)
+        return endpoint_url.rstrip('/')
 
     def _do_req(self, method_name, resource, body=None, response_key=None,
                 raw_response=False):
@@ -52,7 +53,8 @@ class LicensingClient(object):
         if not method:
             raise ValueError("No such HTTP method '%s'" % method_name)
 
-        url = '%s/%s' % (self._endpoint_url.rstrip('/'), resource.lstrip('/'))
+        endpoint_url = self._get_licensing_endpoint_url()
+        url = '%s/%s' % (endpoint_url.rstrip('/'), resource.lstrip('/'))
 
         kwargs = dict()
         if body:
@@ -93,20 +95,20 @@ class LicensingClient(object):
 
         return resp_data
 
-    def _get(self, resource, body=None, response_key=None, raw_response=False):
+    def get(self, resource, body=None, response_key=None, raw_response=False):
         return self._do_req('GET', resource, response_key=response_key,
                             body=body, raw_response=raw_response)
 
-    def _post(self, resource, body=None, response_key=None,
+    def post(self, resource, body=None, response_key=None,
               raw_response=False):
         return self._do_req(
             'POST', resource, body=body, response_key=response_key,
             raw_response=raw_response)
 
-    def _delete(self, resource, body=None, response_key=None,
+    def delete(self, resource, body=None, response_key=None,
                 raw_response=False):
         return self._do_req('DELETE', resource, raw_response=raw_response,
-                            body=body, response_key=None)
+                            body=body, response_key=response_key)
 
 
 class LicensingManager(base.BaseManager):
@@ -118,27 +120,27 @@ class LicensingManager(base.BaseManager):
 
     def status(self, appliance_id):
         url = '/appliances/%s/status' % appliance_id
-        data = self._licensing_cli._get(
+        data = self._licensing_cli.get(
             url, response_key='appliance_licence_status')
         return self.resource_class(self, data, loaded=True)
 
     def list(self, appliance_id):
         url = '/appliances/%s/licences' % appliance_id
-        data = self._licensing_cli._get(url, response_key='licences')
+        data = self._licensing_cli.get(url, response_key='licences')
         return [self.resource_class(self, lic, loaded=True)
                 for lic in data if lic]
 
     def register(self, appliance_id, licence):
         url = '/appliances/%s/licences' % appliance_id
-        data = self._licensing_cli._post(
+        data = self._licensing_cli.post(
             url, body=licence, response_key='licence')
         return self.resource_class(self, data, loaded=True)
 
     def show(self, appliance_id, licence_id):
         url = '/appliances/%s/licences/%s' % (appliance_id, licence_id)
-        data = self._licensing_cli._get(url, response_key='licence')
+        data = self._licensing_cli.get(url, response_key='licence')
         return self.resource_class(self, data, loaded=True)
 
     def delete(self, appliance_id, licence_id):
         url = '/appliances/%s/licences/%s' % (appliance_id, licence_id)
-        return self._licensing_cli._delete(url, raw_response=True)
+        return self._licensing_cli.delete(url, raw_response=True)
