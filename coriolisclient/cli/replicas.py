@@ -74,6 +74,7 @@ class ReplicaDetailFormatter(formatter.EntityFormatter):
             "disk_storage_mappings",
             "storage_backend_mappings",
             "default_storage_backend",
+            "user_scripts",
             "executions",
         ]
 
@@ -115,6 +116,7 @@ class ReplicaDetailFormatter(formatter.EntityFormatter):
                 cli_utils.format_mapping(disk_mappings),
                 cli_utils.format_mapping(backend_mappings),
                 default_storage,
+                cli_utils.format_json_for_object_property(obj, 'user_scripts'),
                 self._format_executions(obj.executions)]
 
         if "instances-data" in self.columns:
