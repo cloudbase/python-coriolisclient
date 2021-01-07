@@ -36,7 +36,7 @@ class MinionPoolFormatter(formatter.EntityFormatter):
                "OS Type",
                "Notes",
                "Pool Status",
-               "Minions")
+               "Minions (Min - Max)")
 
     def _get_sorted_list(self, obj_list):
         return sorted(obj_list, key=lambda o: o.created_at)
@@ -49,7 +49,8 @@ class MinionPoolFormatter(formatter.EntityFormatter):
                 obj.os_type,
                 obj.notes,
                 obj.status,
-                obj.minimum_minions)
+                "%s - %s" % (
+                    obj.minimum_minions, obj.maximum_minions))
 
         return data
 
@@ -58,11 +59,14 @@ class MinionPoolDetailFormatter(formatter.EntityFormatter):
 
     columns = ("ID",
                "Pool Name",
+               "Endpoint",
                "Pool Platform",
                "OS Type",
-               "Notes",
-               "Endpoint",
                "Pool Status",
+               "Notes",
+               "Created At",
+               "Updated At",
+               "Maintenance Trust ID",
                "Minimum Minions",
                "Maximum Minions",
                "Minion Max Idle Time",
@@ -83,7 +87,7 @@ class MinionPoolDetailFormatter(formatter.EntityFormatter):
     def _format_pool_events(self, events):
         return ("%(ls)s" % {"ls": os.linesep}).join(
             [self._format_pool_event(e) for e in
-             sorted(events, key=lambda e: (e["created_at"]))])
+             sorted(events, key=lambda e: e["index"])])
 
     def _format_progress_update(self, progress_update):
         return (
@@ -98,11 +102,14 @@ class MinionPoolDetailFormatter(formatter.EntityFormatter):
     def _get_formatted_data(self, obj):
         data = (obj.id,
                 obj.name,
+                obj.endpoint_id,
                 obj.platform,
                 obj.os_type,
-                obj.notes,
-                obj.endpoint_id,
                 obj.status,
+                obj.notes,
+                obj.created_at,
+                obj.updated_at,
+                obj.maintenance_trust_id,
                 obj.minimum_minions,
                 obj.maximum_minions,
                 obj.minion_max_idle_time,
