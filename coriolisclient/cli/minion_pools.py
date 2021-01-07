@@ -89,15 +89,11 @@ class MinionPoolDetailFormatter(formatter.EntityFormatter):
             [self._format_pool_event(e) for e in
              sorted(events, key=lambda e: e["index"])])
 
-    def _format_progress_update(self, progress_update):
-        return (
-            "%(created_at)s %(message)s" % progress_update)
-
     def _format_progress_updates(self, progress_updates):
         return ("%(ls)s" % {"ls": os.linesep}).join(
             [self._format_progress_update(p) for p in
              sorted(progress_updates,
-                    key=lambda p: (p["current_step"], p["created_at"]))])
+                    key=lambda p: (p.get('index', 0), p["created_at"]))])
 
     def _get_formatted_data(self, obj):
         data = (obj.id,
