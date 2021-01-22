@@ -192,7 +192,7 @@ def get_option_value_from_args(args, option_name, error_on_no_value=True):
 
 def compose_user_scripts(global_scripts, instance_scripts):
     ret = {
-        "global":{},
+        "global": {},
         "instances": {}
     }
     global_scripts = global_scripts or []
@@ -205,14 +205,22 @@ def compose_user_scripts(global_scripts, instance_scripts):
             raise ValueError(
                 "Invalid OS %s. Available options are: %s" % (
                     split[0], ", ".join(constants.OS_LIST)))
+        if not split[1]:
+            # removing script
+            ret["global"][split[0]] = None
+            continue
         if os.path.isfile(split[1]) is False:
             raise ValueError("Could not find %s" % split[1])
         with open(split[1]) as sc:
             ret["global"][split[0]] = sc.read()
-    
+
     for inst in instance_scripts:
         split = inst.split("=", 1)
         if len(split) != 2:
+            continue
+        if not split[1]:
+            # removing script
+            ret['instances'][split[0]] = None
             continue
         if os.path.isfile(split[1]) is False:
             raise ValueError("Could not find %s" % split[1])

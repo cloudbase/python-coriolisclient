@@ -271,6 +271,23 @@ class UpdateReplica(show.ShowOne):
         parser.add_argument('id', help='The replica\'s id')
         parser.add_argument('--notes', dest='notes',
                             help='Notes about the replica.')
+        parser.add_argument('--user-script-global', action='append',
+                            required=False,
+                            dest="global_scripts",
+                            help='A script that will run for a particular '
+                            'os_type. This option can be used multiple '
+                            'times. Use: linux=/path/to/script.sh or '
+                            'windows=/path/to/script.ps1')
+        parser.add_argument('--user-script-instance', action='append',
+                            required=False,
+                            dest="instance_scripts",
+                            help='A script that will run for a particular '
+                            'instance specified by the --instance option. '
+                            'This option can be used multiple times. '
+                            'Use: "instance_name"=/path/to/script.sh.'
+                            ' This option overwrites any OS specific script '
+                            'specified in --user-script-global for this '
+                            'instance')
 
         cli_utils.add_args_for_json_option_to_parser(
             parser, 'destination-environment')
@@ -293,6 +310,8 @@ class UpdateReplica(show.ShowOne):
         network_map = cli_utils.get_option_value_from_args(
             args, 'network-map', error_on_no_value=False)
         storage_mappings = cli_utils.get_storage_mappings_dict_from_args(args)
+        user_scripts = cli_utils.compose_user_scripts(
+            args.global_scripts, args.instance_scripts)
 
         updated_properties = {}
         if destination_environment:
@@ -320,6 +339,8 @@ class UpdateReplica(show.ShowOne):
                 for mp in args.instance_osmorphing_minion_pool_mappings}
             updated_properties['instance_osmorphing_minion_pool_mappings'] = (
                 instance_osmorphing_minion_pool_mappings)
+        if user_scripts:
+            updated_properties['user_scripts'] = user_scripts
 
         if not updated_properties:
             raise ValueError(
