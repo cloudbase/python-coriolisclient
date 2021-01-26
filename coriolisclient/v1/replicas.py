@@ -57,7 +57,8 @@ class ReplicaManager(base.BaseManager):
                source_environment, destination_environment, instances,
                network_map=None, storage_mappings=None,
                origin_minion_pool_id=None, destination_minion_pool_id=None,
-                instance_osmorphing_minion_pool_mappings=None):
+               instance_osmorphing_minion_pool_mappings=None,
+               user_scripts=None):
         if not network_map:
             network_map = destination_environment.get('network_map', {})
         if not storage_mappings:
@@ -70,7 +71,8 @@ class ReplicaManager(base.BaseManager):
                 "destination_environment": destination_environment,
                 "instances": instances,
                 "network_map": network_map,
-                "storage_mappings": storage_mappings
+                "storage_mappings": storage_mappings,
+                "user_scripts": user_scripts,
             }
         }
         if source_environment:

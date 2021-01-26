@@ -17,7 +17,6 @@
 Command-line interface sub-commands related to replicas.
 """
 
-import json
 import os
 
 from cliff import command
@@ -75,6 +74,7 @@ class ReplicaDetailFormatter(formatter.EntityFormatter):
             "disk_storage_mappings",
             "storage_backend_mappings",
             "default_storage_backend",
+            "user_scripts",
             "executions",
         ]
 
@@ -116,6 +116,7 @@ class ReplicaDetailFormatter(formatter.EntityFormatter):
                 cli_utils.format_mapping(disk_mappings),
                 cli_utils.format_mapping(backend_mappings),
                 default_storage,
+                cli_utils.format_json_for_object_property(obj, 'user_scripts'),
                 self._format_executions(obj.executions)]
 
         if "instances-data" in self.columns:
@@ -136,6 +137,23 @@ class CreateReplica(show.ShowOne):
                             dest="instances", metavar="INSTANCE_IDENTIFIER",
                             help='The identifier of a source instance to be '
                                  'replicated. Can be specified multiple times')
+        parser.add_argument('--user-script-global', action='append',
+                            required=False,
+                            dest="global_scripts",
+                            help='A script that will run for a particular '
+                            'os_type. This option can be used multiple '
+                            'times. Use: linux=/path/to/script.sh or '
+                            'windows=/path/to/script.ps1')
+        parser.add_argument('--user-script-instance', action='append',
+                            required=False,
+                            dest="instance_scripts",
+                            help='A script that will run for a particular '
+                            'instance specified by the --instance option. '
+                            'This option can be used multiple times. '
+                            'Use: "instance_name"=/path/to/script.sh.'
+                            ' This option overwrites any OS specific script '
+                            'specified in --user-script-global for this '
+                            'instance')
 
         cli_utils.add_args_for_json_option_to_parser(
             parser, 'destination-environment')
@@ -169,6 +187,8 @@ class CreateReplica(show.ShowOne):
             instance_osmorphing_minion_pool_mappings = {
                 mp['instance_id']: mp['pool_id']
                 for mp in args.instance_osmorphing_minion_pool_mappings}
+        user_scripts = cli_utils.compose_user_scripts(
+            args.global_scripts, args.instance_scripts)
 
         replica = self.app.client_manager.coriolis.replicas.create(
             origin_endpoint_id,
@@ -181,7 +201,8 @@ class CreateReplica(show.ShowOne):
             origin_minion_pool_id=args.origin_minion_pool_id,
             destination_minion_pool_id=args.destination_minion_pool_id,
             instance_osmorphing_minion_pool_mappings=(
-                instance_osmorphing_minion_pool_mappings))
+                instance_osmorphing_minion_pool_mappings),
+            user_scripts=user_scripts)
 
         return ReplicaDetailFormatter().get_formatted_entity(replica)
 
@@ -250,6 +271,23 @@ class UpdateReplica(show.ShowOne):
         parser.add_argument('id', help='The replica\'s id')
         parser.add_argument('--notes', dest='notes',
                             help='Notes about the replica.')
+        parser.add_argument('--user-script-global', action='append',
+                            required=False,
+                            dest="global_scripts",
+                            help='A script that will run for a particular '
+                            'os_type. This option can be used multiple '
+                            'times. Use: linux=/path/to/script.sh or '
+                            'windows=/path/to/script.ps1')
+        parser.add_argument('--user-script-instance', action='append',
+                            required=False,
+                            dest="instance_scripts",
+                            help='A script that will run for a particular '
+                            'instance specified by the --instance option. '
+                            'This option can be used multiple times. '
+                            'Use: "instance_name"=/path/to/script.sh.'
+                            ' This option overwrites any OS specific script '
+                            'specified in --user-script-global for this '
+                            'instance')
 
         cli_utils.add_args_for_json_option_to_parser(
             parser, 'destination-environment')
@@ -272,6 +310,8 @@ class UpdateReplica(show.ShowOne):
         network_map = cli_utils.get_option_value_from_args(
             args, 'network-map', error_on_no_value=False)
         storage_mappings = cli_utils.get_storage_mappings_dict_from_args(args)
+        user_scripts = cli_utils.compose_user_scripts(
+            args.global_scripts, args.instance_scripts)
 
         updated_properties = {}
         if destination_environment:
@@ -299,6 +339,8 @@ class UpdateReplica(show.ShowOne):
                 for mp in args.instance_osmorphing_minion_pool_mappings}
             updated_properties['instance_osmorphing_minion_pool_mappings'] = (
                 instance_osmorphing_minion_pool_mappings)
+        if user_scripts:
+            updated_properties['user_scripts'] = user_scripts
 
         if not updated_properties:
             raise ValueError(
