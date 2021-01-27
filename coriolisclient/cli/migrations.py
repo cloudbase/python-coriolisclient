@@ -81,15 +81,11 @@ class MigrationDetailFormatter(formatter.EntityFormatter):
     def _format_instances(self, obj):
         return os.linesep.join(sorted(obj.instances))
 
-    def _format_progress_update(self, progress_update):
-        return (
-            "%(created_at)s %(message)s" % progress_update)
-
     def _format_progress_updates(self, task_dict):
         return ("%(ls)s" % {"ls": os.linesep}).join(
             [self._format_progress_update(p) for p in
              sorted(task_dict.get("progress_updates", []),
-                    key=lambda p: (p["current_step"], p["created_at"]))])
+                    key=lambda p: (p.get('index', 0), p["created_at"]))])
 
     def _format_task(self, task):
         d = task.to_dict()

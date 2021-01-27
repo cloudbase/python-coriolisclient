@@ -243,16 +243,8 @@ Additional operations on minion pools include::
     coriolis minion pool list
     coriolis minion pool show $POOL_ID
 
-    # create a Pool Execution to set up pool VM shared resources for the specific
-    # platform and pool type it was configured as (e.g. a shared virtual network)
-    coriolis minion pool set up shared resources $POOL_ID
-
-    # view and manage Minion Pool Executions:
-    coriolis minion pool execution list $POOL_ID
-    coriolis minion pool execution show $POOL_ID $EXECUTION_ID
-
-    # allocate minion pool machines:
-    coriolis minion pool allocate machines $POOL_ID
+    # allocate Minion Pool resources:
+    coriolis minion pool allocate $POOL_ID
 
     # use a Minion Pool for a Replica or Migration
     coriolis replica/migration create \
@@ -263,8 +255,8 @@ Additional operations on minion pools include::
         --destination-minion-pool-id $TARGET_POOL_1_ID \
         --osmorphing-minion-pool-mapping $INSTANCE1=$TARGET_POOL_2_ID
 
-    # deallocate Minion Pool machines:
-    coriolis minion pool deallocate machines $POOL_ID
+    # deallocate Minion Pool resources:
+    coriolis minion pool deallocate $POOL_ID
 
     # tear down pool shared resources:
     coriolis minion pool tear down shared resources $POOL_ID

@@ -12,16 +12,18 @@
 # implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
 """
 Command-line interface sub-commands related to minion_pools.
 """
+
+import os
 
 from cliff import command
 from cliff import lister
 from cliff import show
 
 from coriolisclient.cli import formatter
-from coriolisclient.cli import minion_pool_executions
 from coriolisclient.cli import utils as cli_utils
 
 
@@ -34,20 +36,21 @@ class MinionPoolFormatter(formatter.EntityFormatter):
                "OS Type",
                "Notes",
                "Pool Status",
-               "Minions")
+               "Minions (Min - Max)")
 
     def _get_sorted_list(self, obj_list):
         return sorted(obj_list, key=lambda o: o.created_at)
 
     def _get_formatted_data(self, obj):
         data = (obj.id,
-                obj.pool_name,
+                obj.name,
                 obj.endpoint_id,
-                obj.pool_platform,
-                obj.pool_os_type,
+                obj.platform,
+                obj.os_type,
                 obj.notes,
-                obj.pool_status,
-                obj.minimum_minions)
+                obj.status,
+                "%s - %s" % (
+                    obj.minimum_minions, obj.maximum_minions))
 
         return data
 
@@ -56,30 +59,53 @@ class MinionPoolDetailFormatter(formatter.EntityFormatter):
 
     columns = ("ID",
                "Pool Name",
+               "Endpoint",
                "Pool Platform",
                "OS Type",
-               "Notes",
-               "Endpoint",
                "Pool Status",
+               "Notes",
+               "Created At",
+               "Updated At",
+               "Maintenance Trust ID",
                "Minimum Minions",
                "Maximum Minions",
                "Minion Max Idle Time",
                "Minion Retention Strategy",
                "Environment Options",
                "Shared Resources",
+               "Events",
+               "Progress Updates",
                "Minion Machines")
 
     def _get_sorted_list(self, obj_list):
         return sorted(obj_list, key=lambda o: o.created_at)
 
+    def _format_pool_event(self, event):
+        return (
+            "%(level)s %(created_at)s %(message)s" % event)
+
+    def _format_pool_events(self, events):
+        return ("%(ls)s" % {"ls": os.linesep}).join(
+            [self._format_pool_event(e) for e in
+             sorted(events, key=lambda e: e["index"])])
+
+    def _format_progress_updates(self, progress_updates):
+        return ("%(ls)s" % {"ls": os.linesep}).join(
+            [self._format_progress_update(p) for p in
+             sorted(progress_updates,
+                    key=lambda p: (p.get('index', 0), p["created_at"]))])
+
     def _get_formatted_data(self, obj):
         data = (obj.id,
-                obj.pool_name,
-                obj.pool_platform,
-                obj.pool_os_type,
-                obj.notes,
+                obj.name,
                 obj.endpoint_id,
-                obj.pool_status,
+                obj.platform,
+                obj.os_type,
+                obj.status,
+                obj.notes,
+                obj.created_at,
+                obj.updated_at,
+                obj.maintenance_trust_id,
                 obj.minimum_minions,
                 obj.maximum_minions,
                 obj.minion_max_idle_time,
@@ -87,7 +113,9 @@ class MinionPoolDetailFormatter(formatter.EntityFormatter):
                 cli_utils.format_json_for_object_property(
                     obj, prop_name="environment_options"),
                 cli_utils.format_json_for_object_property(
-                    obj, prop_name="pool_shared_resources"),
+                    obj, prop_name="shared_resources"),
+                self._format_pool_events(obj.events),
+                self._format_progress_updates(obj.progress_updates),
                 cli_utils.format_json_for_object_property(
                     obj, prop_name="minion_machines"))
         return data
@@ -100,14 +128,14 @@ class CreateMinionPool(show.ShowOne):
 
         parser.add_argument('name',
                             help='A name for the new minion pool.')
-        parser.add_argument('--pool-os-type', required=True,
+        parser.add_argument('--os-type', required=True,
                             help='The OS type for the minions of the pool.')
-        parser.add_argument('--pool-platform', required=True,
+        parser.add_argument('--platform', required=True,
                             help='The type of the minion pool ("source" or '
                                  "destination"').')
         parser.add_argument('--notes', dest='notes',
-                            help='Notes about the replica.')
-        parser.add_argument('--pool-endpoint', required=True,
+                            help='Notes about the minion pool.')
+        parser.add_argument('--endpoint-id', required=True,
                             help='ID/Name of the Coriolis Endpoint to create '
                                  'the pool for.')
         parser.add_argument('--minimum-minions', type=int, default=None,
@@ -123,22 +151,29 @@ class CreateMinionPool(show.ShowOne):
         parser.add_argument('--minion-retention-strategy', default='delete',
                             help='Action to take when scaling down the number '
                                  'machines within the pool.')
+        parser.add_argument('--skip-allocation', action='store_true',
+                            default=False,
+                            help="Whether or not to skip allocating the minion"
+                                 " pool's resources upfront. The pool "
+                                 "allocation will need to be manually "
+                                 "triggered before the pool can be used.")
+
         cli_utils.add_args_for_json_option_to_parser(
             parser, "environment-options")
         return parser
 
     def take_action(self, args):
         endpoints = self.app.client_manager.coriolis.endpoints
-        endpoint_id = endpoints.get_endpoint_id_for_name(args.pool_endpoint)
+        endpoint_id = endpoints.get_endpoint_id_for_name(args.endpoint_id)
         environment_options = cli_utils.get_option_value_from_args(
             args, 'environment-options', error_on_no_value=True)
         minion_pool = self.app.client_manager.coriolis.minion_pools.create(
-            args.name, endpoint_id, args.pool_platform, args.pool_os_type,
+            args.name, endpoint_id, args.platform, args.os_type,
             environment_options, minimum_minions=args.minimum_minions,
             maximum_minions=args.maximum_minions,
             minion_max_idle_time=args.minion_max_idle_time,
             minion_retention_strategy=args.minion_retention_strategy,
-            notes=args.notes)
+            notes=args.notes, skip_allocation=args.skip_allocation)
 
         return MinionPoolDetailFormatter().get_formatted_entity(minion_pool)
 
@@ -151,10 +186,10 @@ class UpdateMinionPool(show.ShowOne):
         parser.add_argument('id', help='The Minion Pools\'s ID.')
         parser.add_argument('--name',
                             help='New name for the new minion pool.')
-        parser.add_argument('--pool-os-type',
+        parser.add_argument('--os-type',
                             help='The OS type for the minions of the pool.')
         parser.add_argument('--notes', dest='notes',
-                            help='Notes about the replica.')
+                            help='Notes about the minion pool.')
         parser.add_argument('--minimum-minions', type=int, default=None,
                             help='Minimum number of minions machines '
                                  'for the minion pool.')
@@ -163,8 +198,8 @@ class UpdateMinionPool(show.ShowOne):
                                  'for the minion pool.')
         parser.add_argument('--minion-max-idle-time', type=int,
                             help='Number of idle seconds for minions before '
-                                'being shelved based on the selected '
-                                '--minion-retention-strategy')
+                                 'being shelved based on the selected '
+                                 '--minion-retention-strategy')
         parser.add_argument('--minion-retention-strategy',
                             help='Action to take when scaling down the number '
                                  'machines within the pool.')
@@ -176,9 +211,9 @@ class UpdateMinionPool(show.ShowOne):
     def take_action(self, args):
         updated_values = {}
         if args.name:
-            updated_values["pool_name"] = args.name
-        if args.pool_os_type:
-            updated_values["pool_os_type"] = args.pool_os_type
+            updated_values["name"] = args.name
+        if args.os_type:
+            updated_values["os_type"] = args.os_type
         if args.minimum_minions is not None:
             updated_values["minimum_minions"] = args.minimum_minions
         if args.maximum_minions is not None:
@@ -239,71 +274,48 @@ class ListMinionPools(lister.Lister):
         return MinionPoolFormatter().list_objects(minion_pool_list)
 
 
-class SetUpSharedMinionPoolResources(show.ShowOne):
-    """ Set up shared resources for a Minion Pool. """
+class AllocateMinionPool(show.ShowOne):
+    """ Allocates a Minion Pool. """
 
     def get_parser(self, prog_name):
-        parser = super(SetUpSharedMinionPoolResources, self).get_parser(
-            prog_name)
+        parser = super(AllocateMinionPool, self).get_parser(prog_name)
         parser.add_argument('id', help='The minion pool\'s id.')
         return parser
 
     def take_action(self, args):
         mps = self.app.client_manager.coriolis.minion_pools
-        execution = mps.set_up_shared_resources(args.id)
-        return minion_pool_executions.MinionPoolExecutionDetailFormatter(
-            ).get_formatted_entity(execution)
+        minion_pool = mps.allocate_minion_pool(args.id)
+        return MinionPoolDetailFormatter().get_formatted_entity(minion_pool)
 
 
-class TearDownSharedMinionPoolResources(show.ShowOne):
-    """ Tears down shared resources for a Minion Pool. """
-
-    def get_parser(self, prog_name):
-        parser = super(
-            TearDownSharedMinionPoolResources, self).get_parser(prog_name)
-        parser.add_argument('id', help='The minion pool\'s id.')
-        parser.add_argument('--force', action='store_true', default=False,
-                            help='Perform a forced teardown of the minion '
-                                 'pool\'s shared resources.')
-        return parser
-
-    def take_action(self, args):
-        mps = self.app.client_manager.coriolis.minion_pools
-        execution = mps.tear_down_shared_resources(
-            args.id, force=args.force)
-        return minion_pool_executions.MinionPoolExecutionDetailFormatter(
-            ).get_formatted_entity(execution)
-
-
-class AllocateMinionPoolMachines(show.ShowOne):
-    """ Allocates a Minion Pool's machines. """
+class RefreshMinionPool(show.ShowOne):
+    """ Refreshs a Minion Pool. """
 
     def get_parser(self, prog_name):
-        parser = super(AllocateMinionPoolMachines, self).get_parser(prog_name)
+        parser = super(RefreshMinionPool, self).get_parser(prog_name)
         parser.add_argument('id', help='The minion pool\'s id.')
         return parser
 
     def take_action(self, args):
         mps = self.app.client_manager.coriolis.minion_pools
-        execution = mps.allocate_machines(args.id)
-        return minion_pool_executions.MinionPoolExecutionDetailFormatter(
-            ).get_formatted_entity(execution)
+        minion_pool = mps.refresh_minion_pool(args.id)
+        return MinionPoolDetailFormatter().get_formatted_entity(minion_pool)
 
-class DeallocateMinionPoolMachines(show.ShowOne):
-    """ Deallocates a Minion Pool's machines. """
+
+class DeallocateMinionPool(show.ShowOne):
+    """ Deallocates a Minion Pool. """
 
     def get_parser(self, prog_name):
-        parser = super(DeallocateMinionPoolMachines, self).get_parser(
+        parser = super(DeallocateMinionPool, self).get_parser(
             prog_name)
         parser.add_argument('id', help='The minion pool\'s id.')
         parser.add_argument('--force', action='store_true', default=False,
                             help='Perform a forced deallocation of the minion '
-                                 'pool\'s machines.')
+                                 'pool.')
         return parser
 
     def take_action(self, args):
         mps = self.app.client_manager.coriolis.minion_pools
-        execution = mps.deallocate_machines(args.id, force=args.force)
+        minion_pool = mps.deallocate_minion_pool(args.id, force=args.force)
 
-        return minion_pool_executions.MinionPoolExecutionDetailFormatter(
-            ).get_formatted_entity(execution)
+        return MinionPoolDetailFormatter().get_formatted_entity(minion_pool)

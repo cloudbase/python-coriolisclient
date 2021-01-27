@@ -32,7 +32,6 @@ from coriolisclient.v1 import licensing_reservations
 from coriolisclient.v1 import logging as coriolis_logging
 from coriolisclient.v1 import migrations
 from coriolisclient.v1 import minion_pools
-from coriolisclient.v1 import minion_pool_executions
 from coriolisclient.v1 import providers
 from coriolisclient.v1 import regions
 from coriolisclient.v1 import replica_executions
@@ -85,8 +84,6 @@ class Client(object):
             httpclient)
         self.migrations = migrations.MigrationManager(httpclient)
         self.minion_pools = minion_pools.MinionPoolManager(httpclient)
-        self.minion_pool_executions = (
-            minion_pool_executions.MinionPoolExecutionManager(httpclient))
         self.providers = providers.ProvidersManager(httpclient)
         self.replicas = replicas.ReplicaManager(httpclient)
         self.replica_schedules = replica_schedules.ReplicaScheduleManager(
