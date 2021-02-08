@@ -33,8 +33,8 @@ class LicensingStatusFormatter(formatter.EntityFormatter):
             "current_performed_replicas",
             "current_available_migrations",
             "current_available_replicas",
-            "lifetime_perfomed_migrations",
-            "lifetime_perfomed_replicas",
+            "lifetime_performed_migrations",
+            "lifetime_performed_replicas",
             "lifetime_available_migrations",
             "lifetime_available_replicas",
         ]
@@ -47,8 +47,8 @@ class LicensingStatusFormatter(formatter.EntityFormatter):
                 obj.current_performed_replicas,
                 obj.current_available_migrations,
                 obj.current_available_replicas,
-                obj.lifetime_perfomed_migrations,
-                obj.lifetime_perfomed_replicas,
+                obj.lifetime_performed_migrations,
+                obj.lifetime_performed_replicas,
                 obj.lifetime_available_migrations,
                 obj.lifetime_available_replicas,
                 ]
