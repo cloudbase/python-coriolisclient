@@ -63,6 +63,7 @@ class LicenceFormatter(formatter.EntityFormatter):
                "Replicas",
                "Period Start",
                "Period End",
+               "Period Duration",
                "Licence Version",
                )
 
@@ -76,14 +77,15 @@ class LicenceFormatter(formatter.EntityFormatter):
                 obj.replicas,
                 obj.period_start,
                 obj.period_end,
+                obj.period_duration,
                 obj.licence_version,
                 )
 
         return data
 
 
-class LicensingStatus(show.ShowOne):
-    """ Retrieves Licensing Status """
+class LicensingApplianceStatus(show.ShowOne):
+    """ Retrieves Licensing Status for the given appliance. """
 
     def get_parser(self, prog_name):
         parser = super().get_parser(prog_name)
