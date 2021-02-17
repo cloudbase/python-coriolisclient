@@ -26,14 +26,16 @@ from coriolisclient.cli import utils as cli_utils
 class EndpointStorageFormatter(formatter.EntityFormatter):
 
     columns = ("ID",
-               "Name")
+               "Name",
+               "Additional Properties")
 
     def _get_sorted_list(self, obj_list):
         return sorted(obj_list, key=lambda o: o.name)
 
     def _get_formatted_data(self, obj):
         data = (obj.id,
-                obj.name)
+                obj.name,
+                getattr(obj, "additional_provider_properties", {}))
         return data
 
 
