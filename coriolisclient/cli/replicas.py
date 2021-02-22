@@ -32,6 +32,7 @@ class ReplicaFormatter(formatter.EntityFormatter):
 
     columns = ("ID",
                "Instances",
+               "Notes",
                "Last Execution Status",
                "Created",
                )
@@ -48,6 +49,7 @@ class ReplicaFormatter(formatter.EntityFormatter):
     def _get_formatted_data(self, obj):
         data = (obj.id,
                 "\n".join(obj.instances),
+                obj.notes,
                 obj.last_execution_status,
                 obj.created_at,
                 )
@@ -63,6 +65,7 @@ class ReplicaDetailFormatter(formatter.EntityFormatter):
             "last_updated",
             "reservation_id",
             "instances",
+            "notes",
             "origin_endpoint_id",
             "origin_minion_pool_id",
             "destination_endpoint_id",
@@ -101,6 +104,7 @@ class ReplicaDetailFormatter(formatter.EntityFormatter):
                 obj.updated_at,
                 obj.reservation_id,
                 self._format_instances(obj),
+                obj.notes,
                 obj.origin_endpoint_id,
                 obj.origin_minion_pool_id,
                 obj.destination_endpoint_id,
