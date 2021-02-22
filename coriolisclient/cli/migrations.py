@@ -32,6 +32,7 @@ class MigrationFormatter(formatter.EntityFormatter):
     columns = ("ID",
                "Status",
                "Instances",
+               "Notes",
                "Created",
                )
 
@@ -42,6 +43,7 @@ class MigrationFormatter(formatter.EntityFormatter):
         data = (obj.id,
                 obj.status,
                 "\n".join(obj.instances),
+                obj.notes,
                 obj.created_at,
                 )
         return data
@@ -57,6 +59,7 @@ class MigrationDetailFormatter(formatter.EntityFormatter):
             "last_updated",
             "reservation_id",
             "instances",
+            "notes",
             "origin_endpoint_id",
             "origin_minion_pool_id",
             "destination_endpoint_id",
@@ -121,6 +124,7 @@ class MigrationDetailFormatter(formatter.EntityFormatter):
                 obj.updated_at,
                 obj.reservation_id,
                 self._format_instances(obj),
+                obj.notes,
                 obj.origin_endpoint_id,
                 obj.origin_minion_pool_id,
                 obj.destination_endpoint_id,
