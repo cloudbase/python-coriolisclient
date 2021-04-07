@@ -30,7 +30,7 @@ class EndpointSourceMinionPoolOptionsFormatter(formatter.EntityFormatter):
 
     def _get_formatted_data(self, obj):
         data = (obj.name,
-                obj.values,
+                cli_utils.format_json_for_object_property(obj, "values"),
                 obj.to_dict().get("config_default"))
         return data
 
