@@ -60,7 +60,7 @@ class MigrationManager(base.BaseManager):
 
     def create(self, origin_endpoint_id, destination_endpoint_id,
                source_environment, destination_environment, instances,
-               network_map=None, storage_mappings=None,
+               network_map=None, notes=None, storage_mappings=None,
                skip_os_morphing=False, replication_count=None,
                shutdown_instances=None, user_scripts=None,
                origin_minion_pool_id=None, destination_minion_pool_id=None,
@@ -79,6 +79,7 @@ class MigrationManager(base.BaseManager):
                 "instances": instances,
                 "skip_os_morphing": skip_os_morphing,
                 "network_map": network_map,
+                "notes": notes,
                 "storage_mappings": storage_mappings,
                 "user_scripts": user_scripts}}
         if source_environment is not None:
