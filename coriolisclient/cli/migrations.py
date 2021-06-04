@@ -165,6 +165,8 @@ class CreateMigration(show.ShowOne):
                             dest="instances", metavar="INSTANCE_IDENTIFIER",
                             help='The identifier of a source instance to be '
                                  'migrated. Can be specified multiple times')
+        parser.add_argument('--notes', dest='notes',
+                            help='Notes about the migration')
         parser.add_argument('--user-script-global', action='append',
                             required=False,
                             dest="global_scripts",
@@ -237,6 +239,7 @@ class CreateMigration(show.ShowOne):
             destination_environment,
             args.instances,
             network_map=network_map,
+            notes=args.notes,
             storage_mappings=storage_mappings,
             skip_os_morphing=args.skip_os_morphing,
             replication_count=args.replication_count,

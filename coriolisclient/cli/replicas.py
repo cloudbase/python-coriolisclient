@@ -141,6 +141,8 @@ class CreateReplica(show.ShowOne):
                             dest="instances", metavar="INSTANCE_IDENTIFIER",
                             help='The identifier of a source instance to be '
                                  'replicated. Can be specified multiple times')
+        parser.add_argument('--notes', dest='notes',
+                            help='Notes about the replica')
         parser.add_argument('--user-script-global', action='append',
                             required=False,
                             dest="global_scripts",
@@ -201,6 +203,7 @@ class CreateReplica(show.ShowOne):
             destination_environment,
             args.instances,
             network_map=network_map,
+            notes=args.notes,
             storage_mappings=storage_mappings,
             origin_minion_pool_id=args.origin_minion_pool_id,
             destination_minion_pool_id=args.destination_minion_pool_id,
