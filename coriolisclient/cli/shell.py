@@ -347,6 +347,13 @@ def _setup_logging():
     logging.getLogger("requests").setLevel(logging.WARNING)
     logging.getLogger("keystoneclient").setLevel(logging.ERROR)
 
+    LOG = logging.getLogger('coriolisclient')
+    handler = logging.StreamHandler()
+    format = logging.Formatter('%(levelname)s: %(message)s')
+    handler.setFormatter(format)
+    LOG.addHandler(handler)
+    LOG.propagate = False
+
 
 def main(argv=sys.argv[1:]):
     _setup_logging()
