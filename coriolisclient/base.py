@@ -18,10 +18,18 @@
 #    under the License.
 
 import copy
+import logging
+import traceback
 
 import six
 
+from keystoneauth1 import exceptions as keystoneauth_exceptions
 from oslo_utils import strutils
+
+from coriolisclient import exceptions
+
+
+LOG = logging.getLogger(__name__)
 
 
 def getid(obj, possible_fields=["uuid", "id"]):
@@ -37,6 +45,19 @@ def getid(obj, possible_fields=["uuid", "id"]):
             return getattr(obj, key)
     return obj
 
+
+def wrap_unauthorized_exception(func):
+    def wrapper(*args, **kwargs):
+        try:
+            return func(*args, **kwargs)
+        except keystoneauth_exceptions.http.Unauthorized as ex:
+            LOG.exception(traceback.format_exc())
+            raise exceptions.HTTPAuthError(
+                "Failed to authorize Keystone session. Please recheck "
+                "credentials. The error message received from Keystone was: "
+                "%s" % str(ex))
+
+    return wrapper
 
 class Resource(object):
     """Base class for OpenStack resources (tenant, user, etc.).
@@ -142,6 +163,7 @@ class BaseManager(object):
         super(BaseManager, self).__init__()
         self.client = client
 
+    @wrap_unauthorized_exception
     def _list(self, url, response_key=None, obj_class=None, json=None,
               values_key='values'):
         """List the collection.
@@ -172,6 +194,7 @@ class BaseManager(object):
 
         return [obj_class(self, res, loaded=True) for res in data if res]
 
+    @wrap_unauthorized_exception
     def _get(self, url, response_key=None):
         """Get an object from collection.
         :param url: a partial URL, e.g., '/servers'
@@ -183,6 +206,7 @@ class BaseManager(object):
         data = body[response_key] if response_key is not None else body
         return self.resource_class(self, data, loaded=True)
 
+    @wrap_unauthorized_exception
     def _post(self, url, json, response_key=None, return_raw=False):
         """Create an object.
         :param url: a partial URL, e.g., '/servers'
@@ -200,6 +224,7 @@ class BaseManager(object):
             return data
         return self.resource_class(self, data)
 
+    @wrap_unauthorized_exception
     def _put(self, url, json=None, response_key=None):
         """Update an object with PUT method.
         :param url: a partial URL, e.g., '/servers'
@@ -218,6 +243,7 @@ class BaseManager(object):
             else:
                 return self.resource_class(self, body)
 
+    @wrap_unauthorized_exception
     def _patch(self, url, json=None, response_key=None):
         """Update an object with PATCH method.
         :param url: a partial URL, e.g., '/servers'
@@ -233,6 +259,7 @@ class BaseManager(object):
         else:
             return self.resource_class(self, body)
 
+    @wrap_unauthorized_exception
     def _delete(self, url):
         """Delete an object.
         :param url: a partial URL, e.g., '/servers/my-server'

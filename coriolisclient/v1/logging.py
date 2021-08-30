@@ -17,11 +17,13 @@ import asyncio
 import datetime
 import json
 import logging
+import traceback
 
 import requests
 import websockets
 
-from keystoneauth1.exceptions.catalog import EndpointNotFound
+from keystoneauth1.exceptions import catalog
+from keystoneauth1.exceptions import http
 from six.moves.urllib import parse as urlparse
 
 from coriolisclient import base
@@ -52,10 +54,16 @@ class LoggingClient(object):
         try:
             url = self._cli.get_endpoint(service_type=name)
             if url is None:
-                raise EndpointNotFound()
+                raise catalog.EndpointNotFound()
             return url.rstrip("/")
-        except EndpointNotFound:
+        except catalog.EndpointNotFound:
             raise exceptions.LoggingEndpointNotFound()
+        except http.Unauthorized as ex:
+            LOG.exception(traceback.format_exc())
+            raise exceptions.HTTPAuthError(
+                "Failed to authorize Keystone session. Please recheck "
+                "credentials. The error message received from Keystone was: "
+                "%s" % str(ex))
 
     @property
     def _auth_headers(self):
