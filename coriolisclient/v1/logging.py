@@ -41,7 +41,7 @@ class LoggingClient(object):
         try:
             self._ep_url = self._get_endpoint_url(self._ep_name)
         except Exception as ex:
-            LOG.warn(
+            LOG.warning(
                 "Unable to determine logging endpoint: %s", str(ex))
 
     @property
