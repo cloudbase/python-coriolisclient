@@ -45,6 +45,7 @@ _IDENTITY_API_VERSION_3 = ['3']
 
 class Coriolis(app.App):
     """Coriolis command line interface."""
+    CONSOLE_MESSAGE_FORMAT = '%(levelname)s: %(message)s'
 
     def __init__(self, **kwargs):
         self.client = None
@@ -346,14 +347,6 @@ class Coriolis(app.App):
 def _setup_logging():
     logging.getLogger("requests").setLevel(logging.WARNING)
     logging.getLogger("keystoneclient").setLevel(logging.ERROR)
-
-    LOG = logging.getLogger('coriolisclient')
-    handler = logging.StreamHandler()
-    format = logging.Formatter('%(levelname)s: %(message)s')
-    handler.setFormatter(format)
-    LOG.addHandler(handler)
-    LOG.propagate = False
-
 
 def main(argv=sys.argv[1:]):
     _setup_logging()
