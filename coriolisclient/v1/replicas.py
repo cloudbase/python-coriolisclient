@@ -47,8 +47,11 @@ class ReplicaManager(base.BaseManager):
     def __init__(self, api):
         super(ReplicaManager, self).__init__(api)
 
-    def list(self):
-        return self._list('/replicas/detail', 'replicas')
+    def list(self, detail=False):
+        path = "/replicas"
+        if detail:
+            path = "%s/detail" % path
+        return self._list(path, 'replicas')
 
     def get(self, replica):
         return self._get('/replicas/%s' % base.getid(replica), 'replica')
