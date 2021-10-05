@@ -52,8 +52,11 @@ class MigrationManager(base.BaseManager):
     def __init__(self, api):
         super(MigrationManager, self).__init__(api)
 
-    def list(self):
-        return self._list('/migrations/detail', 'migrations')
+    def list(self, detail=False):
+        path = "/migrations"
+        if detail:
+            path = "%s/detail" % path
+        return self._list(path, 'migrations')
 
     def get(self, migration):
         return self._get('/migrations/%s' % base.getid(migration), 'migration')
