@@ -41,7 +41,7 @@ class MigrationFormatter(formatter.EntityFormatter):
 
     def _get_formatted_data(self, obj):
         data = (obj.id,
-                obj.status,
+                obj.last_execution_status,
                 "\n".join(obj.instances),
                 obj.notes,
                 obj.created_at,
@@ -119,7 +119,7 @@ class MigrationDetailFormatter(formatter.EntityFormatter):
         default_storage, backend_mappings, disk_mappings = (
             cli_utils.parse_storage_mappings(storage_mappings))
         data = [obj.id,
-                obj.status,
+                obj.last_execution_status,
                 obj.created_at,
                 obj.updated_at,
                 obj.reservation_id,
