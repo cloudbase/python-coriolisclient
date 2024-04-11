@@ -58,6 +58,7 @@ class ReplicaManager(base.BaseManager):
 
     def create(self, origin_endpoint_id, destination_endpoint_id,
                source_environment, destination_environment, instances,
+               replica_scenario,
                network_map=None, notes=None, storage_mappings=None,
                origin_minion_pool_id=None, destination_minion_pool_id=None,
                instance_osmorphing_minion_pool_mappings=None,
@@ -73,6 +74,7 @@ class ReplicaManager(base.BaseManager):
                 "destination_endpoint_id": destination_endpoint_id,
                 "destination_environment": destination_environment,
                 "instances": instances,
+                "scenario": replica_scenario,
                 "network_map": network_map,
                 "notes": notes,
                 "storage_mappings": storage_mappings,
