@@ -17,6 +17,7 @@ import logging
 
 from keystoneauth1 import adapter
 
+from coriolisclient.v1 import deployments
 from coriolisclient.v1 import diagnostics
 from coriolisclient.v1 import endpoint_destination_minion_pool_options
 from coriolisclient.v1 import endpoint_destination_options
@@ -84,6 +85,7 @@ class Client(object):
             endpoint_source_options.EndpointSourceOptionsManager(httpclient))
         self.endpoint_storage = endpoint_storage.EndpointStorageManager(
             httpclient)
+        self.deployments = deployments.DeploymentManager(httpclient)
         self.migrations = migrations.MigrationManager(httpclient)
         self.minion_pools = minion_pools.MinionPoolManager(httpclient)
         self.providers = providers.ProvidersManager(httpclient)
