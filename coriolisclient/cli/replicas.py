@@ -35,6 +35,7 @@ REPLICA_SCENARIO_LIVE_MIGRATION = "live_migration"
 class ReplicaFormatter(formatter.EntityFormatter):
 
     columns = ("ID",
+               "Scenario",
                "Instances",
                "Notes",
                "Last Execution Status",
@@ -52,6 +53,7 @@ class ReplicaFormatter(formatter.EntityFormatter):
 
     def _get_formatted_data(self, obj):
         data = (obj.id,
+                getattr(obj, "scenario", "replica"),
                 "\n".join(obj.instances),
                 obj.notes,
                 obj.last_execution_status,
