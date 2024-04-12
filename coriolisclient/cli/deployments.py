@@ -30,6 +30,7 @@ from coriolisclient.cli import utils as cli_utils
 class DeploymentFormatter(formatter.EntityFormatter):
 
     columns = ("ID",
+               "Replica ID",
                "Status",
                "Instances",
                "Notes",
@@ -41,6 +42,7 @@ class DeploymentFormatter(formatter.EntityFormatter):
 
     def _get_formatted_data(self, obj):
         data = (obj.id,
+                obj.replica_id,
                 obj.last_execution_status,
                 "\n".join(obj.instances),
                 obj.notes,
