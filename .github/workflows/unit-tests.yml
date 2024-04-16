@@ -1,0 +1,35 @@
+name: Coriolis Client Unit Tests
+
+on:
+  workflow_dispatch:
+  pull_request:
+    branches: [ "master" ]
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-22.04
+    strategy:
+      matrix:
+        python-version: ["3.8", "3.9", "3.10", "3.11"]
+        architecture: ["x64"]
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ matrix.python-version }}
+        architecture: ${{ matrix.architecture }}
+    - name: Install python3 tox
+      shell: bash
+      run: |
+        python3 -m pip install tox
+    - name: Run unit tests with tox
+      shell: bash
+      run: |
+        tox -e py3,pep8 -v
+
