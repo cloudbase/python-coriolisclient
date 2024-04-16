@@ -15,16 +15,10 @@
 """
 Command-line interface sub-commands related to logging.
 """
-import argparse
-
 from cliff import command
 from cliff import lister
-from cliff import show
-
-from oslo_utils import timeutils
 
 from coriolisclient.cli import formatter
-from coriolisclient import exceptions
 
 
 _READIBLE_LOG_LEVELS = [

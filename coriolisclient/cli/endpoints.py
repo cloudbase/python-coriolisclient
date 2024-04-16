@@ -15,7 +15,6 @@
 """
 Command-line interface sub-commands related to endpoints.
 """
-
 import argparse
 import json
 
@@ -23,8 +22,8 @@ from cliff import command
 from cliff import lister
 from cliff import show
 
-from coriolisclient import exceptions
 from coriolisclient.cli import formatter
+from coriolisclient import exceptions
 
 
 def add_connection_info_args_to_parser(parser):

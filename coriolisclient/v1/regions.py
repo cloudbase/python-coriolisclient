@@ -14,8 +14,6 @@
 # limitations under the License.
 
 from coriolisclient import base
-from coriolisclient import exceptions
-from coriolisclient.cli import utils
 
 
 class Region(base.Resource):

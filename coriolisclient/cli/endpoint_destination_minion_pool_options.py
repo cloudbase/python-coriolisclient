@@ -61,8 +61,8 @@ class ListEndpointDestinationMinionPoolOptions(lister.Lister):
 
         endpoints = self.app.client_manager.coriolis.endpoints
         endpoint_id = endpoints.get_endpoint_id_for_name(args.endpoint)
-        empdo = (
-            self.app.client_manager.coriolis.endpoint_destination_minion_pool_options)
+        empdo = (self.app.client_manager.coriolis.
+                 endpoint_destination_minion_pool_options)
         obj_list = empdo.list(
             endpoint_id, environment=environment, option_names=options)
         return EndpointDestinationMinionPoolOptionsFormatter().list_objects(

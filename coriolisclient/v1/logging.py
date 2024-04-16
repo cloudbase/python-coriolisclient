@@ -108,7 +108,8 @@ class LoggingClient(object):
                     as_dict = json.loads(msg)
                     if app_name is None:
                         app = "\033[2m\033[1m%s\x1b[0m" % as_dict["app_name"]
-                        spacing = " " * (max((22-len(as_dict["app_name"]), 1)))
+                        spacing = (" " *
+                                   (max((22 - len(as_dict["app_name"]), 1))))
                         print("%s>>%s%s" % (app, spacing, as_dict["message"]))
                     else:
                         print(as_dict["message"])
@@ -125,8 +126,10 @@ class LoggingClient(object):
         try:
             _ = datetime.datetime.fromtimestamp(int(period))
             return int(period)
-        except:
-            pass
+        except (OverflowError, OSError):
+            LOG.warning("Failed to initialize timestamp from period value: %d", period)
+        except ValueError:
+            LOG.warning("Invalid value type for period: %s", period)
         units = {
             "s": "seconds",
             "m": "minutes",
@@ -136,7 +139,7 @@ class LoggingClient(object):
         try:
             count = period[:-1]
             unit = period[-1]
-        except:
+        except Exception:
             raise exceptions.CoriolisException("Failed to parse period")
 
         conv_unit = units.get(unit)
