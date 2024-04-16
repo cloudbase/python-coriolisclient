@@ -127,7 +127,8 @@ class LoggingClient(object):
             _ = datetime.datetime.fromtimestamp(int(period))
             return int(period)
         except (OverflowError, OSError):
-            LOG.warning("Failed to initialize timestamp from period value: %d", period)
+            LOG.warning("Failed to initialize timestamp from period value: %d",
+                        period)
         except ValueError:
             LOG.warning("Invalid value type for period: %s", period)
         units = {
