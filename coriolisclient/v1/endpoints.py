@@ -14,8 +14,8 @@
 # limitations under the License.
 
 from coriolisclient import base
-from coriolisclient import exceptions
 from coriolisclient.cli import utils
+from coriolisclient import exceptions
 
 
 class ConnectionInfo(base.Resource):

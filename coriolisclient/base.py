@@ -59,6 +59,7 @@ def wrap_unauthorized_exception(func):
 
     return wrapper
 
+
 class Resource(object):
     """Base class for OpenStack resources (tenant, user, etc.).
 

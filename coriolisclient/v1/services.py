@@ -14,8 +14,6 @@
 # limitations under the License.
 
 from coriolisclient import base
-from coriolisclient import exceptions
-from coriolisclient.cli import utils
 
 
 class Service(base.Resource):
@@ -66,7 +64,7 @@ class ServiceManager(base.BaseManager):
                     host, topic))
         if len(matches) > 1:
             raise ValueError(
-                "Multiple services with the host/topic %s/%s were found: %s" % (
-                    host, topic, matches))
+                "Multiple services with the host/topic %s/%s were found: %s"
+                % (host, topic, matches))
 
         return matches[0]

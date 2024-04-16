@@ -15,8 +15,6 @@
 """
 Command-line interface sub-commands related to endpoints.
 """
-import json
-
 from cliff import lister
 
 from coriolisclient.cli import formatter

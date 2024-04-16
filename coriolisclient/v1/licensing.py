@@ -100,13 +100,13 @@ class LicensingClient(object):
                             body=body, raw_response=raw_response)
 
     def post(self, resource, body=None, response_key=None,
-              raw_response=False):
+             raw_response=False):
         return self._do_req(
             'POST', resource, body=body, response_key=response_key,
             raw_response=raw_response)
 
     def delete(self, resource, body=None, response_key=None,
-                raw_response=False):
+               raw_response=False):
         return self._do_req('DELETE', resource, raw_response=raw_response,
                             body=body, response_key=response_key)
 

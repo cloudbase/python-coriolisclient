@@ -15,27 +15,22 @@
 """
 Command-line interface sub-commands related to diagnostics.
 """
-import argparse
-
-from cliff import command
 from cliff import lister
-from cliff import show
-
-from oslo_utils import timeutils
 
 from coriolisclient.cli import formatter
-from coriolisclient import exceptions
 
 
 class DiagnosticsFormatter(formatter.EntityFormatter):
 
-    columns = ("Application", "Hostname", "IP addresses", "Packages", "OS info")
+    columns = ("Application", "Hostname", "IP addresses", "Packages",
+               "OS info")
 
     def _get_sorted_list(self, obj_list):
         return sorted(obj_list, key=lambda o: o.application)
 
     def _get_formatted_data(self, obj):
-        data = (obj.application, obj.hostname, obj.ip_addresses, obj.packages, obj.os_info)
+        data = (obj.application, obj.hostname, obj.ip_addresses, obj.packages,
+                obj.os_info)
         return data
 
 
@@ -49,4 +44,3 @@ class GetCoriolisDiagnostics(lister.Lister):
     def take_action(self, args):
         diag_details = self.app.client_manager.coriolis.diagnostics.get()
         return DiagnosticsFormatter().list_objects(diag_details)
-

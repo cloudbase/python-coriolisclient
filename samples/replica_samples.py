@@ -100,7 +100,6 @@ def create_vm_replicas(coriolis, source_endpoint, destination_endpoint,
                     "Could not find source VM '%s' on source endpoint '%s'" % (
                         vm_name_or_id, source_endpoint))
 
-
         print("Creating Replica for VM(s): %s" % vm_group)
         replicas.append(
             coriolis.replicas.create(
@@ -184,7 +183,8 @@ def wait_for_replica_execution(coriolis, replica, execution,
     return execution
 
 
-def wait_for_replica_migration(coriolis, migration, max_tries=600, retry_period=5):
+def wait_for_replica_migration(coriolis, migration, max_tries=600,
+                               retry_period=5):
     """ Waits for a maximum amount of time for a given Migration to finish.
 
     :param migration_id: Migration object/ID

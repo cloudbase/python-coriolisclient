@@ -74,11 +74,11 @@ class Client(object):
             endpoint_destination_options.EndpointDestinationOptionsManager(
                 httpclient))
         self.endpoint_source_minion_pool_options = (
-            endpoint_source_minion_pool_options.EndpointSourceMinionPoolOptionsManager(
-                httpclient))
+            endpoint_source_minion_pool_options.
+            EndpointSourceMinionPoolOptionsManager(httpclient))
         self.endpoint_destination_minion_pool_options = (
-            endpoint_destination_minion_pool_options.EndpointDestinationMinionPoolOptionsManager(
-                httpclient))
+            endpoint_destination_minion_pool_options.
+            EndpointDestinationMinionPoolOptionsManager(httpclient))
         self.endpoint_source_options = (
             endpoint_source_options.EndpointSourceOptionsManager(httpclient))
         self.endpoint_storage = endpoint_storage.EndpointStorageManager(

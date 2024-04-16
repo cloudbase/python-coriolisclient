@@ -17,20 +17,20 @@
 Command-line interface to the Coriolis API.
 """
 
+from collections import namedtuple
 import logging
 import os
 import sys
-from collections import namedtuple
 
 from cliff import app
 from cliff import command
 from cliff import commandmanager
 from cliff import complete
 from cliff import help
-from keystoneauth1 import loading
-from keystoneauth1 import session
 from keystoneauth1.identity import v2
 from keystoneauth1.identity import v3
+from keystoneauth1 import loading
+from keystoneauth1 import session
 
 import six
 
@@ -347,6 +347,7 @@ class Coriolis(app.App):
 def _setup_logging():
     logging.getLogger("requests").setLevel(logging.WARNING)
     logging.getLogger("keystoneclient").setLevel(logging.ERROR)
+
 
 def main(argv=sys.argv[1:]):
     _setup_logging()
