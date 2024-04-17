@@ -62,8 +62,9 @@ class GetCoriolisDiagnosticsTestCase(test_base.CoriolisBaseTestCase):
         super(GetCoriolisDiagnosticsTestCase, self).setUp()
         self.diag = diagnostics.GetCoriolisDiagnostics()
 
-    @mock.patch.object(diagnostics.GetCoriolisDiagnostics, 'get_parser')
+    @mock.patch.object(lister.Lister, 'get_parser')
     def test_get_parser(self, mock_get_parser):
+        mock_get_parser.return_value = None
         result = self.diag.get_parser(mock.sentinel.prog_name)
 
         self.assertEqual(
