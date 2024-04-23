@@ -51,7 +51,7 @@ class EndpointTestCase(test_base.CoriolisBaseTestCase):
             "expected_result": {"secret_ref": "mock_secret"}
         },
     )
-    def test_get_connnection_info_from_args(self, data):
+    def test_get_connection_info_from_args(self, data):
         mock_args = mock.MagicMock()
         (mock_args.connection,
             mock_args.connection_file.__enter__.return_value.read.return_value,
@@ -62,11 +62,11 @@ class EndpointTestCase(test_base.CoriolisBaseTestCase):
         if data["expected_result"] == "exception":
             self.assertRaises(
                 ValueError,
-                endpoints.get_connnection_info_from_args,
+                endpoints.get_connection_info_from_args,
                 mock_args
             )
         else:
-            result = endpoints.get_connnection_info_from_args(
+            result = endpoints.get_connection_info_from_args(
                 mock_args, raise_if_none=data.get("raise_if_none", True))
 
             self.assertEqual(
@@ -185,10 +185,10 @@ class CreateEndpointTestCase(test_base.CoriolisBaseTestCase):
 
     @mock.patch.object(endpoints.EndpointDetailFormatter,
                        'get_formatted_entity')
-    @mock.patch.object(endpoints, 'get_connnection_info_from_args')
+    @mock.patch.object(endpoints, 'get_connection_info_from_args')
     def test_take_action(
         self,
-        mock_get_connnection_info_from_args,
+        mock_get_connection_info_from_args,
         mock_get_formatted_entity
     ):
         args = mock.Mock()
@@ -212,11 +212,11 @@ class CreateEndpointTestCase(test_base.CoriolisBaseTestCase):
             mock_get_formatted_entity.return_value,
             result
         )
-        mock_get_connnection_info_from_args.assert_called_once_with(args)
+        mock_get_connection_info_from_args.assert_called_once_with(args)
         mock_create.assert_called_once_with(
             mock.sentinel.name,
             mock.sentinel.provider,
-            mock_get_connnection_info_from_args.return_value,
+            mock_get_connection_info_from_args.return_value,
             mock.sentinel.description,
             regions=mock.sentinel.regions,
         )
@@ -238,10 +238,10 @@ class CreateEndpointTestCase(test_base.CoriolisBaseTestCase):
 
     @mock.patch.object(endpoints.EndpointDetailFormatter,
                        'get_formatted_entity')
-    @mock.patch.object(endpoints, 'get_connnection_info_from_args')
+    @mock.patch.object(endpoints, 'get_connection_info_from_args')
     def test_take_action_validation_failed(
         self,
-        mock_get_connnection_info_from_args,
+        mock_get_connection_info_from_args,
         mock_get_formatted_entity
     ):
         args = mock.Mock()
@@ -265,11 +265,11 @@ class CreateEndpointTestCase(test_base.CoriolisBaseTestCase):
             args
         )
 
-        mock_get_connnection_info_from_args.assert_called_once_with(args)
+        mock_get_connection_info_from_args.assert_called_once_with(args)
         mock_create.assert_called_once_with(
             mock.sentinel.name,
             mock.sentinel.provider,
-            mock_get_connnection_info_from_args.return_value,
+            mock_get_connection_info_from_args.return_value,
             mock.sentinel.description,
             regions=mock.sentinel.regions,
         )
@@ -306,10 +306,10 @@ class UpdateEndpointTestCase(test_base.CoriolisBaseTestCase):
 
     @mock.patch.object(endpoints.EndpointDetailFormatter,
                        'get_formatted_entity')
-    @mock.patch.object(endpoints, 'get_connnection_info_from_args')
+    @mock.patch.object(endpoints, 'get_connection_info_from_args')
     def test_take_action(
         self,
-        mock_get_connnection_info_from_args,
+        mock_get_connection_info_from_args,
         mock_get_formatted_entity
     ):
         args = mock.Mock()
@@ -325,7 +325,7 @@ class UpdateEndpointTestCase(test_base.CoriolisBaseTestCase):
         expected_updated_values = {
             "name": mock.sentinel.name,
             "description": mock.sentinel.description,
-            "connection_info": (mock_get_connnection_info_from_args.
+            "connection_info": (mock_get_connection_info_from_args.
                                 return_value),
             "mapped_regions": mock.sentinel.regions,
         }
@@ -336,7 +336,7 @@ class UpdateEndpointTestCase(test_base.CoriolisBaseTestCase):
             mock_get_formatted_entity.return_value,
             result
         )
-        mock_get_connnection_info_from_args.assert_called_once_with(
+        mock_get_connection_info_from_args.assert_called_once_with(
             args, raise_if_none=False)
         mock_update.assert_called_once_with(
             mock.sentinel.id,
