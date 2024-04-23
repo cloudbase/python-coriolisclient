@@ -43,7 +43,7 @@ def add_connection_info_args_to_parser(parser):
     return parser
 
 
-def get_connnection_info_from_args(args, raise_if_none=True):
+def get_connection_info_from_args(args, raise_if_none=True):
     """ Returns a dict with the connection info from the arguments. """
     conn_info = None
     raw_conn_info = None
@@ -148,7 +148,7 @@ class CreateEndpoint(show.ShowOne):
                 "Please specify either --connection or "
                 "--connection-secret, but not both")
 
-        conn_info = get_connnection_info_from_args(args)
+        conn_info = get_connection_info_from_args(args)
         endpoint = self.app.client_manager.coriolis.endpoints.create(
             args.name,
             args.provider,
@@ -191,7 +191,7 @@ class UpdateEndpoint(show.ShowOne):
                 "Please specify either --connection or "
                 "--connection-secret, but not both")
 
-        conn_info = get_connnection_info_from_args(args, raise_if_none=False)
+        conn_info = get_connection_info_from_args(args, raise_if_none=False)
         updated_values = {}
         if args.name is not None:
             updated_values["name"] = args.name
