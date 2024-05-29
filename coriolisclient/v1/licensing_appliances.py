@@ -41,5 +41,5 @@ class LicensingAppliancesManager(base.BaseManager):
 
     def create(self):
         url = '/appliances'
-        data = self._licensing_cli.post(url, response_key='apppliance')
+        data = self._licensing_cli.post(url, response_key='appliance')
         return self.resource_class(self, data, loaded=True)
