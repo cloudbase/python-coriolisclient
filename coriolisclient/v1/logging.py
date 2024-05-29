@@ -137,7 +137,7 @@ class LoggingClient(object):
             _ = datetime.datetime.fromtimestamp(int(period))
             return int(period)
         except (OverflowError, OSError):
-            LOG.warning("Failed to initialize timestamp from period value: %d",
+            LOG.warning("Failed to initialize timestamp from period value: %s",
                         period)
         except ValueError:
             LOG.warning("Invalid value type for period: %s", period)
@@ -157,7 +157,7 @@ class LoggingClient(object):
         if conv_unit is None:
             raise exceptions.CoriolisException("invalid period %s" % period)
 
-        args = {conv_unit: count}
+        args = {conv_unit: int(count)}
         tm = datetime.datetime.utcnow() - datetime.timedelta(**args)
         return int(tm.timestamp())
 
