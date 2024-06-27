@@ -60,7 +60,8 @@ class GetCoriolisDiagnosticsTestCase(test_base.CoriolisBaseTestCase):
     def setUp(self, mock__init__):
         mock__init__.return_value = None
         super(GetCoriolisDiagnosticsTestCase, self).setUp()
-        self.diag = diagnostics.GetCoriolisDiagnostics()
+        self.diag = diagnostics.GetCoriolisDiagnostics(
+            mock.sentinel.app, mock.sentinel.app_args)
 
     @mock.patch.object(lister.Lister, 'get_parser')
     def test_get_parser(self, mock_get_parser):
