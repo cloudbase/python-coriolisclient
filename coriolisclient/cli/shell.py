@@ -148,7 +148,9 @@ class Coriolis(app.App):
 
         auth = method(**kwargs)
 
-        return session.Session(auth=auth, verify=not args.insecure)
+        verify = args.os_cacert or not args.insecure
+
+        return session.Session(auth=auth, verify=verify)
 
     def create_client(self, args):
         created_client = None
