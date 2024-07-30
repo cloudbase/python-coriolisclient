@@ -49,11 +49,12 @@ _DEFAULT_API_VERSION = 'v1'
 
 
 class _HTTPClient(adapter.Adapter):
-    def __init__(self, session, project_id=None, **kwargs):
+    def __init__(self, session, project_id=None, verify=True, **kwargs):
         kwargs.setdefault('interface', _DEFAULT_SERVICE_INTERFACE)
         kwargs.setdefault('service_type', _DEFAULT_SERVICE_TYPE)
         kwargs.setdefault('version', _DEFAULT_API_VERSION)
         endpoint = kwargs.pop('endpoint', None)
+        self.verify = verify
 
         super(_HTTPClient, self).__init__(session, **kwargs)
 

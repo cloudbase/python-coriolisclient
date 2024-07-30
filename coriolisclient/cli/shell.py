@@ -124,7 +124,7 @@ class Coriolis(app.App):
         return dict((k, v) for (k, v) in six.iteritems(kwargs) if v)
 
     def create_keystone_session(
-            self, args, api_version, kwargs_dict, auth_type
+            self, args, api_version, kwargs_dict, auth_type, verify=True,
     ):
         # Make sure we have the correct arguments to function
         self.check_auth_arguments(args, api_version, raise_exc=True)
@@ -148,8 +148,6 @@ class Coriolis(app.App):
 
         auth = method(**kwargs)
 
-        verify = args.os_cacert or not args.insecure
-
         return session.Session(auth=auth, verify=verify)
 
     def create_client(self, args):
@@ -157,6 +155,7 @@ class Coriolis(app.App):
         endpoint_filter_kwargs = self._get_endpoint_filter_kwargs(args)
 
         api_version = args.os_identity_api_version
+        verify = args.os_cacert or not args.insecure
         if args.no_auth and args.os_auth_url:
             raise Exception(
                 'ERROR: argument --os-auth-url/-A: not allowed '
@@ -172,7 +171,7 @@ class Coriolis(app.App):
             created_client = client.Client(
                 endpoint=args.endpoint,
                 project_id=args.os_tenant_id or args.os_project_id,
-                verify=not args.insecure,
+                verify=verify,
                 **endpoint_filter_kwargs
             )
         # Token-based authentication
@@ -184,11 +183,12 @@ class Coriolis(app.App):
                 'token': args.os_auth_token
             }
             session = self.create_keystone_session(
-                args, api_version, token_kwargs, auth_type='token'
-            )
+                args, api_version, token_kwargs, auth_type='token',
+                verify=verify)
             created_client = client.Client(
                 session=session,
                 endpoint=args.endpoint,
+                verify=verify,
                 **endpoint_filter_kwargs
             )
 
@@ -201,11 +201,12 @@ class Coriolis(app.App):
                 'username': args.os_username,
             }
             session = self.create_keystone_session(
-                args, api_version, password_kwargs, auth_type='password'
-            )
+                args, api_version, password_kwargs, auth_type='password',
+                verify=verify)
             created_client = client.Client(
                 session=session,
                 endpoint=args.endpoint,
+                verify=verify,
                 **endpoint_filter_kwargs
             )
         else:
