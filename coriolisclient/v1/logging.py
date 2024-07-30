@@ -17,6 +17,7 @@ import asyncio
 import datetime
 import json
 import logging
+import ssl
 import traceback
 
 import requests
@@ -100,9 +101,18 @@ class LoggingClient(object):
             "severity": severity,
         }
         url = self._construct_url("ws", args, is_websocket=True)
+        if self._cli.verify:
+            cafile = None
+            if isinstance(self._cli.verify, str):
+                cafile = self._cli.verify
+            ssl_context = ssl.create_default_context(cafile=cafile)
+        else:
+            ssl_context = ssl.SSLContext()
+            ssl_context.verify_mode = ssl.CERT_NONE
 
         async def nested():
-            async with websockets.connect(url, extra_headers=headers) as ws:
+            async with websockets.connect(
+                    url, extra_headers=headers, ssl=ssl_context) as ws:
                 while True:
                     msg = await ws.recv()
                     as_dict = json.loads(msg)
@@ -162,7 +172,9 @@ class LoggingClient(object):
         }
         resource = "logs/%s/" % app
         url = self._construct_url(resource, args)
-        with requests.get(url, headers=headers, stream=True) as r:
+        verify = self._cli.verify
+        with requests.get(
+                url, headers=headers, stream=True, verify=verify) as r:
             r.raise_for_status()
             with open(to, 'wb') as fd:
                 for chunk in r.iter_content(chunk_size=8192):
@@ -172,7 +184,7 @@ class LoggingClient(object):
     def list_logs(self):
         headers = self._auth_headers
         url = self._construct_url("logs/")
-        req = requests.get(url, headers=headers)
+        req = requests.get(url, headers=headers, verify=self._cli.verify)
         req.raise_for_status()
         ret = req.json()
         return ret.get("logs", [])

@@ -56,7 +56,7 @@ class LicensingClient(object):
         endpoint_url = self._get_licensing_endpoint_url()
         url = '%s/%s' % (endpoint_url.rstrip('/'), resource.lstrip('/'))
 
-        kwargs = dict()
+        kwargs = {"verify": self._cli.verify}
         if body:
             if not isinstance(body, (str, bytes)):
                 body = json.dumps(body)
