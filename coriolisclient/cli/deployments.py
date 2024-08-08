@@ -254,7 +254,8 @@ class CancelDeployment(command.Command):
         return parser
 
     def take_action(self, args):
-        self.app.client_manager.coriolis.deployments.cancel(args.id, args.force)
+        self.app.client_manager.coriolis.deployments.cancel(
+            args.id, args.force)
 
 
 class DeleteDeployment(command.Command):

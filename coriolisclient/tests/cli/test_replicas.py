@@ -80,6 +80,7 @@ class ReplicaFormatterTestCase(test_base.CoriolisBaseTestCase):
         obj.last_execution_status = mock.sentinel.last_execution_status
         obj.instances = ["mock_instance3", "mock_instance1", "mock_instance2"]
         obj.notes = mock.sentinel.notes
+        obj.scenario = mock.sentinel.scenario
         obj.created_at = mock.sentinel.created_at
 
         result = self.replica._get_formatted_data(obj)
@@ -87,6 +88,7 @@ class ReplicaFormatterTestCase(test_base.CoriolisBaseTestCase):
         self.assertEqual(
             (
                 mock.sentinel.id,
+                mock.sentinel.scenario,
                 ('mock_instance3%(ls)smock_instance1%(ls)smock_instance2'
                  % {"ls": "\n"}),
                 mock.sentinel.notes,
@@ -211,10 +213,12 @@ class ReplicaDetailFormatterTestCase(test_base.CoriolisBaseTestCase):
         mock_format_executions.return_value = \
             mock.sentinel.formatted_executions
         mock_obj.info = mock.sentinel.info
+        mock_obj.scenario = mock.sentinel.scenario
         expected_result = [
             mock.sentinel.id,
             mock.sentinel.created_at,
             mock.sentinel.updated_at,
+            mock.sentinel.scenario,
             mock.sentinel.reservation_id,
             mock.sentinel.formatted_instances,
             mock.sentinel.notes,
@@ -281,6 +285,7 @@ class CreateReplicaTestCase(test_base.CoriolisBaseTestCase):
         args = mock.Mock()
         args.instances = mock.sentinel.instances
         args.notes = mock.sentinel.notes
+        args.scenario = mock.sentinel.scenario
         args.origin_minion_pool_id = mock.sentinel.origin_minion_pool_id
         args.destination_minion_pool_id = \
             mock.sentinel.destination_minion_pool_id
@@ -315,6 +320,7 @@ class CreateReplicaTestCase(test_base.CoriolisBaseTestCase):
             mock.sentinel.source_environment,
             mock.sentinel.destination_environment,
             mock.sentinel.instances,
+            mock.sentinel.scenario,
             network_map=mock.sentinel.network_map,
             notes=mock.sentinel.notes,
             storage_mappings=(mock_get_storage_mappings_dict_from_args.
