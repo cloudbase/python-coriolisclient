@@ -59,7 +59,8 @@ class DeploymentManager(base.BaseManager):
         return self._list(path, 'deployments')
 
     def get(self, deployment):
-        return self._get('/deployments/%s' % base.getid(deployment), 'deployment')
+        return self._get(
+            '/deployments/%s' % base.getid(deployment), 'deployment')
 
     def create_from_replica(self, replica_id, clone_disks=True, force=False,
                             skip_os_morphing=False, user_scripts=None,
