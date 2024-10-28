@@ -28,9 +28,14 @@ from coriolisclient.cli import replica_executions
 from coriolisclient.cli import utils as cli_utils
 
 
+REPLICA_SCENARIO_REPLICA = "replica"
+REPLICA_SCENARIO_LIVE_MIGRATION = "live_migration"
+
+
 class ReplicaFormatter(formatter.EntityFormatter):
 
     columns = ("ID",
+               "Scenario",
                "Instances",
                "Notes",
                "Last Execution Status",
@@ -48,6 +53,7 @@ class ReplicaFormatter(formatter.EntityFormatter):
 
     def _get_formatted_data(self, obj):
         data = (obj.id,
+                getattr(obj, "scenario", "replica"),
                 "\n".join(obj.instances),
                 obj.notes,
                 obj.last_execution_status,
@@ -63,6 +69,7 @@ class ReplicaDetailFormatter(formatter.EntityFormatter):
             "id",
             "created",
             "last_updated",
+            "scenario_type",
             "reservation_id",
             "instances",
             "notes",
@@ -102,6 +109,7 @@ class ReplicaDetailFormatter(formatter.EntityFormatter):
         data = [obj.id,
                 obj.created_at,
                 obj.updated_at,
+                getattr(obj, "scenario", ""),
                 obj.reservation_id,
                 self._format_instances(obj),
                 obj.notes,
@@ -141,6 +149,20 @@ class CreateReplica(show.ShowOne):
                             dest="instances", metavar="INSTANCE_IDENTIFIER",
                             help='The identifier of a source instance to be '
                                  'replicated. Can be specified multiple times')
+        parser.add_argument('--scenario',
+                            dest="scenario", metavar="SCENARIO",
+                            choices=[
+                                REPLICA_SCENARIO_REPLICA,
+                                REPLICA_SCENARIO_LIVE_MIGRATION],
+                            default=REPLICA_SCENARIO_REPLICA,
+                            help='The type of scenario to use when creating '
+                                 'the Replica. "replica" will create a '
+                                 'monthly-billed Replica which can be '
+                                 'executed and deployed as many times as '
+                                 'desired, while "live_migration" will '
+                                 'create a Replica which can be synced '
+                                 'as many times as needed but only '
+                                 'deployed once.')
         parser.add_argument('--notes', dest='notes',
                             help='Notes about the replica')
         parser.add_argument('--user-script-global', action='append',
@@ -202,6 +224,7 @@ class CreateReplica(show.ShowOne):
             source_environment,
             destination_environment,
             args.instances,
+            args.scenario,
             network_map=network_map,
             notes=args.notes,
             storage_mappings=storage_mappings,
