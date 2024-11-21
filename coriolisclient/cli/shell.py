@@ -35,6 +35,7 @@ from keystoneauth1 import session
 import six
 
 from coriolisclient import client
+from coriolisclient import exceptions
 from coriolisclient import version
 
 
@@ -100,7 +101,7 @@ class Coriolis(app.App):
                 successful = False
 
         if not successful and raise_exc:
-            raise Exception(msg)
+            raise exceptions.CoriolisException(msg)
 
         return successful
 
@@ -157,7 +158,7 @@ class Coriolis(app.App):
         api_version = args.os_identity_api_version
         verify = args.os_cacert or not args.insecure
         if args.no_auth and args.os_auth_url:
-            raise Exception(
+            raise exceptions.CoriolisException(
                 'ERROR: argument --os-auth-url/-A: not allowed '
                 'with argument --no-auth/-N'
             )
@@ -165,7 +166,7 @@ class Coriolis(app.App):
         if args.no_auth:
             if not all([args.endpoint, args.os_tenant_id or
                         args.os_project_id]):
-                raise Exception(
+                raise exceptions.CoriolisException(
                     'ERROR: please specify --endpoint and '
                     '--os-project-id (or --os-tenant-id)')
             created_client = client.Client(
@@ -177,7 +178,8 @@ class Coriolis(app.App):
         # Token-based authentication
         elif args.os_auth_token:
             if not args.os_auth_url:
-                raise Exception('ERROR: please specify --os-auth-url')
+                raise exceptions.CoriolisException(
+                    'ERROR: please specify --os-auth-url')
             token_kwargs = {
                 'auth_url': args.os_auth_url,
                 'token': args.os_auth_token
@@ -210,7 +212,8 @@ class Coriolis(app.App):
                 **endpoint_filter_kwargs
             )
         else:
-            raise Exception('ERROR: please specify authentication credentials')
+            raise exceptions.CoriolisException(
+                'ERROR: please specify authentication credentials')
 
         return created_client
 
