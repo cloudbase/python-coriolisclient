@@ -1,0 +1,129 @@
+
+- config:
+    args:
+        os_project_id: "mock_os_project_id"
+        os_project_name: "mock_os_project_name"
+        os_project_domain_name: "mock_os_project_domain_name"
+        os_project_domain_id: "mock_os_project_domain_id"
+        os_tenant_id: "mock_os_tenant_id"
+        os_tenant_name: "mock_os_tenant_name"
+    api_version: '3'
+    raise_exc: False
+    expected_result: True
+
+- config:
+    args:
+        os_project_id: "mock_os_project_id"
+        os_project_name: "mock_os_project_name"
+        os_project_domain_name: "mock_os_project_domain_name"
+        os_project_domain_id: "mock_os_project_domain_id"
+        os_tenant_id: "mock_os_tenant_id"
+        os_tenant_name: "mock_os_tenant_name"
+    api_version:
+    raise_exc: False
+    expected_result: True
+
+- config:
+    args:
+    api_version: '3'
+    raise_exc: False
+    expected_result: False
+
+- config:
+    args:
+      os_project_id: "mock_os_project_id"
+    api_version: '3'
+    raise_exc: False
+    expected_result: True
+
+- config:
+    args:
+      os_project_name: "mock_os_project_name"
+    api_version: '3'
+    raise_exc: False
+    expected_result: False
+
+- config:
+    args:
+      os_project_name: "mock_os_project_name"
+      os_project_domain_name: "mock_os_project_domain_name"
+    api_version: '3'
+    raise_exc: False
+    expected_result: True
+
+
+- config:
+    args:
+      os_tenant_id: "mock_os_tenant_id"
+    api_version: '3'
+    raise_exc: False
+    expected_result: False
+
+- config:
+    args:
+      os_project_name: "mock_os_project_name"
+      os_project_domain_name: "mock_os_project_domain_name"
+    api_version:
+    raise_exc: False
+    expected_result: True
+
+- config:
+    args:
+      os_tenant_id: "mock_os_tenant_id"
+      os_tenant_name: "mock_os_tenant_name"
+    api_version: 
+    raise_exc: False
+    expected_result: False
+
+- config:
+    args:
+    api_version:
+    raise_exc: False
+    expected_result: False
+
+- config:
+    args:
+    api_version:
+    raise_exc: True
+    expected_result:
+
+- config:
+    args:
+        os_project_id: "mock_os_project_id"
+        os_project_name: "mock_os_project_name"
+        os_project_domain_name: "mock_os_project_domain_name"
+        os_project_domain_id: "mock_os_project_domain_id"
+        os_tenant_id: "mock_os_tenant_id"
+        os_tenant_name: "mock_os_tenant_name"
+    api_version: '2'
+    raise_exc: False
+    expected_result: True
+
+- config:
+    args:
+      os_tenant_id: "mock_os_tenant_id"
+      os_tenant_name: "mock_os_tenant_name"
+    api_version: '2'
+    raise_exc: False
+    expected_result: True
+
+- config:
+    args:
+    api_version: '2'
+    raise_exc: False
+    expected_result: False
+
+- config:
+    args:
+      os_tenant_id: "mock_os_tenant_id"
+    api_version: '2'
+    raise_exc: False
+    expected_result: True
+
+- config:
+    args:
+      os_project_name: "mock_os_project_name"
+      os_project_domain_name: "mock_os_project_domain_name"
+    api_version: '2'
+    raise_exc: False
+    expected_result: False
