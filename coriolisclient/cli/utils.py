@@ -175,7 +175,7 @@ def get_option_value_from_args(args, option_name, error_on_no_value=True):
         with file_arg as fin:
             raw_value = fin.read()
 
-    if not value and raw_value:
+    if raw_value:
         try:
             value = json.loads(raw_value)
         except ValueError as ex:
