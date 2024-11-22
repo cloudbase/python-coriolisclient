@@ -30,13 +30,11 @@ class ReplicaScheduleManager(base.BaseManager):
 
     def list(self, replica, hide_expired=False):
         query = {}
+        url = '/replicas/%s/schedules' % base.getid(replica)
         if hide_expired:
             query["show_expired"] = hide_expired is False
-        url = '/replicas/%s/schedules' % base.getid(replica)
-        if query:
             url += "?" + urlparse.urlencode(query)
-        return self._list(
-            url, 'schedules')
+        return self._list(url, 'schedules')
 
     def get(self, replica, schedule):
         return self._get(
