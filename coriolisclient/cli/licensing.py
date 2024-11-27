@@ -74,7 +74,7 @@ class LicenceFormatter(formatter.EntityFormatter):
         data = (obj.id,
                 obj.issue_date,
                 obj.migrations,
-                obj.replicas,
+                obj.transfers,
                 obj.period_start,
                 obj.period_end,
                 obj.period_duration,
