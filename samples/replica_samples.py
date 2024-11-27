@@ -102,7 +102,7 @@ def create_vm_replicas(coriolis, source_endpoint, destination_endpoint,
 
         print("Creating Replica for VM(s): %s" % vm_group)
         replicas.append(
-            coriolis.replicas.create(
+            coriolis.transfers.create(
                 source_endpoint, destination_endpoint,
                 source_options, destination_options,
                 vm_group,
@@ -118,7 +118,7 @@ def get_replicas_for_endpoint(coriolis, endpoint,
     endpoint = coriolis.endpoints.get(endpoint)
 
     found = []
-    for replica in coriolis.replicas.list():
+    for replica in coriolis.transfers.list():
         if as_source and replica.origin_endpoint_id == endpoint.id:
             found.append(replica)
 
@@ -131,7 +131,7 @@ def get_replicas_for_endpoint(coriolis, endpoint,
 def get_replicas_for_vm(coriolis, vm_name):
     """ Returns all Replicas which include the given VM name. """
     replicas = []
-    for replica in coriolis.replicas.list():
+    for replica in coriolis.transfers.list():
         if vm_name in replica.instances:
             replicas.append(replica)
 
@@ -141,7 +141,7 @@ def get_replicas_for_vm(coriolis, vm_name):
 def get_errord_replicas(coriolis):
     """ Returns a list of all the Replicas whose last execution error'd. """
     errord = []
-    for replica in coriolis.replicas.list():
+    for replica in coriolis.transfers.list():
         if not replica.executions:
             # Replica was never executed
             continue
@@ -162,13 +162,13 @@ def wait_for_replica_execution(coriolis, replica, execution,
     """
     tries = 0
 
-    execution = coriolis.replica_executions.get(
+    execution = coriolis.transfer_executions.get(
         replica, execution)
     while tries < max_tries and execution.status == "RUNNING":
         print("Waiting on execution %s (currently %s)" % (
             execution.id, execution.status))
         time.sleep(retry_period)
-        execution = coriolis.replica_executions.get(
+        execution = coriolis.transfer_executions.get(
             replica, execution)
 
         if execution.status == "ERROR":
@@ -220,15 +220,15 @@ def delete_replica(coriolis, replica, delete_replica_disks=True):
                                  the Replica itself.
     """
     if delete_replica_disks:
-        execution = coriolis.replicas.delete_disks(replica)
+        execution = coriolis.transfers.delete_disks(replica)
         wait_for_replica_execution(coriolis, replica, execution)
 
     # NOTE: this is redundant as executions are cascade-deleted on
     # the deletion of the parent Replica anyway:
     for execution in reversed(replica.executions):
-        coriolis.replica_executions.delete(execution)
+        coriolis.transfer_executions.delete(execution)
 
-    coriolis.replicas.delete(replica)
+    coriolis.transfers.delete(replica)
 
 
 def main():
@@ -252,14 +252,14 @@ def main():
 
     # execute the Replica:
     test_replica = replicas[0]
-    execution = coriolis.replica_executions.create(
+    execution = coriolis.transfer_executions.create(
         test_replica, shutdown_instances=True)
 
     # wait for execution to finish:
     wait_for_replica_execution(coriolis, test_replica, execution)
 
     # create a Migration from the Replica:
-    migration = coriolis.migrations.create_from_replica(
+    migration = coriolis.migrations.create_from_transfer(
         test_replica.id, clone_disks=True, skip_os_morphing=False)
     migration = wait_for_replica_migration(coriolis, migration)
     print("Migrated VM info is: %s" % (

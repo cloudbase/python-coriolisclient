@@ -4,17 +4,17 @@
 from unittest import mock
 
 from coriolisclient.tests import test_base
-from coriolisclient.v1 import replica_executions
-from coriolisclient.v1 import replicas
+from coriolisclient.v1 import transfer_executions
+from coriolisclient.v1 import transfers
 
 
-class ReplicaTestCase(test_base.CoriolisBaseTestCase):
-    """Test suite for the Coriolis v1 Replica."""
+class TransferTestCase(test_base.CoriolisBaseTestCase):
+    """Test suite for the Coriolis v1 Transfer."""
 
-    @mock.patch.object(replicas.Replica, "get")
+    @mock.patch.object(transfers.Transfer, "get")
     def test_properties(self, mock_get):
         mock_client = mock.Mock()
-        self.replica = replicas.Replica(
+        self.transfer = transfers.Transfer(
             mock_client,
             {
                 "source_environment": {
@@ -38,18 +38,18 @@ class ReplicaTestCase(test_base.CoriolisBaseTestCase):
                 mock.sentinel.execution2
             ),
             (
-                self.replica.source_environment.source_environment1,
-                self.replica.destination_environment.destination_environment1,
-                self.replica.executions[0].execution1,
-                self.replica.executions[1].execution2,
+                self.transfer.source_environment.source_environment1,
+                self.transfer.destination_environment.destination_environment1,
+                self.transfer.executions[0].execution1,
+                self.transfer.executions[1].execution2,
             )
         )
         mock_get.assert_not_called()
 
-    @mock.patch.object(replicas.Replica, "get")
+    @mock.patch.object(transfers.Transfer, "get")
     def test_properties_none(self, mock_get):
         mock_client = mock.Mock()
-        self.replica = replicas.Replica(
+        self.transfer = transfers.Transfer(
             mock_client,
             {}
         )
@@ -61,54 +61,54 @@ class ReplicaTestCase(test_base.CoriolisBaseTestCase):
                 []
             ),
             (
-                self.replica.source_environment,
-                self.replica.destination_environment,
-                self.replica.executions
+                self.transfer.source_environment,
+                self.transfer.destination_environment,
+                self.transfer.executions
             )
         )
         mock_get.assert_called_once()
 
 
-class ReplicaManagerTestCase(test_base.CoriolisBaseTestCase):
-    """Test suite for the Coriolis v1 Replica Manager."""
+class TransferManagerTestCase(test_base.CoriolisBaseTestCase):
+    """Test suite for the Coriolis v1 Transfer Manager."""
 
     def setUp(self):
         mock_client = mock.Mock()
-        super(ReplicaManagerTestCase, self).setUp()
-        self.replica = replicas.ReplicaManager(mock_client)
+        super(TransferManagerTestCase, self).setUp()
+        self.transfer = transfers.TransferManager(mock_client)
 
-    @mock.patch.object(replicas.ReplicaManager, "_list")
+    @mock.patch.object(transfers.TransferManager, "_list")
     def test_list(self, mock_list):
-        result = self.replica.list(detail=False)
+        result = self.transfer.list(detail=False)
 
         self.assertEqual(
             mock_list.return_value,
             result
         )
-        mock_list.assert_called_once_with("/replicas", "replicas")
+        mock_list.assert_called_once_with("/transfers", "transfers")
 
-    @mock.patch.object(replicas.ReplicaManager, "_list")
+    @mock.patch.object(transfers.TransferManager, "_list")
     def test_list_details(self, mock_list):
-        result = self.replica.list(detail=True)
+        result = self.transfer.list(detail=True)
 
         self.assertEqual(
             mock_list.return_value,
             result
         )
-        mock_list.assert_called_once_with("/replicas/detail", "replicas")
+        mock_list.assert_called_once_with("/transfers/detail", "transfers")
 
-    @mock.patch.object(replicas.ReplicaManager, "_get")
+    @mock.patch.object(transfers.TransferManager, "_get")
     def test_get(self, mock_get):
-        result = self.replica.get(mock.sentinel.replica)
+        result = self.transfer.get(mock.sentinel.transfer)
 
         self.assertEqual(
             mock_get.return_value,
             result
         )
         mock_get.assert_called_once_with(
-            "/replicas/%s" % (mock.sentinel.replica), "replica")
+            "/transfers/%s" % mock.sentinel.transfer, "transfer")
 
-    @mock.patch.object(replicas.ReplicaManager, "_post")
+    @mock.patch.object(transfers.TransferManager, "_post")
     def test_create(self, mock_post):
         expected_data = {
             "origin_endpoint_id": mock.sentinel.origin_endpoint_id,
@@ -119,6 +119,7 @@ class ReplicaManagerTestCase(test_base.CoriolisBaseTestCase):
                 "storage_mappings": mock.sentinel.storage_mappings
             },
             "instances": mock.sentinel.instances,
+            "scenario": mock.sentinel.scenario,
             "network_map": mock.sentinel.network_map,
             "notes": mock.sentinel.notes,
             "storage_mappings": mock.sentinel.storage_mappings,
@@ -129,9 +130,9 @@ class ReplicaManagerTestCase(test_base.CoriolisBaseTestCase):
             "instance_osmorphing_minion_pool_mappings":
                 mock.sentinel.instance_osmorphing_minion_pool_mappings,
         }
-        expected_data = {"replica": expected_data}
+        expected_data = {"transfer": expected_data}
 
-        result = self.replica.create(
+        result = self.transfer.create(
             mock.sentinel.origin_endpoint_id,
             mock.sentinel.destination_endpoint_id,
             mock.sentinel.source_environment,
@@ -140,6 +141,7 @@ class ReplicaManagerTestCase(test_base.CoriolisBaseTestCase):
                 "storage_mappings": mock.sentinel.storage_mappings
             },
             mock.sentinel.instances,
+            mock.sentinel.scenario,
             network_map=None,
             notes=mock.sentinel.notes,
             storage_mappings=None,
@@ -156,52 +158,52 @@ class ReplicaManagerTestCase(test_base.CoriolisBaseTestCase):
             result
         )
         mock_post.assert_called_once_with(
-            "/replicas", expected_data, "replica")
+            "/transfers", expected_data, "transfer")
 
-    @mock.patch.object(replicas.ReplicaManager, "_delete")
+    @mock.patch.object(transfers.TransferManager, "_delete")
     def test_delete(self, mock_delete):
-        result = self.replica.delete(mock.sentinel.replica)
+        result = self.transfer.delete(mock.sentinel.transfer)
 
         self.assertEqual(
             mock_delete.return_value,
             result
         )
         mock_delete.assert_called_once_with(
-            "/replicas/%s" % mock.sentinel.replica)
+            "/transfers/%s" % mock.sentinel.transfer)
 
-    @mock.patch.object(replica_executions, "ReplicaExecution")
-    def test_delete_disks(self, mock_ReplicaExecution):
-        result = self.replica.delete_disks(mock.sentinel.replica)
+    @mock.patch.object(transfer_executions, "TransferExecution")
+    def test_delete_disks(self, mock_TransferExecution):
+        result = self.transfer.delete_disks(mock.sentinel.transfer)
 
         self.assertEqual(
-            mock_ReplicaExecution.return_value,
+            mock_TransferExecution.return_value,
             result
         )
-        self.replica.client.post.assert_called_once_with(
-            "/replicas/%s/actions" % mock.sentinel.replica,
+        self.transfer.client.post.assert_called_once_with(
+            "/transfers/%s/actions" % mock.sentinel.transfer,
             json={'delete-disks': None})
-        mock_ReplicaExecution.assert_called_once_with(
-            self.replica,
-            (self.replica.client.post.return_value.json.return_value.
+        mock_TransferExecution.assert_called_once_with(
+            self.transfer,
+            (self.transfer.client.post.return_value.json.return_value.
              get("execution")),
             loaded=True
         )
 
-    @mock.patch.object(replica_executions, "ReplicaExecution")
-    def test_update(self, mock_ReplicaExecution):
+    @mock.patch.object(transfer_executions, "TransferExecution")
+    def test_update(self, mock_TransferExecution):
         updated_values = {"network_map": mock.sentinel.network_map}
-        result = self.replica.update(mock.sentinel.replica, updated_values)
+        result = self.transfer.update(mock.sentinel.transfer, updated_values)
 
         self.assertEqual(
-            mock_ReplicaExecution.return_value,
+            mock_TransferExecution.return_value,
             result
         )
-        self.replica.client.put.assert_called_once_with(
-            "/replicas/%s" % mock.sentinel.replica,
-            json={"replica": updated_values})
-        mock_ReplicaExecution.assert_called_once_with(
-            self.replica,
-            (self.replica.client.put.return_value.json.return_value.
+        self.transfer.client.put.assert_called_once_with(
+            "/transfers/%s" % mock.sentinel.transfer,
+            json={"transfer": updated_values})
+        mock_TransferExecution.assert_called_once_with(
+            self.transfer,
+            (self.transfer.client.put.return_value.json.return_value.
              get("execution")),
             loaded=True
         )

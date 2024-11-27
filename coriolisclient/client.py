@@ -35,10 +35,10 @@ from coriolisclient.v1 import logging as coriolis_logging
 from coriolisclient.v1 import minion_pools
 from coriolisclient.v1 import providers
 from coriolisclient.v1 import regions
-from coriolisclient.v1 import replica_executions
-from coriolisclient.v1 import replica_schedules
-from coriolisclient.v1 import replicas
 from coriolisclient.v1 import services
+from coriolisclient.v1 import transfer_executions
+from coriolisclient.v1 import transfer_schedules
+from coriolisclient.v1 import transfers
 
 
 LOG = logging.getLogger(__name__)
@@ -87,11 +87,11 @@ class Client(object):
         self.deployments = deployments.DeploymentManager(httpclient)
         self.minion_pools = minion_pools.MinionPoolManager(httpclient)
         self.providers = providers.ProvidersManager(httpclient)
-        self.replicas = replicas.ReplicaManager(httpclient)
-        self.replica_schedules = replica_schedules.ReplicaScheduleManager(
+        self.transfers = transfers.TransferManager(httpclient)
+        self.transfer_schedules = transfer_schedules.TransferScheduleManager(
             httpclient)
-        self.replica_executions = replica_executions.ReplicaExecutionManager(
-            httpclient)
+        self.transfer_executions = (
+            transfer_executions.TransferExecutionManager(httpclient))
         self.regions = regions.RegionManager(httpclient)
         self.services = services.ServiceManager(httpclient)
         self.logging = coriolis_logging.CoriolisLogDownloadManager(httpclient)
