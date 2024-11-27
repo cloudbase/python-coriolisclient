@@ -1,0 +1,133 @@
+
+- config:
+    args:
+        os_project_id: "mock_os_project_id"
+        os_project_name: "mock_os_project_name"
+        os_project_domain_name: "mock_os_project_domain_name"
+        os_project_domain_id: "mock_os_project_domain_id"
+        os_tenant_id: "mock_os_tenant_id"
+        os_tenant_name: "mock_os_tenant_name"
+        insecure: True
+    kwargs:
+        auth_url: "mock_auth_url"
+        token: "mock_token"
+    expected_kwargs:
+        auth_url: "mock_auth_url"
+        token: "mock_token"
+        project_id: "mock_os_project_id"
+        project_name: "mock_os_project_name"
+        project_domain_name: "mock_os_project_domain_name"
+        project_domain_id: "mock_os_project_domain_id"
+    verify: False
+    api_version: '3'
+    auth_type: 'token'
+    auth_fun: 'keystoneauth1.identity.v3.Token'
+
+- config:
+    args:
+        os_project_id: "mock_os_project_id"
+        os_tenant_id: "mock_os_tenant_id"
+    kwargs:
+        auth_url: "mock_auth_url"
+        token: "mock_token"
+    expected_kwargs:
+        auth_url: "mock_auth_url"
+        token: "mock_token"
+        project_id: "mock_os_project_id"
+    api_version: '3'
+    auth_type: 'token'
+    auth_fun: 'keystoneauth1.identity.v3.Token'
+
+- config:
+    args:
+        os_project_id: "mock_os_project_id"
+        os_tenant_id: "mock_os_tenant_id"
+    kwargs:
+        auth_url: "mock_auth_url"
+    expected_kwargs:
+        auth_url: "mock_auth_url"
+        project_id: "mock_os_project_id"
+    api_version: '3'
+    auth_type: 'other'
+    auth_fun: 'keystoneauth1.identity.v3.Password'
+
+
+- config:
+    args:
+        os_project_id: "mock_os_project_id"
+        os_tenant_id: "mock_os_tenant_id"
+    kwargs:
+        auth_url: "mock_auth_url"
+    expected_kwargs:
+        auth_url: "mock_auth_url"
+        project_id: "mock_os_project_id"
+    api_version: '3'
+    auth_type:
+    auth_fun: 'keystoneauth1.identity.v3.Password'
+
+- config:
+    args:
+        os_project_id: "mock_os_project_id"
+        os_project_name: "mock_os_project_name"
+        os_project_domain_name: "mock_os_project_domain_name"
+        os_project_domain_id: "mock_os_project_domain_id"
+        os_tenant_id: "mock_os_tenant_id"
+        os_tenant_name: "mock_os_tenant_name"
+    kwargs:
+        auth_url: "mock_auth_url"
+        token: "mock_token"
+    expected_kwargs:
+        auth_url: "mock_auth_url"
+        token: "mock_token"
+        tenant_id: "mock_os_tenant_id"
+        tenant_name: "mock_os_tenant_name"
+    api_version: '2'
+    auth_type: 'token'
+    auth_fun: 'keystoneauth1.identity.v2.Token'
+
+
+- config:
+    args:
+        os_tenant_id: "mock_os_tenant_id"
+        os_tenant_name: "mock_os_tenant_name"
+    kwargs:
+        auth_url: "mock_auth_url"
+        token: "mock_token"
+    expected_kwargs:
+        auth_url: "mock_auth_url"
+        token: "mock_token"
+        tenant_id: "mock_os_tenant_id"
+        tenant_name: "mock_os_tenant_name"
+    api_version: '2'
+    auth_type: 'token'
+    auth_fun: 'keystoneauth1.identity.v2.Token'
+
+
+- config:
+    args:
+        os_tenant_id: "mock_os_tenant_id"
+        os_tenant_name: "mock_os_tenant_name"
+    kwargs:
+        auth_url: "mock_auth_url"
+    expected_kwargs:
+        auth_url: "mock_auth_url"
+        tenant_id: "mock_os_tenant_id"
+        tenant_name: "mock_os_tenant_name"
+    api_version: '2'
+    auth_type: 'other'
+    auth_fun: 'keystoneauth1.identity.v2.Password'
+
+
+- config:
+    args:
+        os_tenant_id: "mock_os_tenant_id"
+        os_tenant_name: "mock_os_tenant_name"
+    kwargs:
+        auth_url: "mock_auth_url"
+    expected_kwargs:
+        auth_url: "mock_auth_url"
+        tenant_id: "mock_os_tenant_id"
+        tenant_name: "mock_os_tenant_name"
+    api_version: '2'
+    auth_type:
+    auth_fun: 'keystoneauth1.identity.v2.Password'
