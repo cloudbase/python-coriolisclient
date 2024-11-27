@@ -30,7 +30,7 @@ from coriolisclient.cli import utils as cli_utils
 class DeploymentFormatter(formatter.EntityFormatter):
 
     columns = ("ID",
-               "Replica ID",
+               "Transfer ID",
                "Status",
                "Instances",
                "Notes",
@@ -42,7 +42,7 @@ class DeploymentFormatter(formatter.EntityFormatter):
 
     def _get_formatted_data(self, obj):
         data = (obj.id,
-                obj.replica_id,
+                obj.transfer_id,
                 obj.last_execution_status,
                 "\n".join(obj.instances),
                 obj.notes,
@@ -59,8 +59,8 @@ class DeploymentDetailFormatter(formatter.EntityFormatter):
             "status",
             "created",
             "last_updated",
-            "replica_id",
-            "replica_scenario_type",
+            "transfer_id",
+            "transfer_scenario_type",
             "reservation_id",
             "instances",
             "notes",
@@ -69,7 +69,6 @@ class DeploymentDetailFormatter(formatter.EntityFormatter):
             "destination_endpoint_id",
             "destination_minion_pool_id",
             "instance_osmorphing_minion_pool_mappings",
-            "replication_count",
             "shutdown_instances",
             "destination_environment",
             "source_environment",
@@ -126,8 +125,8 @@ class DeploymentDetailFormatter(formatter.EntityFormatter):
                 obj.last_execution_status,
                 obj.created_at,
                 obj.updated_at,
-                obj.replica_id,
-                obj.replica_scenario_type,
+                obj.transfer_id,
+                obj.transfer_scenario_type,
                 obj.reservation_id,
                 self._format_instances(obj),
                 obj.notes,
@@ -137,7 +136,6 @@ class DeploymentDetailFormatter(formatter.EntityFormatter):
                 obj.destination_minion_pool_id,
                 cli_utils.format_json_for_object_property(
                     obj, 'instance_osmorphing_minion_pool_mappings'),
-                getattr(obj, 'replication_count', None),
                 getattr(obj, 'shutdown_instances', False),
                 cli_utils.format_json_for_object_property(
                     obj, prop_name="destination_environment"),
@@ -160,17 +158,17 @@ class DeploymentDetailFormatter(formatter.EntityFormatter):
 
 
 class CreateDeployment(show.ShowOne):
-    """Start a new deployment from an existing replica"""
+    """Start a new deployment from an existing transfer"""
     def get_parser(self, prog_name):
         parser = super(CreateDeployment, self).get_parser(prog_name)
-        parser.add_argument('replica',
-                            help='The ID of the replica to migrate')
+        parser.add_argument('transfer',
+                            help='The ID of the transfer to migrate')
         parser.add_argument('--force',
-                            help='Force the deployment in case of a replica '
+                            help='Force the deployment in case of a transfer '
                             'with failed executions', action='store_true',
                             default=False)
         parser.add_argument('--dont-clone-disks',
-                            help='Retain the replica disks by cloning them',
+                            help='Retain the transfer disks by cloning them',
                             action='store_false', dest="clone_disks",
                             default=True)
         parser.add_argument('--skip-os-morphing',
@@ -211,8 +209,8 @@ class CreateDeployment(show.ShowOne):
                 mp['instance_id']: mp['pool_id']
                 for mp in args.instance_osmorphing_minion_pool_mappings}
 
-        deployment = m.create_from_replica(
-            args.replica,
+        deployment = m.create_from_transfer(
+            args.transfer,
             args.clone_disks,
             args.force,
             args.skip_os_morphing,

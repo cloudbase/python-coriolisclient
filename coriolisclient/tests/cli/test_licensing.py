@@ -90,7 +90,7 @@ class LicenceFormatterTestCase(test_base.CoriolisBaseTestCase):
         obj.id = mock.sentinel.id
         obj.issue_date = mock.sentinel.issue_date
         obj.migrations = mock.sentinel.migrations
-        obj.replicas = mock.sentinel.replicas
+        obj.replicas = mock.sentinel.transfers
         obj.period_start = mock.sentinel.period_start
         obj.period_end = mock.sentinel.period_end
         obj.period_duration = mock.sentinel.period_duration
@@ -103,7 +103,7 @@ class LicenceFormatterTestCase(test_base.CoriolisBaseTestCase):
                 mock.sentinel.id,
                 mock.sentinel.issue_date,
                 mock.sentinel.migrations,
-                mock.sentinel.replicas,
+                mock.sentinel.transfers,
                 mock.sentinel.period_start,
                 mock.sentinel.period_end,
                 mock.sentinel.period_duration,

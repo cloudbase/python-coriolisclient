@@ -9,7 +9,7 @@ from cliff import command
 from cliff import lister
 from cliff import show
 
-from coriolisclient.cli import replica_schedules
+from coriolisclient.cli import transfer_schedules
 from coriolisclient import exceptions
 from coriolisclient.tests import test_base
 
@@ -53,7 +53,7 @@ class ReplicaScheduleFormatterTestCase(test_base.CoriolisBaseTestCase):
 
     def setUp(self):
         super(ReplicaScheduleFormatterTestCase, self).setUp()
-        self.replica = replica_schedules.ReplicaScheduleFormatter()
+        self.replica = replica_schedules.TransferScheduleFormatter()
 
     def test_get_sorted_list(self):
         obj1 = mock.Mock()
@@ -98,7 +98,7 @@ class ReplicaScheduleDetailFormatterTestCase(test_base.CoriolisBaseTestCase):
 
     def setUp(self):
         super(ReplicaScheduleDetailFormatterTestCase, self).setUp()
-        self.replica = replica_schedules.ReplicaScheduleDetailFormatter()
+        self.replica = replica_schedules.TransferScheduleDetailFormatter()
 
     def test_get_formatted_data(self):
         obj = mock.Mock()
@@ -134,7 +134,7 @@ class CreateReplicaScheduleTestCase(test_base.CoriolisBaseTestCase):
     def setUp(self):
         self.mock_app = mock.Mock()
         super(CreateReplicaScheduleTestCase, self).setUp()
-        self.replica = replica_schedules.CreateReplicaSchedule(
+        self.replica = replica_schedules.CreateTransferSchedule(
             self.mock_app, mock.sentinel.app_args)
 
     @mock.patch.object(show.ShowOne, 'get_parser')
@@ -150,7 +150,7 @@ class CreateReplicaScheduleTestCase(test_base.CoriolisBaseTestCase):
         )
         mock_get_parser.assert_called_once_with(mock.sentinel.prog_name)
 
-    @mock.patch.object(replica_schedules.ReplicaScheduleDetailFormatter,
+    @mock.patch.object(replica_schedules.TransferScheduleDetailFormatter,
                        'get_formatted_entity')
     @mock.patch.object(replica_schedules, '_parse_expiration_date')
     @mock.patch.object(replica_schedules, '_parse_schedule_group_args')
@@ -167,7 +167,7 @@ class CreateReplicaScheduleTestCase(test_base.CoriolisBaseTestCase):
         mock_schedule_group_args = {"minute": mock.sentinel.minute}
         mock_parse_schedule_group_args.return_value = mock_schedule_group_args
         mock_schedule = mock.Mock()
-        self.mock_app.client_manager.coriolis.replica_schedules.create = \
+        self.mock_app.client_manager.coriolis.transfer_schedules.create = \
             mock_schedule
 
         result = self.replica.take_action(args)
@@ -210,7 +210,7 @@ class ShowReplicaScheduleTestCase(test_base.CoriolisBaseTestCase):
     def setUp(self):
         self.mock_app = mock.Mock()
         super(ShowReplicaScheduleTestCase, self).setUp()
-        self.replica = replica_schedules.ShowReplicaSchedule(
+        self.replica = replica_schedules.ShowTransferSchedule(
             self.mock_app, mock.sentinel.app_args)
 
     @mock.patch.object(show.ShowOne, 'get_parser')
@@ -226,7 +226,7 @@ class ShowReplicaScheduleTestCase(test_base.CoriolisBaseTestCase):
         )
         mock_get_parser.assert_called_once_with(mock.sentinel.prog_name)
 
-    @mock.patch.object(replica_schedules.ReplicaScheduleDetailFormatter,
+    @mock.patch.object(replica_schedules.TransferScheduleDetailFormatter,
                        'get_formatted_entity')
     def test_take_action(
         self,
@@ -236,7 +236,7 @@ class ShowReplicaScheduleTestCase(test_base.CoriolisBaseTestCase):
         args.replica = mock.sentinel.replica
         args.id = mock.sentinel.id
         schedule = mock.Mock()
-        self.mock_app.client_manager.coriolis.replica_schedules.get = \
+        self.mock_app.client_manager.coriolis.transfer_schedules.get = \
             schedule
 
         result = self.replica.take_action(args)
@@ -256,7 +256,7 @@ class UpdateReplicaScheduleTestCase(test_base.CoriolisBaseTestCase):
     def setUp(self):
         self.mock_app = mock.Mock()
         super(UpdateReplicaScheduleTestCase, self).setUp()
-        self.replica = replica_schedules.UpdateReplicaSchedule(
+        self.replica = replica_schedules.UpdateTransferSchedule(
             self.mock_app, mock.sentinel.app_args)
 
     @mock.patch.object(show.ShowOne, 'get_parser')
@@ -272,7 +272,7 @@ class UpdateReplicaScheduleTestCase(test_base.CoriolisBaseTestCase):
         )
         mock_get_parser.assert_called_once_with(mock.sentinel.prog_name)
 
-    @mock.patch.object(replica_schedules.ReplicaScheduleDetailFormatter,
+    @mock.patch.object(replica_schedules.TransferScheduleDetailFormatter,
                        'get_formatted_entity')
     @mock.patch.object(replica_schedules, '_parse_expiration_date')
     @mock.patch.object(replica_schedules, '_parse_schedule_group_args')
@@ -291,7 +291,7 @@ class UpdateReplicaScheduleTestCase(test_base.CoriolisBaseTestCase):
         mock_parse_schedule_group_args.return_value = \
             {"minute": mock.sentinel.minute}
         replica_schedule = mock.Mock()
-        self.mock_app.client_manager.coriolis.replica_schedules = \
+        self.mock_app.client_manager.coriolis.transfer_schedules = \
             replica_schedule
         expected_updated_values = {
             "schedule": {"minute": mock.sentinel.minute},
@@ -313,7 +313,7 @@ class UpdateReplicaScheduleTestCase(test_base.CoriolisBaseTestCase):
             expected_updated_values
         )
 
-    @mock.patch.object(replica_schedules.ReplicaScheduleDetailFormatter,
+    @mock.patch.object(replica_schedules.TransferScheduleDetailFormatter,
                        'get_formatted_entity')
     @mock.patch.object(replica_schedules, '_parse_expiration_date')
     @mock.patch.object(replica_schedules, '_parse_schedule_group_args')
@@ -331,7 +331,7 @@ class UpdateReplicaScheduleTestCase(test_base.CoriolisBaseTestCase):
         args.enabled = None
         mock_parse_schedule_group_args.return_value = {}
         replica_schedule = mock.Mock()
-        self.mock_app.client_manager.coriolis.replica_schedules = \
+        self.mock_app.client_manager.coriolis.transfer_schedules = \
             replica_schedule
         expected_updated_values = {"expiration_date": None}
 
@@ -356,7 +356,7 @@ class DeleteReplicaScheduleTestCase(test_base.CoriolisBaseTestCase):
     def setUp(self):
         self.mock_app = mock.Mock()
         super(DeleteReplicaScheduleTestCase, self).setUp()
-        self.replica = replica_schedules.DeleteReplicaSchedule(
+        self.replica = replica_schedules.DeleteTransferSchedule(
             self.mock_app, mock.sentinel.app_args)
 
     @mock.patch.object(command.Command, 'get_parser')
@@ -377,7 +377,7 @@ class DeleteReplicaScheduleTestCase(test_base.CoriolisBaseTestCase):
         args.replica = mock.sentinel.replica
         args.id = mock.sentinel.id
         replica_schedule = mock.Mock()
-        self.mock_app.client_manager.coriolis.replica_schedules = \
+        self.mock_app.client_manager.coriolis.transfer_schedules = \
             replica_schedule
 
         self.replica.take_action(args)
@@ -392,7 +392,7 @@ class ListReplicaScheduleTestCase(test_base.CoriolisBaseTestCase):
     def setUp(self):
         self.mock_app = mock.Mock()
         super(ListReplicaScheduleTestCase, self).setUp()
-        self.replica = replica_schedules.ListReplicaSchedule(
+        self.replica = replica_schedules.ListTransferSchedule(
             self.mock_app, mock.sentinel.app_args)
 
     @mock.patch.object(lister.Lister, 'get_parser')
@@ -408,7 +408,7 @@ class ListReplicaScheduleTestCase(test_base.CoriolisBaseTestCase):
         )
         mock_get_parser.assert_called_once_with(mock.sentinel.prog_name)
 
-    @mock.patch.object(replica_schedules.ReplicaScheduleFormatter,
+    @mock.patch.object(replica_schedules.TransferScheduleFormatter,
                        'list_objects')
     def test_take_action(
         self,
@@ -418,7 +418,7 @@ class ListReplicaScheduleTestCase(test_base.CoriolisBaseTestCase):
         args.replica = mock.sentinel.replica
         args.hide_expired = mock.sentinel.hide_expired
         mock_replica_list = mock.Mock()
-        self.mock_app.client_manager.coriolis.replica_schedules.list = \
+        self.mock_app.client_manager.coriolis.transfer_schedules.list = \
             mock_replica_list
 
         result = self.replica.take_action(args)

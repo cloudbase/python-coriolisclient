@@ -17,7 +17,7 @@ from coriolisclient import base
 from coriolisclient.v1 import common
 
 
-class ReplicaExecution(base.Resource):
+class TransferExecution(base.Resource):
     _tasks = None
 
     @property
@@ -28,37 +28,38 @@ class ReplicaExecution(base.Resource):
                 self._info.get('tasks', [])]
 
 
-class ReplicaExecutionManager(base.BaseManager):
-    resource_class = ReplicaExecution
+class TransferExecutionManager(base.BaseManager):
+    resource_class = TransferExecution
 
     def __init__(self, api):
-        super(ReplicaExecutionManager, self).__init__(api)
+        super(TransferExecutionManager, self).__init__(api)
 
-    def list(self, replica):
+    def list(self, transfer):
         return self._list(
-            '/replicas/%s/executions' % base.getid(replica), 'executions')
+            '/transfers/%s/executions' % base.getid(transfer), 'executions')
 
-    def get(self, replica, execution):
+    def get(self, transfer, execution):
         return self._get(
-            '/replicas/%(replica_id)s/executions/%(execution_id)s' %
-            {"replica_id": base.getid(replica),
+            '/transfers/%(transfer_id)s/executions/%(execution_id)s' %
+            {"transfer_id": base.getid(transfer),
              "execution_id": base.getid(execution)},
             'execution')
 
-    def create(self, replica, shutdown_instances=False):
+    def create(self, transfer, shutdown_instances=False):
         data = {"execution": {"shutdown_instances": shutdown_instances}}
         return self._post(
-            '/replicas/%s/executions' % base.getid(replica), data, 'execution')
+            '/transfers/%s/executions' %
+            base.getid(transfer), data, 'execution')
 
-    def delete(self, replica, execution):
+    def delete(self, transfer, execution):
         return self._delete(
-            '/replicas/%(replica_id)s/executions/%(execution_id)s' %
-            {"replica_id": base.getid(replica),
+            '/transfers/%(transfer_id)s/executions/%(execution_id)s' %
+            {"transfer_id": base.getid(transfer),
              "execution_id": base.getid(execution)})
 
-    def cancel(self, replica, execution, force=False):
+    def cancel(self, transfer, execution, force=False):
         return self.client.post(
-            '/replicas/%(replica_id)s/executions/%(execution_id)s/actions' %
-            {"replica_id": base.getid(replica),
+            '/transfers/%(transfer_id)s/executions/%(execution_id)s/actions' %
+            {"transfer_id": base.getid(transfer),
              "execution_id": base.getid(execution)},
             json={'cancel': {'force': force}})

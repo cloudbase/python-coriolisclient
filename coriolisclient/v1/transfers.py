@@ -15,10 +15,10 @@
 
 from coriolisclient import base
 from coriolisclient.v1 import common
-from coriolisclient.v1 import replica_executions
+from coriolisclient.v1 import transfer_executions
 
 
-class Replica(base.Resource):
+class Transfer(base.Resource):
     _tasks = None
 
     @property
@@ -41,24 +41,24 @@ class Replica(base.Resource):
                 self._info.get('executions', [])]
 
 
-class ReplicaManager(base.BaseManager):
-    resource_class = Replica
+class TransferManager(base.BaseManager):
+    resource_class = Transfer
 
     def __init__(self, api):
-        super(ReplicaManager, self).__init__(api)
+        super(TransferManager, self).__init__(api)
 
     def list(self, detail=False):
-        path = "/replicas"
+        path = "/transfers"
         if detail:
             path = "%s/detail" % path
-        return self._list(path, 'replicas')
+        return self._list(path, 'transfers')
 
-    def get(self, replica):
-        return self._get('/replicas/%s' % base.getid(replica), 'replica')
+    def get(self, transfer):
+        return self._get('/transfers/%s' % base.getid(transfer), 'transfer')
 
     def create(self, origin_endpoint_id, destination_endpoint_id,
                source_environment, destination_environment, instances,
-               replica_scenario,
+               transfer_scenario,
                network_map=None, notes=None, storage_mappings=None,
                origin_minion_pool_id=None, destination_minion_pool_id=None,
                instance_osmorphing_minion_pool_mappings=None,
@@ -69,12 +69,12 @@ class ReplicaManager(base.BaseManager):
             storage_mappings = destination_environment.get(
                 'storage_mappings', {})
         data = {
-            "replica": {
+            "transfer": {
                 "origin_endpoint_id": origin_endpoint_id,
                 "destination_endpoint_id": destination_endpoint_id,
                 "destination_environment": destination_environment,
                 "instances": instances,
-                "scenario": replica_scenario,
+                "scenario": transfer_scenario,
                 "network_map": network_map,
                 "notes": notes,
                 "storage_mappings": storage_mappings,
@@ -82,35 +82,35 @@ class ReplicaManager(base.BaseManager):
             }
         }
         if source_environment:
-            data['replica']['source_environment'] = source_environment
+            data['transfer']['source_environment'] = source_environment
         if origin_minion_pool_id is not None:
-            data['replica']['origin_minion_pool_id'] = origin_minion_pool_id
+            data['transfer']['origin_minion_pool_id'] = origin_minion_pool_id
         if destination_minion_pool_id is not None:
-            data['replica']['destination_minion_pool_id'] = (
+            data['transfer']['destination_minion_pool_id'] = (
                 destination_minion_pool_id)
         if instance_osmorphing_minion_pool_mappings:
-            data['replica']['instance_osmorphing_minion_pool_mappings'] = (
+            data['transfer']['instance_osmorphing_minion_pool_mappings'] = (
                 instance_osmorphing_minion_pool_mappings)
 
-        return self._post('/replicas', data, 'replica')
+        return self._post('/transfers', data, 'transfer')
 
-    def delete(self, replica):
-        return self._delete('/replicas/%s' % base.getid(replica))
+    def delete(self, transfer):
+        return self._delete('/transfers/%s' % base.getid(transfer))
 
-    def delete_disks(self, replica):
+    def delete_disks(self, transfer):
         response = self.client.post(
-            '/replicas/%s/actions' % base.getid(replica),
+            '/transfers/%s/actions' % base.getid(transfer),
             json={'delete-disks': None})
 
-        return replica_executions.ReplicaExecution(
+        return transfer_executions.TransferExecution(
             self, response.json().get("execution"), loaded=True)
 
-    def update(self, replica, updated_values):
+    def update(self, transfer, updated_values):
         data = {
-            "replica": updated_values
+            "transfer": updated_values
         }
         response = self.client.put(
-            '/replicas/%s' % base.getid(replica), json=data)
+            '/transfers/%s' % base.getid(transfer), json=data)
 
-        return replica_executions.ReplicaExecution(
+        return transfer_executions.TransferExecution(
             self, response.json().get("execution"), loaded=True)

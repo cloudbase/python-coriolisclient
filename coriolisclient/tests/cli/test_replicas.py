@@ -7,8 +7,8 @@ from cliff import command
 from cliff import lister
 from cliff import show
 
-from coriolisclient.cli import replica_executions
-from coriolisclient.cli import replicas
+from coriolisclient.cli import transfer_executions
+from coriolisclient.cli import transfers
 from coriolisclient.cli import utils as cli_utils
 from coriolisclient.tests import test_base
 
@@ -18,7 +18,7 @@ class ReplicaFormatterTestCase(test_base.CoriolisBaseTestCase):
 
     def setUp(self):
         super(ReplicaFormatterTestCase, self).setUp()
-        self.replica = replicas.ReplicaFormatter()
+        self.replica = replicas.TransferFormatter()
 
     def test_get_sorted_list(self):
         obj1 = mock.Mock()
@@ -104,7 +104,7 @@ class ReplicaDetailFormatterTestCase(test_base.CoriolisBaseTestCase):
 
     def setUp(self):
         super(ReplicaDetailFormatterTestCase, self).setUp()
-        self.replica = replicas.ReplicaDetailFormatter(
+        self.replica = replicas.TransferDetailFormatter(
             show_instances_data=True)
 
     def test_format_instances(self):
@@ -137,7 +137,7 @@ class ReplicaDetailFormatterTestCase(test_base.CoriolisBaseTestCase):
             result
         )
 
-    @mock.patch.object(replicas.ReplicaDetailFormatter, '_format_execution')
+    @mock.patch.object(replicas.TransferDetailFormatter, '_format_execution')
     def test_format_executions(self, mock_format_execution):
         executions = mock.Mock()
         execution1 = mock.Mock()
@@ -165,10 +165,10 @@ class ReplicaDetailFormatterTestCase(test_base.CoriolisBaseTestCase):
             result
         )
 
-    @mock.patch.object(replicas.ReplicaDetailFormatter, '_format_executions')
+    @mock.patch.object(replicas.TransferDetailFormatter, '_format_executions')
     @mock.patch.object(cli_utils, 'format_mapping')
     @mock.patch.object(cli_utils, 'format_json_for_object_property')
-    @mock.patch.object(replicas.ReplicaDetailFormatter,
+    @mock.patch.object(replicas.TransferDetailFormatter,
                        '_format_instances')
     @mock.patch.object(cli_utils, 'parse_storage_mappings')
     def test_get_formatted_data(
@@ -252,7 +252,7 @@ class CreateReplicaTestCase(test_base.CoriolisBaseTestCase):
     def setUp(self):
         self.mock_app = mock.Mock()
         super(CreateReplicaTestCase, self).setUp()
-        self.replica = replicas.CreateReplica(
+        self.replica = replicas.CreateTransfer(
             self.mock_app, mock.sentinel.app_args)
 
     @mock.patch.object(cli_utils, 'add_args_for_json_option_to_parser')
@@ -273,7 +273,7 @@ class CreateReplicaTestCase(test_base.CoriolisBaseTestCase):
     @mock.patch.object(cli_utils, 'compose_user_scripts')
     @mock.patch.object(cli_utils, 'get_storage_mappings_dict_from_args')
     @mock.patch.object(cli_utils, 'get_option_value_from_args')
-    @mock.patch.object(replicas.ReplicaDetailFormatter,
+    @mock.patch.object(replicas.TransferDetailFormatter,
                        'get_formatted_entity')
     def test_take_action(
         self,
@@ -300,7 +300,7 @@ class CreateReplicaTestCase(test_base.CoriolisBaseTestCase):
             mock.sentinel.origin_endpoint_id,
             mock.sentinel.destination_endpoint_id
         ]
-        self.mock_app.client_manager.coriolis.replicas.create = \
+        self.mock_app.client_manager.coriolis.transfers.create = \
             mock_replicas
         mock_get_option_value_from_args.side_effect = [
             mock.sentinel.destination_environment,
@@ -342,7 +342,7 @@ class ShowReplicaTestCase(test_base.CoriolisBaseTestCase):
     def setUp(self):
         self.mock_app = mock.Mock()
         super(ShowReplicaTestCase, self).setUp()
-        self.replica = replicas.ShowReplica(
+        self.replica = replicas.ShowTransfer(
             self.mock_app, mock.sentinel.app_args)
 
     @mock.patch.object(show.ShowOne, 'get_parser')
@@ -355,13 +355,13 @@ class ShowReplicaTestCase(test_base.CoriolisBaseTestCase):
         )
         mock_get_parser.assert_called_once_with(mock.sentinel.prog_name)
 
-    @mock.patch.object(replicas.ReplicaDetailFormatter,
+    @mock.patch.object(replicas.TransferDetailFormatter,
                        'get_formatted_entity')
     def test_take_action(self, mock_get_formatted_entity):
         args = mock.Mock()
         args.id = mock.sentinel.id
         mock_replica = mock.Mock()
-        self.mock_app.client_manager.coriolis.replicas.get = mock_replica
+        self.mock_app.client_manager.coriolis.transfers.get = mock_replica
 
         result = self.replica.take_action(args)
 
@@ -380,7 +380,7 @@ class DeleteReplicaTestCase(test_base.CoriolisBaseTestCase):
     def setUp(self):
         self.mock_app = mock.Mock()
         super(DeleteReplicaTestCase, self).setUp()
-        self.replica = replicas.DeleteReplica(
+        self.replica = replicas.DeleteTransfer(
             self.mock_app, mock.sentinel.app_args)
 
     @mock.patch.object(command.Command, 'get_parser')
@@ -397,7 +397,7 @@ class DeleteReplicaTestCase(test_base.CoriolisBaseTestCase):
         args = mock.Mock()
         args.id = mock.sentinel.id
         mock_replica = mock.Mock()
-        self.mock_app.client_manager.coriolis.replicas.delete = mock_replica
+        self.mock_app.client_manager.coriolis.transfers.delete = mock_replica
 
         self.replica.take_action(args)
 
@@ -410,7 +410,7 @@ class DeleteReplicaDisksTestCase(test_base.CoriolisBaseTestCase):
     def setUp(self):
         self.mock_app = mock.Mock()
         super(DeleteReplicaDisksTestCase, self).setUp()
-        self.replica = replicas.DeleteReplicaDisks(
+        self.replica = replicas.DeleteTransferDisks(
             self.mock_app, mock.sentinel.app_args)
 
     @mock.patch.object(command.Command, 'get_parser')
@@ -423,13 +423,13 @@ class DeleteReplicaDisksTestCase(test_base.CoriolisBaseTestCase):
         )
         mock_get_parser.assert_called_once_with(mock.sentinel.prog_name)
 
-    @mock.patch.object(replica_executions.ReplicaExecutionDetailFormatter,
+    @mock.patch.object(replica_executions.TransferExecutionDetailFormatter,
                        'get_formatted_entity')
     def test_take_action(self, mock_get_formatted_entity):
         args = mock.Mock()
         args.id = mock.sentinel.id
         mock_replica = mock.Mock()
-        self.mock_app.client_manager.coriolis.replicas.delete_disks = \
+        self.mock_app.client_manager.coriolis.transfers.delete_disks = \
             mock_replica
 
         result = self.replica.take_action(args)
@@ -449,7 +449,7 @@ class ListReplicaTestCase(test_base.CoriolisBaseTestCase):
     def setUp(self):
         self.mock_app = mock.Mock()
         super(ListReplicaTestCase, self).setUp()
-        self.replica = replicas.ListReplica(
+        self.replica = replicas.ListTransfer(
             self.mock_app, mock.sentinel.app_args)
 
     @mock.patch.object(lister.Lister, 'get_parser')
@@ -462,11 +462,11 @@ class ListReplicaTestCase(test_base.CoriolisBaseTestCase):
         )
         mock_get_parser.assert_called_once_with(mock.sentinel.prog_name)
 
-    @mock.patch.object(replicas.ReplicaFormatter, 'list_objects')
+    @mock.patch.object(replicas.TransferFormatter, 'list_objects')
     def test_take_action(self, mock_list_objects):
         args = mock.Mock()
         mock_replica = mock.Mock()
-        self.mock_app.client_manager.coriolis.replicas.list = mock_replica
+        self.mock_app.client_manager.coriolis.transfers.list = mock_replica
 
         result = self.replica.take_action(args)
 
@@ -483,7 +483,7 @@ class UpdateReplicaTestCase(test_base.CoriolisBaseTestCase):
     def setUp(self):
         self.mock_app = mock.Mock()
         super(UpdateReplicaTestCase, self).setUp()
-        self.replica = replicas.UpdateReplica(
+        self.replica = replicas.UpdateTransfer(
             self.mock_app, mock.sentinel.app_args)
 
     @mock.patch.object(show.ShowOne, 'get_parser')
@@ -496,7 +496,7 @@ class UpdateReplicaTestCase(test_base.CoriolisBaseTestCase):
         )
         mock_get_parser.assert_called_once_with(mock.sentinel.prog_name)
 
-    @mock.patch.object(replica_executions.ReplicaExecutionDetailFormatter,
+    @mock.patch.object(replica_executions.TransferExecutionDetailFormatter,
                        'get_formatted_entity')
     @mock.patch.object(cli_utils, 'compose_user_scripts')
     @mock.patch.object(cli_utils, 'get_storage_mappings_dict_from_args')
@@ -521,7 +521,7 @@ class UpdateReplicaTestCase(test_base.CoriolisBaseTestCase):
             {"instance_id": "mock_instance2", "pool_id": "mock_pool2"}
         ]
         mock_replica = mock.Mock()
-        self.mock_app.client_manager.coriolis.replicas = mock_replica
+        self.mock_app.client_manager.coriolis.transfers = mock_replica
         mock_get_option_value_from_args.side_effect = [
             mock.sentinel.destination_environment,
             mock.sentinel.source_environment,
@@ -575,7 +575,7 @@ class UpdateReplicaTestCase(test_base.CoriolisBaseTestCase):
         args.global_scripts = mock.sentinel.global_scripts
         args.instance_scripts = mock.sentinel.instance_scripts
         mock_replica = mock.Mock()
-        self.mock_app.client_manager.coriolis.replicas = mock_replica
+        self.mock_app.client_manager.coriolis.transfers = mock_replica
         mock_get_option_value_from_args.return_value = None
         mock_get_storage_mappings_dict_from_args.return_value = None
         mock_compose_user_scripts.return_value = None

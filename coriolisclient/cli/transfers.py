@@ -14,7 +14,7 @@
 # limitations under the License.
 
 """
-Command-line interface sub-commands related to replicas.
+Command-line interface sub-commands related to transfers.
 """
 
 import os
@@ -24,15 +24,15 @@ from cliff import lister
 from cliff import show
 
 from coriolisclient.cli import formatter
-from coriolisclient.cli import replica_executions
+from coriolisclient.cli import transfer_executions
 from coriolisclient.cli import utils as cli_utils
 
 
-REPLICA_SCENARIO_REPLICA = "replica"
-REPLICA_SCENARIO_LIVE_MIGRATION = "live_migration"
+TRANSFER_SCENARIO_REPLICA = "replica"
+TRANSFER_SCENARIO_LIVE_MIGRATION = "live_migration"
 
 
-class ReplicaFormatter(formatter.EntityFormatter):
+class TransferFormatter(formatter.EntityFormatter):
 
     columns = ("ID",
                "Scenario",
@@ -62,7 +62,7 @@ class ReplicaFormatter(formatter.EntityFormatter):
         return data
 
 
-class ReplicaDetailFormatter(formatter.EntityFormatter):
+class TransferDetailFormatter(formatter.EntityFormatter):
 
     def __init__(self, show_instances_data=False):
         self.columns = [
@@ -137,10 +137,10 @@ class ReplicaDetailFormatter(formatter.EntityFormatter):
         return data
 
 
-class CreateReplica(show.ShowOne):
-    """Create a new replica"""
+class CreateTransfer(show.ShowOne):
+    """Create a new transfer"""
     def get_parser(self, prog_name):
-        parser = super(CreateReplica, self).get_parser(prog_name)
+        parser = super(CreateTransfer, self).get_parser(prog_name)
         parser.add_argument('--origin-endpoint', required=True,
                             help='The origin endpoint id')
         parser.add_argument('--destination-endpoint', required=True,
@@ -148,23 +148,24 @@ class CreateReplica(show.ShowOne):
         parser.add_argument('--instance', action='append', required=True,
                             dest="instances", metavar="INSTANCE_IDENTIFIER",
                             help='The identifier of a source instance to be '
-                                 'replicated. Can be specified multiple times')
+                                 'transferred. Can be specified multiple '
+                                 'times')
         parser.add_argument('--scenario',
                             dest="scenario", metavar="SCENARIO",
                             choices=[
-                                REPLICA_SCENARIO_REPLICA,
-                                REPLICA_SCENARIO_LIVE_MIGRATION],
-                            default=REPLICA_SCENARIO_REPLICA,
+                                TRANSFER_SCENARIO_REPLICA,
+                                TRANSFER_SCENARIO_LIVE_MIGRATION],
+                            default=TRANSFER_SCENARIO_REPLICA,
                             help='The type of scenario to use when creating '
-                                 'the Replica. "replica" will create a '
+                                 'the Transfer. "replica" will create a '
                                  'monthly-billed Replica which can be '
                                  'executed and deployed as many times as '
                                  'desired, while "live_migration" will '
-                                 'create a Replica which can be synced '
+                                 'create a Transfer which can be synced '
                                  'as many times as needed but only '
                                  'deployed once.')
         parser.add_argument('--notes', dest='notes',
-                            help='Notes about the replica')
+                            help='Notes about the transfer')
         parser.add_argument('--user-script-global', action='append',
                             required=False,
                             dest="global_scripts",
@@ -218,7 +219,7 @@ class CreateReplica(show.ShowOne):
         user_scripts = cli_utils.compose_user_scripts(
             args.global_scripts, args.instance_scripts)
 
-        replica = self.app.client_manager.coriolis.replicas.create(
+        transfer = self.app.client_manager.coriolis.transfers.create(
             origin_endpoint_id,
             destination_endpoint_id,
             source_environment,
@@ -234,15 +235,15 @@ class CreateReplica(show.ShowOne):
                 instance_osmorphing_minion_pool_mappings),
             user_scripts=user_scripts)
 
-        return ReplicaDetailFormatter().get_formatted_entity(replica)
+        return TransferDetailFormatter().get_formatted_entity(transfer)
 
 
-class ShowReplica(show.ShowOne):
-    """Show a replica"""
+class ShowTransfer(show.ShowOne):
+    """Show a transfer"""
 
     def get_parser(self, prog_name):
-        parser = super(ShowReplica, self).get_parser(prog_name)
-        parser.add_argument('id', help='The replica\'s id')
+        parser = super(ShowTransfer, self).get_parser(prog_name)
+        parser.add_argument('id', help='The transfer\'s id')
         parser.add_argument('--show-instances-data', action='store_true',
                             help='Includes the instances data used for tasks '
                             'execution, this is useful for troubleshooting',
@@ -250,57 +251,57 @@ class ShowReplica(show.ShowOne):
         return parser
 
     def take_action(self, args):
-        replica = self.app.client_manager.coriolis.replicas.get(args.id)
-        return ReplicaDetailFormatter(
-            args.show_instances_data).get_formatted_entity(replica)
+        transfer = self.app.client_manager.coriolis.transfers.get(args.id)
+        return TransferDetailFormatter(
+            args.show_instances_data).get_formatted_entity(transfer)
 
 
-class DeleteReplica(command.Command):
-    """Delete a replica"""
+class DeleteTransfer(command.Command):
+    """Delete a transfer"""
 
     def get_parser(self, prog_name):
-        parser = super(DeleteReplica, self).get_parser(prog_name)
-        parser.add_argument('id', help='The replica\'s id')
+        parser = super(DeleteTransfer, self).get_parser(prog_name)
+        parser.add_argument('id', help='The transfer\'s id')
         return parser
 
     def take_action(self, args):
-        self.app.client_manager.coriolis.replicas.delete(args.id)
+        self.app.client_manager.coriolis.transfers.delete(args.id)
 
 
-class DeleteReplicaDisks(show.ShowOne):
-    """Delete replica target disks"""
+class DeleteTransferDisks(show.ShowOne):
+    """Delete transfer target disks"""
 
     def get_parser(self, prog_name):
-        parser = super(DeleteReplicaDisks, self).get_parser(prog_name)
-        parser.add_argument('id', help='The replica\'s id')
+        parser = super(DeleteTransferDisks, self).get_parser(prog_name)
+        parser.add_argument('id', help='The transfer\'s id')
         return parser
 
     def take_action(self, args):
-        execution = self.app.client_manager.coriolis.replicas.delete_disks(
+        execution = self.app.client_manager.coriolis.transfers.delete_disks(
             args.id)
-        return replica_executions.ReplicaExecutionDetailFormatter(
+        return transfer_executions.TransferExecutionDetailFormatter(
         ).get_formatted_entity(execution)
 
 
-class ListReplica(lister.Lister):
-    """List replicas"""
+class ListTransfer(lister.Lister):
+    """List transfers"""
 
     def get_parser(self, prog_name):
-        parser = super(ListReplica, self).get_parser(prog_name)
+        parser = super(ListTransfer, self).get_parser(prog_name)
         return parser
 
     def take_action(self, args):
-        obj_list = self.app.client_manager.coriolis.replicas.list()
-        return ReplicaFormatter().list_objects(obj_list)
+        obj_list = self.app.client_manager.coriolis.transfers.list()
+        return TransferFormatter().list_objects(obj_list)
 
 
-class UpdateReplica(show.ShowOne):
-    """Create a new replica"""
+class UpdateTransfer(show.ShowOne):
+    """Create a new transfer"""
     def get_parser(self, prog_name):
-        parser = super(UpdateReplica, self).get_parser(prog_name)
-        parser.add_argument('id', help='The replica\'s id')
+        parser = super(UpdateTransfer, self).get_parser(prog_name)
+        parser.add_argument('id', help='The transfer\'s id')
         parser.add_argument('--notes', dest='notes',
-                            help='Notes about the replica.')
+                            help='Notes about the transfer.')
         parser.add_argument('--user-script-global', action='append',
                             required=False,
                             dest="global_scripts",
@@ -375,10 +376,10 @@ class UpdateReplica(show.ShowOne):
         if not updated_properties:
             raise ValueError(
                 "No options provided for update. Please run `coriolis help "
-                "replica update` for details on accepted parameters.")
+                "transfer update` for details on accepted parameters.")
 
-        execution = self.app.client_manager.coriolis.replicas.update(
+        execution = self.app.client_manager.coriolis.transfers.update(
             args.id, updated_properties)
 
-        return replica_executions.ReplicaExecutionDetailFormatter(
+        return transfer_executions.TransferExecutionDetailFormatter(
         ).get_formatted_entity(execution)

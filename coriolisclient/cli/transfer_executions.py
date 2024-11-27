@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """
-Command-line interface sub-commands related to replicas.
+Command-line interface sub-commands related to transfers.
 """
 import os
 
@@ -24,9 +24,9 @@ from cliff import show
 from coriolisclient.cli import formatter
 
 
-class ReplicaExecutionFormatter(formatter.EntityFormatter):
+class TransferExecutionFormatter(formatter.EntityFormatter):
 
-    columns = ("Replica ID",
+    columns = ("Transfer ID",
                "ID",
                "Status",
                "Created",
@@ -44,10 +44,10 @@ class ReplicaExecutionFormatter(formatter.EntityFormatter):
         return data
 
 
-class ReplicaExecutionDetailFormatter(formatter.EntityFormatter):
+class TransferExecutionDetailFormatter(formatter.EntityFormatter):
 
     columns = ("id",
-               "replica_id",
+               "transfer_id",
                "status",
                "created",
                "last_updated",
@@ -100,49 +100,50 @@ class ReplicaExecutionDetailFormatter(formatter.EntityFormatter):
         return data
 
 
-class CreateReplicaExecution(show.ShowOne):
-    """Start a replica execution"""
+class CreateTransferExecution(show.ShowOne):
+    """Start a transfer execution"""
     def get_parser(self, prog_name):
-        parser = super(CreateReplicaExecution, self).get_parser(prog_name)
-        parser.add_argument('replica',
-                            help='The ID of the replica to execute')
+        parser = super(CreateTransferExecution, self).get_parser(prog_name)
+        parser.add_argument('transfer',
+                            help='The ID of the transfer to execute')
         parser.add_argument('--shutdown-instances',
                             help='Shutdown instances before executing the '
-                            'replica', action='store_true',
+                            'transfer', action='store_true',
                             default=False)
         return parser
 
     def take_action(self, args):
-        execution = self.app.client_manager.coriolis.replica_executions.create(
-            args.replica, args.shutdown_instances)
+        execution = (
+            self.app.client_manager.coriolis.transfer_executions.create(
+                args.transfer, args.shutdown_instances))
 
-        return ReplicaExecutionDetailFormatter().get_formatted_entity(
+        return TransferExecutionDetailFormatter().get_formatted_entity(
             execution)
 
 
-class ShowReplicaExecution(show.ShowOne):
-    """Show a replica execution"""
+class ShowTransferExecution(show.ShowOne):
+    """Show a transfer execution"""
 
     def get_parser(self, prog_name):
-        parser = super(ShowReplicaExecution, self).get_parser(prog_name)
-        parser.add_argument('replica', help='The replica\'s id')
-        parser.add_argument('id', help='The replica execution\'s id')
+        parser = super(ShowTransferExecution, self).get_parser(prog_name)
+        parser.add_argument('transfer', help='The transfer\'s id')
+        parser.add_argument('id', help='The transfer execution\'s id')
         return parser
 
     def take_action(self, args):
-        execution = self.app.client_manager.coriolis.replica_executions.get(
-            args.replica, args.id)
-        return ReplicaExecutionDetailFormatter().get_formatted_entity(
+        execution = self.app.client_manager.coriolis.transfer_executions.get(
+            args.transfer, args.id)
+        return TransferExecutionDetailFormatter().get_formatted_entity(
             execution)
 
 
-class CancelReplicaExecution(command.Command):
-    """Cancel a replica execution"""
+class CancelTransferExecution(command.Command):
+    """Cancel a transfer execution"""
 
     def get_parser(self, prog_name):
-        parser = super(CancelReplicaExecution, self).get_parser(prog_name)
-        parser.add_argument('replica', help='The replica\'s id')
-        parser.add_argument('id', help='The replica execution\'s id')
+        parser = super(CancelTransferExecution, self).get_parser(prog_name)
+        parser.add_argument('transfer', help='The transfer\'s id')
+        parser.add_argument('id', help='The transfer execution\'s id')
         parser.add_argument('--force',
                             help='Perform a forced termination of running '
                             'tasks', action='store_true',
@@ -150,33 +151,33 @@ class CancelReplicaExecution(command.Command):
         return parser
 
     def take_action(self, args):
-        self.app.client_manager.coriolis.replica_executions.cancel(
-            args.replica, args.id, args.force)
+        self.app.client_manager.coriolis.transfer_executions.cancel(
+            args.transfer, args.id, args.force)
 
 
-class DeleteReplicaExecution(command.Command):
-    """Delete a replica execution"""
+class DeleteTransferExecution(command.Command):
+    """Delete a transfer execution"""
 
     def get_parser(self, prog_name):
-        parser = super(DeleteReplicaExecution, self).get_parser(prog_name)
-        parser.add_argument('replica', help='The replica\'s id')
-        parser.add_argument('id', help='The replica execution\'s id')
+        parser = super(DeleteTransferExecution, self).get_parser(prog_name)
+        parser.add_argument('transfer', help='The transfer\'s id')
+        parser.add_argument('id', help='The transfer execution\'s id')
         return parser
 
     def take_action(self, args):
-        self.app.client_manager.coriolis.replica_executions.delete(
-            args.replica, args.id)
+        self.app.client_manager.coriolis.transfer_executions.delete(
+            args.transfer, args.id)
 
 
-class ListReplicaExecution(lister.Lister):
-    """List replica executions"""
+class ListTransferExecution(lister.Lister):
+    """List transfer executions"""
 
     def get_parser(self, prog_name):
-        parser = super(ListReplicaExecution, self).get_parser(prog_name)
-        parser.add_argument('replica', help='The replica\'s id')
+        parser = super(ListTransferExecution, self).get_parser(prog_name)
+        parser.add_argument('transfer', help='The transfer\'s id')
         return parser
 
     def take_action(self, args):
-        obj_list = self.app.client_manager.coriolis.replica_executions.list(
-            args.replica)
-        return ReplicaExecutionFormatter().list_objects(obj_list)
+        obj_list = self.app.client_manager.coriolis.transfer_executions.list(
+            args.transfer)
+        return TransferExecutionFormatter().list_objects(obj_list)
