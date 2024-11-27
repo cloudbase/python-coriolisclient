@@ -62,12 +62,12 @@ class DeploymentManager(base.BaseManager):
         return self._get(
             '/deployments/%s' % base.getid(deployment), 'deployment')
 
-    def create_from_replica(self, replica_id, clone_disks=True, force=False,
-                            skip_os_morphing=False, user_scripts=None,
-                            instance_osmorphing_minion_pool_mappings=None):
+    def create_from_transfer(self, transfer_id, clone_disks=True, force=False,
+                             skip_os_morphing=False, user_scripts=None,
+                             instance_osmorphing_minion_pool_mappings=None):
         data = {
             "deployment": {
-                "replica_id": replica_id,
+                "transfer_id": transfer_id,
                 "clone_disks": clone_disks,
                 "force": force,
                 "skip_os_morphing": skip_os_morphing,
@@ -78,7 +78,7 @@ class DeploymentManager(base.BaseManager):
         return self._post('/deployments', data, 'deployment')
 
     def delete(self, deployment):
-        return self._delete('/deployment/%s' % base.getid(deployment))
+        return self._delete('/deployments/%s' % base.getid(deployment))
 
     def cancel(self, deployment, force=False):
         return self.client.post(
