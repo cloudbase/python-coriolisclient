@@ -200,7 +200,7 @@ class CreateDeployment(show.ShowOne):
         return parser
 
     def take_action(self, args):
-        m = self.app.client_manager.coriolis.deployments
+        d = self.app.client_manager.coriolis.deployments
         user_scripts = cli_utils.compose_user_scripts(
             args.global_scripts, args.instance_scripts)
         instance_osmorphing_minion_pool_mappings = None
@@ -209,7 +209,7 @@ class CreateDeployment(show.ShowOne):
                 mp['instance_id']: mp['pool_id']
                 for mp in args.instance_osmorphing_minion_pool_mappings}
 
-        deployment = m.create_from_transfer(
+        deployment = d.create_from_transfer(
             args.transfer,
             args.clone_disks,
             args.force,
