@@ -18,32 +18,33 @@ from six.moves.urllib import parse as urlparse
 from coriolisclient import base
 
 
-class ReplicaSchedule(base.Resource):
+class TransferSchedule(base.Resource):
     _tasks = None
 
 
-class ReplicaScheduleManager(base.BaseManager):
-    resource_class = ReplicaSchedule
+class TransferScheduleManager(base.BaseManager):
+    resource_class = TransferSchedule
 
     def __init__(self, api):
-        super(ReplicaScheduleManager, self).__init__(api)
+        super(TransferScheduleManager, self).__init__(api)
 
-    def list(self, replica, hide_expired=False):
+    def list(self, transfer, hide_expired=False):
         query = {}
-        url = '/replicas/%s/schedules' % base.getid(replica)
         if hide_expired:
             query["show_expired"] = hide_expired is False
+        url = '/transfers/%s/schedules' % base.getid(transfer)
+        if query:
             url += "?" + urlparse.urlencode(query)
         return self._list(url, 'schedules')
 
-    def get(self, replica, schedule):
+    def get(self, transfer, schedule):
         return self._get(
-            '/replicas/%(replica_id)s/schedules/%(schedule_id)s' %
-            {"replica_id": base.getid(replica),
+            '/transfers/%(transfer_id)s/schedules/%(schedule_id)s' %
+            {"transfer_id": base.getid(transfer),
              "schedule_id": base.getid(schedule)},
             'schedule')
 
-    def create(self, replica, schedule, enabled, expiration_date,
+    def create(self, transfer, schedule, enabled, expiration_date,
                shutdown_instance):
         data = {
             "schedule": schedule,
@@ -54,9 +55,9 @@ class ReplicaScheduleManager(base.BaseManager):
             data["expiration_date"] = self._format_rfc3339_datetime(
                 expiration_date)
         return self._post(
-            '/replicas/%s/schedules' % base.getid(replica), data, 'schedule')
+            '/transfers/%s/schedules' % base.getid(transfer), data, 'schedule')
 
-    def update(self, replica_id, schedule_id, updated_values):
+    def update(self, transfer_id, schedule_id, updated_values):
         expiration_date = updated_values.get("expiration_date")
         if expiration_date:
             updated_values = updated_values.copy()
@@ -64,15 +65,15 @@ class ReplicaScheduleManager(base.BaseManager):
                 expiration_date)
 
         return self._put(
-            '/replicas/%(replica_id)s/schedules/%(schedule_id)s' % {
-                "replica_id": base.getid(replica_id),
+            '/transfers/%(transfer_id)s/schedules/%(schedule_id)s' % {
+                "transfer_id": base.getid(transfer_id),
                 "schedule_id": base.getid(schedule_id)},
             updated_values, 'schedule')
 
-    def delete(self, replica, schedule):
+    def delete(self, transfer, schedule):
         return self._delete(
-            '/replicas/%(replica_id)s/schedules/%(schedule_id)s' %
-            {"replica_id": base.getid(replica),
+            '/transfers/%(transfer_id)s/schedules/%(schedule_id)s' %
+            {"transfer_id": base.getid(transfer),
              "schedule_id": base.getid(schedule)})
 
     @staticmethod

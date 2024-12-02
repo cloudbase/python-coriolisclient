@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """
-Command-line interface sub-commands related to replicas.
+Command-line interface sub-commands related to transfers.
 """
 import argparse
 
@@ -42,9 +42,9 @@ class RangeAction(argparse.Action):
         setattr(namespace, self.dest, value)
 
 
-class ReplicaScheduleFormatter(formatter.EntityFormatter):
+class TransferScheduleFormatter(formatter.EntityFormatter):
 
-    columns = ("Replica ID",
+    columns = ("Transfer ID",
                "ID",
                "Schedule",
                "Created",
@@ -55,7 +55,7 @@ class ReplicaScheduleFormatter(formatter.EntityFormatter):
         return sorted(obj_list, key=lambda o: o.created_at)
 
     def _get_formatted_data(self, obj):
-        data = (obj.replica_id,
+        data = (obj.transfer_id,
                 obj.id,
                 obj.schedule,
                 obj.created_at,
@@ -63,10 +63,10 @@ class ReplicaScheduleFormatter(formatter.EntityFormatter):
         return data
 
 
-class ReplicaScheduleDetailFormatter(formatter.EntityFormatter):
+class TransferScheduleDetailFormatter(formatter.EntityFormatter):
 
     columns = ("id",
-               "replica_id",
+               "transfer_id",
                "schedule",
                "created",
                "last_updated",
@@ -76,7 +76,7 @@ class ReplicaScheduleDetailFormatter(formatter.EntityFormatter):
 
     def _get_formatted_data(self, obj):
         data = (obj.id,
-                obj.replica_id,
+                obj.transfer_id,
                 obj.schedule,
                 obj.created_at,
                 obj.updated_at,
@@ -86,12 +86,12 @@ class ReplicaScheduleDetailFormatter(formatter.EntityFormatter):
         return data
 
 
-class CreateReplicaSchedule(show.ShowOne):
-    """Start a replica schedule"""
+class CreateTransferSchedule(show.ShowOne):
+    """Start a transfer schedule"""
     def get_parser(self, prog_name):
-        parser = super(CreateReplicaSchedule, self).get_parser(prog_name)
-        parser.add_argument('replica',
-                            help='The ID of the replica')
+        parser = super(CreateTransferSchedule, self).get_parser(prog_name)
+        parser.add_argument('transfer',
+                            help='The ID of the transfer')
         _add_schedule_group(parser)
         parser.add_argument('--expires-at',
                             help='ISO8601 formatted date',
@@ -113,35 +113,35 @@ class CreateReplicaSchedule(show.ShowOne):
                 "Please provide at least one value in the Schedule group")
 
         exp = _parse_expiration_date(args.expires_at)
-        schedule = self.app.client_manager.coriolis.replica_schedules.create(
-            args.replica, parsed_schedule,
+        schedule = self.app.client_manager.coriolis.transfer_schedules.create(
+            args.transfer, parsed_schedule,
             args.disabled is False, exp, args.shutdown_instance)
-        return ReplicaScheduleDetailFormatter().get_formatted_entity(
+        return TransferScheduleDetailFormatter().get_formatted_entity(
             schedule)
 
 
-class ShowReplicaSchedule(show.ShowOne):
-    """Show a replica schedule"""
+class ShowTransferSchedule(show.ShowOne):
+    """Show a transfer schedule"""
 
     def get_parser(self, prog_name):
-        parser = super(ShowReplicaSchedule, self).get_parser(prog_name)
-        parser.add_argument('replica', help='The replica\'s id')
-        parser.add_argument('id', help='The replica schedule\'s id')
+        parser = super(ShowTransferSchedule, self).get_parser(prog_name)
+        parser.add_argument('transfer', help='The transfer\'s id')
+        parser.add_argument('id', help='The transfer schedule\'s id')
         return parser
 
     def take_action(self, args):
-        schedule = self.app.client_manager.coriolis.replica_schedules.get(
-            args.replica, args.id)
-        return ReplicaScheduleDetailFormatter().get_formatted_entity(
+        schedule = self.app.client_manager.coriolis.transfer_schedules.get(
+            args.transfer, args.id)
+        return TransferScheduleDetailFormatter().get_formatted_entity(
             schedule)
 
 
-class UpdateReplicaSchedule(show.ShowOne):
-    """Updates a replica schedule"""
+class UpdateTransferSchedule(show.ShowOne):
+    """Updates a transfer schedule"""
     def get_parser(self, prog_name):
-        parser = super(UpdateReplicaSchedule, self).get_parser(prog_name)
-        parser.add_argument('replica', help='The replica\'s id')
-        parser.add_argument('id', help='The replica schedule\'s id')
+        parser = super(UpdateTransferSchedule, self).get_parser(prog_name)
+        parser.add_argument('transfer', help='The transfer\'s id')
+        parser.add_argument('id', help='The transfer schedule\'s id')
         _add_schedule_group(parser)
         expires_parser = parser.add_mutually_exclusive_group(required=False)
         expires_parser.add_argument(
@@ -199,33 +199,33 @@ class UpdateReplicaSchedule(show.ShowOne):
         if args.enabled is not None:
             updated_values["enabled"] = args.enabled
 
-        schedule = self.app.client_manager.coriolis.replica_schedules.update(
-            args.replica, args.id, updated_values)
+        schedule = self.app.client_manager.coriolis.transfer_schedules.update(
+            args.transfer, args.id, updated_values)
 
-        return ReplicaScheduleDetailFormatter().get_formatted_entity(
+        return TransferScheduleDetailFormatter().get_formatted_entity(
             schedule)
 
 
-class DeleteReplicaSchedule(command.Command):
-    """Delete a replica schedule"""
+class DeleteTransferSchedule(command.Command):
+    """Delete a transfer schedule"""
 
     def get_parser(self, prog_name):
-        parser = super(DeleteReplicaSchedule, self).get_parser(prog_name)
-        parser.add_argument('replica', help='The replica\'s id')
-        parser.add_argument('id', help='The replica schedule\'s id')
+        parser = super(DeleteTransferSchedule, self).get_parser(prog_name)
+        parser.add_argument('transfer', help='The transfer\'s id')
+        parser.add_argument('id', help='The transfer schedule\'s id')
         return parser
 
     def take_action(self, args):
-        self.app.client_manager.coriolis.replica_schedules.delete(
-            args.replica, args.id)
+        self.app.client_manager.coriolis.transfer_schedules.delete(
+            args.transfer, args.id)
 
 
-class ListReplicaSchedule(lister.Lister):
-    """List replica schedules"""
+class ListTransferSchedule(lister.Lister):
+    """List transfer schedules"""
 
     def get_parser(self, prog_name):
-        parser = super(ListReplicaSchedule, self).get_parser(prog_name)
-        parser.add_argument('replica', help='The replica\'s id')
+        parser = super(ListTransferSchedule, self).get_parser(prog_name)
+        parser.add_argument('transfer', help='The transfer\'s id')
         parser.add_argument('--hide-expired',
                             help='Hide expired schedules',
                             action='store_true',
@@ -233,9 +233,9 @@ class ListReplicaSchedule(lister.Lister):
         return parser
 
     def take_action(self, args):
-        obj_list = self.app.client_manager.coriolis.replica_schedules.list(
-            args.replica, hide_expired=args.hide_expired)
-        return ReplicaScheduleFormatter().list_objects(obj_list)
+        obj_list = self.app.client_manager.coriolis.transfer_schedules.list(
+            args.transfer, hide_expired=args.hide_expired)
+        return TransferScheduleFormatter().list_objects(obj_list)
 
 
 def _add_schedule_group(parser):

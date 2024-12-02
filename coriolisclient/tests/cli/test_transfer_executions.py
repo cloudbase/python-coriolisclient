@@ -9,16 +9,16 @@ from cliff import lister
 from cliff import show
 
 from coriolisclient.cli import formatter
-from coriolisclient.cli import replica_executions
+from coriolisclient.cli import transfer_executions
 from coriolisclient.tests import test_base
 
 
-class ReplicaExecutionFormatterTestCase(test_base.CoriolisBaseTestCase):
+class TransferExecutionFormatterTestCase(test_base.CoriolisBaseTestCase):
     """Test suite for the Coriolis Replic Execution Formatter."""
 
     def setUp(self):
-        super(ReplicaExecutionFormatterTestCase, self).setUp()
-        self.replica = replica_executions.ReplicaExecutionFormatter()
+        super(TransferExecutionFormatterTestCase, self).setUp()
+        self.transfer = transfer_executions.TransferExecutionFormatter()
 
     def test_get_sorted_list(self):
         obj1 = mock.Mock()
@@ -29,7 +29,7 @@ class ReplicaExecutionFormatterTestCase(test_base.CoriolisBaseTestCase):
         obj3.created_at = "date3"
         obj_list = [obj2, obj1, obj3]
 
-        result = self.replica._get_sorted_list(obj_list)
+        result = self.transfer._get_sorted_list(obj_list)
 
         self.assertEqual(
             [obj1, obj2, obj3],
@@ -43,7 +43,7 @@ class ReplicaExecutionFormatterTestCase(test_base.CoriolisBaseTestCase):
         obj.status = mock.sentinel.status
         obj.created_at = mock.sentinel.created_at
 
-        result = self.replica._get_formatted_data(obj)
+        result = self.transfer._get_formatted_data(obj)
 
         self.assertEqual(
             (
@@ -56,12 +56,12 @@ class ReplicaExecutionFormatterTestCase(test_base.CoriolisBaseTestCase):
         )
 
 
-class ReplicaExecutionDetailFormatterTestCase(test_base.CoriolisBaseTestCase):
-    """Test suite for the Coriolis Replica Execution Detail Formatter."""
+class TransferExecutionDetailFormatterTestCase(test_base.CoriolisBaseTestCase):
+    """Test suite for the Coriolis Transfer Execution Detail Formatter."""
 
     def setUp(self):
-        super(ReplicaExecutionDetailFormatterTestCase, self).setUp()
-        self.replica = replica_executions.ReplicaExecutionDetailFormatter()
+        super(TransferExecutionDetailFormatterTestCase, self).setUp()
+        self.transfer = transfer_executions.TransferExecutionDetailFormatter()
 
     def test_format_instances(self):
         obj = mock.Mock()
@@ -75,7 +75,7 @@ class ReplicaExecutionDetailFormatterTestCase(test_base.CoriolisBaseTestCase):
             % {"ls": os.linesep}
         )
 
-        result = self.replica._format_instances(obj)
+        result = self.transfer._format_instances(obj)
 
         self.assertEqual(
             expected_result,
@@ -98,14 +98,14 @@ class ReplicaExecutionDetailFormatterTestCase(test_base.CoriolisBaseTestCase):
             'date1 [30] None' % {"ls": os.linesep}
         )
 
-        result = self.replica._format_progress_updates(task_dict)
+        result = self.transfer._format_progress_updates(task_dict)
 
         self.assertEqual(
             expected_result,
             result
         )
 
-    @mock.patch.object(replica_executions.ReplicaExecutionDetailFormatter,
+    @mock.patch.object(transfer_executions.TransferExecutionDetailFormatter,
                        '_format_progress_updates')
     def test_format_task(self, mock_format_progress_updates):
         mock_task = mock.Mock()
@@ -134,14 +134,14 @@ class ReplicaExecutionDetailFormatterTestCase(test_base.CoriolisBaseTestCase):
             'date3 [20] message3%(ls)s'
             'date1 [30] None' % {"ls": os.linesep})
 
-        result = self.replica._format_task(mock_task)
+        result = self.transfer._format_task(mock_task)
 
         self.assertEqual(
             expected_result,
             result
         )
 
-    @mock.patch.object(replica_executions.ReplicaExecutionDetailFormatter,
+    @mock.patch.object(transfer_executions.TransferExecutionDetailFormatter,
                        '_format_progress_updates')
     def test_format_task_no_progress_updates(
         self, mock_format_progress_updates):
@@ -166,14 +166,14 @@ class ReplicaExecutionDetailFormatterTestCase(test_base.CoriolisBaseTestCase):
             'progress_updates:' % {"ls": os.linesep}
         )
 
-        result = self.replica._format_task(mock_task)
+        result = self.transfer._format_task(mock_task)
 
         self.assertEqual(
             expected_result,
             result
         )
 
-    @mock.patch.object(replica_executions.ReplicaExecutionDetailFormatter,
+    @mock.patch.object(transfer_executions.TransferExecutionDetailFormatter,
                        '_format_task')
     def test_format_tasks(self, mock_format_task):
         obj = mock.Mock()
@@ -181,16 +181,16 @@ class ReplicaExecutionDetailFormatterTestCase(test_base.CoriolisBaseTestCase):
         mock_format_task.side_effect = ["task1", "task2"]
         expected_result = 'task1%(ls)s%(ls)stask2' % {"ls": os.linesep}
 
-        result = self.replica._format_tasks(obj)
+        result = self.transfer._format_tasks(obj)
 
         self.assertEqual(
             expected_result,
             result
         )
 
-    @mock.patch.object(replica_executions.ReplicaExecutionDetailFormatter,
+    @mock.patch.object(transfer_executions.TransferExecutionDetailFormatter,
                        '_format_tasks')
-    @mock.patch.object(replica_executions.ReplicaExecutionDetailFormatter,
+    @mock.patch.object(transfer_executions.TransferExecutionDetailFormatter,
                        '_format_instances')
     def test_get_formatted_data(
         self,
@@ -219,7 +219,7 @@ class ReplicaExecutionDetailFormatterTestCase(test_base.CoriolisBaseTestCase):
             mock.sentinel.formatted_tasks,
         )
 
-        result = self.replica._get_formatted_data(mock_obj)
+        result = self.transfer._get_formatted_data(mock_obj)
 
         self.assertEqual(
             expected_result,
@@ -227,13 +227,13 @@ class ReplicaExecutionDetailFormatterTestCase(test_base.CoriolisBaseTestCase):
         )
 
 
-class CreateReplicaExecutionTestCase(test_base.CoriolisBaseTestCase):
-    """Test suite for the Coriolis Create Replica Execution."""
+class CreateTransferExecutionTestCase(test_base.CoriolisBaseTestCase):
+    """Test suite for the Coriolis Create Transfer Execution."""
 
     def setUp(self):
         self.mock_app = mock.Mock()
-        super(CreateReplicaExecutionTestCase, self).setUp()
-        self.replica = replica_executions.CreateReplicaExecution(
+        super(CreateTransferExecutionTestCase, self).setUp()
+        self.transfer = transfer_executions.CreateTransferExecution(
             self.mock_app, mock.sentinel.app_args)
 
     @mock.patch.object(show.ShowOne, 'get_parser')
@@ -241,7 +241,7 @@ class CreateReplicaExecutionTestCase(test_base.CoriolisBaseTestCase):
         self,
         mock_get_parser
     ):
-        result = self.replica.get_parser(mock.sentinel.prog_name)
+        result = self.transfer.get_parser(mock.sentinel.prog_name)
 
         self.assertEqual(
             mock_get_parser.return_value,
@@ -249,38 +249,38 @@ class CreateReplicaExecutionTestCase(test_base.CoriolisBaseTestCase):
         )
         mock_get_parser.assert_called_once_with(mock.sentinel.prog_name)
 
-    @mock.patch.object(replica_executions.ReplicaExecutionDetailFormatter,
+    @mock.patch.object(transfer_executions.TransferExecutionDetailFormatter,
                        'get_formatted_entity')
     def test_take_action(
         self,
         mock_get_formatted_entity
     ):
         args = mock.Mock()
-        args.replica = mock.sentinel.replica
+        args.transfer = mock.sentinel.transfer
         args.shutdown_instances = mock.sentinel.shutdown_instances
         mock_execution = mock.Mock()
-        self.mock_app.client_manager.coriolis.replica_executions.create = \
+        self.mock_app.client_manager.coriolis.transfer_executions.create = \
             mock_execution
 
-        result = self.replica.take_action(args)
+        result = self.transfer.take_action(args)
 
         self.assertEqual(
             mock_get_formatted_entity.return_value,
             result
         )
         mock_execution.assert_called_once_with(
-            mock.sentinel.replica, mock.sentinel.shutdown_instances)
+            mock.sentinel.transfer, mock.sentinel.shutdown_instances)
         mock_get_formatted_entity.assert_called_once_with(
             mock_execution.return_value)
 
 
-class ShowReplicaExecutionTestCase(test_base.CoriolisBaseTestCase):
-    """Test suite for the Coriolis Client Show Replica Execution."""
+class ShowTransferExecutionTestCase(test_base.CoriolisBaseTestCase):
+    """Test suite for the Coriolis Client Show Transfer Execution."""
 
     def setUp(self):
         self.mock_app = mock.Mock()
-        super(ShowReplicaExecutionTestCase, self).setUp()
-        self.replica = replica_executions.ShowReplicaExecution(
+        super(ShowTransferExecutionTestCase, self).setUp()
+        self.transfer = transfer_executions.ShowTransferExecution(
             self.mock_app, mock.sentinel.app_args)
 
     @mock.patch.object(show.ShowOne, 'get_parser')
@@ -288,7 +288,7 @@ class ShowReplicaExecutionTestCase(test_base.CoriolisBaseTestCase):
         self,
         mock_get_parser
     ):
-        result = self.replica.get_parser(mock.sentinel.prog_name)
+        result = self.transfer.get_parser(mock.sentinel.prog_name)
 
         self.assertEqual(
             mock_get_parser.return_value,
@@ -296,37 +296,37 @@ class ShowReplicaExecutionTestCase(test_base.CoriolisBaseTestCase):
         )
         mock_get_parser.assert_called_once_with(mock.sentinel.prog_name)
 
-    @mock.patch.object(replica_executions.ReplicaExecutionDetailFormatter,
+    @mock.patch.object(transfer_executions.TransferExecutionDetailFormatter,
                        'get_formatted_entity')
     def test_take_action(
         self,
         mock_get_formatted_entity
     ):
         args = mock.Mock()
-        args.replica = mock.sentinel.replica
+        args.transfer = mock.sentinel.transfer
         args.id = mock.sentinel.id
         execution = mock.Mock()
-        self.mock_app.client_manager.coriolis.replica_executions.get = \
+        self.mock_app.client_manager.coriolis.transfer_executions.get = \
             execution
 
-        result = self.replica.take_action(args)
+        result = self.transfer.take_action(args)
 
         self.assertEqual(
             mock_get_formatted_entity.return_value,
             result
         )
-        execution.assert_called_once_with(args.replica, args.id)
+        execution.assert_called_once_with(args.transfer, args.id)
         mock_get_formatted_entity.assert_called_once_with(
             execution.return_value)
 
 
-class CancelReplicaExecutionTestCase(test_base.CoriolisBaseTestCase):
-    """Test suite for the Coriolis Client Cancel Replica Execution."""
+class CancelTransferExecutionTestCase(test_base.CoriolisBaseTestCase):
+    """Test suite for the Coriolis Client Cancel Transfer Execution."""
 
     def setUp(self):
         self.mock_app = mock.Mock()
-        super(CancelReplicaExecutionTestCase, self).setUp()
-        self.replica = replica_executions.CancelReplicaExecution(
+        super(CancelTransferExecutionTestCase, self).setUp()
+        self.transfer = transfer_executions.CancelTransferExecution(
             self.mock_app, mock.sentinel.app_args)
 
     @mock.patch.object(command.Command, 'get_parser')
@@ -334,7 +334,7 @@ class CancelReplicaExecutionTestCase(test_base.CoriolisBaseTestCase):
         self,
         mock_get_parser
     ):
-        result = self.replica.get_parser(mock.sentinel.prog_name)
+        result = self.transfer.get_parser(mock.sentinel.prog_name)
 
         self.assertEqual(
             mock_get_parser.return_value,
@@ -344,26 +344,26 @@ class CancelReplicaExecutionTestCase(test_base.CoriolisBaseTestCase):
 
     def test_take_action(self):
         args = mock.Mock()
-        args.replica = mock.sentinel.replica
+        args.transfer = mock.sentinel.transfer
         args.id = mock.sentinel.id
         args.force = False
-        replica_execution = mock.Mock()
-        self.mock_app.client_manager.coriolis.replica_executions = \
-            replica_execution
+        transfer_execution = mock.Mock()
+        self.mock_app.client_manager.coriolis.transfer_executions = \
+            transfer_execution
 
-        self.replica.take_action(args)
+        self.transfer.take_action(args)
 
-        replica_execution.cancel.assert_called_once_with(
-            mock.sentinel.replica, mock.sentinel.id, False)
+        transfer_execution.cancel.assert_called_once_with(
+            mock.sentinel.transfer, mock.sentinel.id, False)
 
 
-class DeleteReplicaExecutionTestCase(test_base.CoriolisBaseTestCase):
-    """Test suite for the Coriolis Client Delete Replica Execution."""
+class DeleteTransferExecutionTestCase(test_base.CoriolisBaseTestCase):
+    """Test suite for the Coriolis Client Delete Transfer Execution."""
 
     def setUp(self):
         self.mock_app = mock.Mock()
-        super(DeleteReplicaExecutionTestCase, self).setUp()
-        self.replica = replica_executions.DeleteReplicaExecution(
+        super(DeleteTransferExecutionTestCase, self).setUp()
+        self.transfer = transfer_executions.DeleteTransferExecution(
             self.mock_app, mock.sentinel.app_args)
 
     @mock.patch.object(command.Command, 'get_parser')
@@ -371,7 +371,7 @@ class DeleteReplicaExecutionTestCase(test_base.CoriolisBaseTestCase):
         self,
         mock_get_parser
     ):
-        result = self.replica.get_parser(mock.sentinel.prog_name)
+        result = self.transfer.get_parser(mock.sentinel.prog_name)
 
         self.assertEqual(
             mock_get_parser.return_value,
@@ -381,25 +381,25 @@ class DeleteReplicaExecutionTestCase(test_base.CoriolisBaseTestCase):
 
     def test_take_action(self):
         args = mock.Mock()
-        args.replica = mock.sentinel.replica
+        args.transfer = mock.sentinel.transfer
         args.id = mock.sentinel.id
-        replica_execution = mock.Mock()
-        self.mock_app.client_manager.coriolis.replica_executions = \
-            replica_execution
+        transfer_execution = mock.Mock()
+        self.mock_app.client_manager.coriolis.transfer_executions = \
+            transfer_execution
 
-        self.replica.take_action(args)
+        self.transfer.take_action(args)
 
-        replica_execution.delete.assert_called_once_with(
-            mock.sentinel.replica, mock.sentinel.id)
+        transfer_execution.delete.assert_called_once_with(
+            mock.sentinel.transfer, mock.sentinel.id)
 
 
-class ListReplicaExecutionTestCase(test_base.CoriolisBaseTestCase):
-    """Test suite for the Coriolis Client List Replica Execution."""
+class ListTransferExecutionTestCase(test_base.CoriolisBaseTestCase):
+    """Test suite for the Coriolis Client List Transfer Execution."""
 
     def setUp(self):
         self.mock_app = mock.Mock()
-        super(ListReplicaExecutionTestCase, self).setUp()
-        self.replica = replica_executions.ListReplicaExecution(
+        super(ListTransferExecutionTestCase, self).setUp()
+        self.transfer = transfer_executions.ListTransferExecution(
             self.mock_app, mock.sentinel.app_args)
 
     @mock.patch.object(lister.Lister, 'get_parser')
@@ -407,7 +407,7 @@ class ListReplicaExecutionTestCase(test_base.CoriolisBaseTestCase):
         self,
         mock_get_parser
     ):
-        result = self.replica.get_parser(mock.sentinel.prog_name)
+        result = self.transfer.get_parser(mock.sentinel.prog_name)
 
         self.assertEqual(
             mock_get_parser.return_value,
@@ -415,24 +415,24 @@ class ListReplicaExecutionTestCase(test_base.CoriolisBaseTestCase):
         )
         mock_get_parser.assert_called_once_with(mock.sentinel.prog_name)
 
-    @mock.patch.object(replica_executions.ReplicaExecutionFormatter,
+    @mock.patch.object(transfer_executions.TransferExecutionFormatter,
                        'list_objects')
     def test_take_action(
         self,
         mock_list_objects
     ):
         args = mock.Mock()
-        args.replica = mock.sentinel.replica
-        mock_replica_list = mock.Mock()
-        self.mock_app.client_manager.coriolis.replica_executions.list = \
-            mock_replica_list
+        args.transfer = mock.sentinel.transfer
+        mock_transfer_list = mock.Mock()
+        self.mock_app.client_manager.coriolis.transfer_executions.list = \
+            mock_transfer_list
 
-        result = self.replica.take_action(args)
+        result = self.transfer.take_action(args)
 
         self.assertEqual(
             mock_list_objects.return_value,
             result
         )
-        mock_replica_list.assert_called_once_with(mock.sentinel.replica)
+        mock_transfer_list.assert_called_once_with(mock.sentinel.transfer)
         mock_list_objects.assert_called_once_with(
-            mock_replica_list.return_value)
+            mock_transfer_list.return_value)
