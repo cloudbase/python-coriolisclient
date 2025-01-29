@@ -110,12 +110,17 @@ class CreateTransferExecution(show.ShowOne):
                             help='Shutdown instances before executing the '
                             'transfer', action='store_true',
                             default=False)
+        parser.add_argument('--auto-deploy',
+                            help="Automatically execute deployment after the "
+                                 "transfer execution finishes",
+                            action='store_true',
+                            default=False)
         return parser
 
     def take_action(self, args):
         execution = (
             self.app.client_manager.coriolis.transfer_executions.create(
-                args.transfer, args.shutdown_instances))
+                args.transfer, args.shutdown_instances, args.auto_deploy))
 
         return TransferExecutionDetailFormatter().get_formatted_entity(
             execution)
