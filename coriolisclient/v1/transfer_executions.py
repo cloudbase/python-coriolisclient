@@ -45,8 +45,10 @@ class TransferExecutionManager(base.BaseManager):
              "execution_id": base.getid(execution)},
             'execution')
 
-    def create(self, transfer, shutdown_instances=False):
-        data = {"execution": {"shutdown_instances": shutdown_instances}}
+    def create(self, transfer, shutdown_instances=False, auto_deploy=False):
+        data = {"execution":
+                    {"shutdown_instances": shutdown_instances,
+                     "auto_deploy": auto_deploy}}
         return self._post(
             '/transfers/%s/executions' %
             base.getid(transfer), data, 'execution')
