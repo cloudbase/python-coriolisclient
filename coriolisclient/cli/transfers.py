@@ -27,9 +27,34 @@ from coriolisclient.cli import formatter
 from coriolisclient.cli import transfer_executions
 from coriolisclient.cli import utils as cli_utils
 
-
 TRANSFER_SCENARIO_REPLICA = "replica"
 TRANSFER_SCENARIO_LIVE_MIGRATION = "live_migration"
+
+
+def _add_default_deployment_args_to_parser(parser):
+    cd_group = parser.add_mutually_exclusive_group()
+    cd_group.add_argument('--clone-disks',
+                       help='Retain the transfer disks by cloning them '
+                            'when launching deployment',
+                       action='store_true', dest="clone_disks",
+                       default=None)
+    cd_group.add_argument('--dont-clone-disks',
+                       help="Deploy directly on transfer disks, without "
+                            "cloning them.",
+                       action="store_false", dest="clone_disks",
+                       default=None)
+
+    osm_group = parser.add_mutually_exclusive_group()
+    osm_group.add_argument('--os-morphing',
+                           help="Include the OSMorphing process on the "
+                                "deployments of this transfer.",
+                           action="store_false", dest="skip_os_morphing",
+                           default=None)
+    osm_group.add_argument('--skip-os-morphing',
+                           help='Skip the OS morphing process on the '
+                                'deployments of this transfer',
+                           action='store_true', default=None,
+                           dest="skip_os_morphing")
 
 
 class TransferFormatter(formatter.EntityFormatter):
@@ -85,6 +110,8 @@ class TransferDetailFormatter(formatter.EntityFormatter):
             "storage_backend_mappings",
             "default_storage_backend",
             "user_scripts",
+            "clone_disks",
+            "skip_os_morphing",
             "executions",
         ]
 
@@ -129,6 +156,8 @@ class TransferDetailFormatter(formatter.EntityFormatter):
                 cli_utils.format_mapping(backend_mappings),
                 default_storage,
                 cli_utils.format_json_for_object_property(obj, 'user_scripts'),
+                obj.clone_disks,
+                obj.skip_os_morphing,
                 self._format_executions(obj.executions)]
 
         if "instances-data" in self.columns:
@@ -195,6 +224,7 @@ class CreateTransfer(show.ShowOne):
             include_osmorphing_pool_mappings_arg=True)
 
         cli_utils.add_storage_mappings_arguments_to_parser(parser)
+        _add_default_deployment_args_to_parser(parser)
 
         return parser
 
@@ -233,7 +263,9 @@ class CreateTransfer(show.ShowOne):
             destination_minion_pool_id=args.destination_minion_pool_id,
             instance_osmorphing_minion_pool_mappings=(
                 instance_osmorphing_minion_pool_mappings),
-            user_scripts=user_scripts)
+            user_scripts=user_scripts,
+            clone_disks=args.clone_disks,
+            skip_os_morphing=args.skip_os_morphing)
 
         return TransferDetailFormatter().get_formatted_entity(transfer)
 
@@ -330,6 +362,7 @@ class UpdateTransfer(show.ShowOne):
             parser, include_origin_pool_arg=True,
             include_destination_pool_arg=True,
             include_osmorphing_pool_mappings_arg=True)
+        _add_default_deployment_args_to_parser(parser)
 
         return parser
 
@@ -372,6 +405,10 @@ class UpdateTransfer(show.ShowOne):
                 instance_osmorphing_minion_pool_mappings)
         if user_scripts:
             updated_properties['user_scripts'] = user_scripts
+        if args.clone_disks is not None:
+            updated_properties['clone_disks'] = args.clone_disks
+        if args.skip_os_morphing is not None:
+            updated_properties['skip_os_morphing'] = args.skip_os_morphing
 
         if not updated_properties:
             raise ValueError(
