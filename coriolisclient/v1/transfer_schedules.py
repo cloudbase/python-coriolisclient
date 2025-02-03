@@ -45,11 +45,12 @@ class TransferScheduleManager(base.BaseManager):
             'schedule')
 
     def create(self, transfer, schedule, enabled, expiration_date,
-               shutdown_instance):
+               shutdown_instance, auto_deploy):
         data = {
             "schedule": schedule,
             "enabled": enabled,
             "shutdown_instance": shutdown_instance,
+            "auto_deploy": auto_deploy,
         }
         if expiration_date:
             data["expiration_date"] = self._format_rfc3339_datetime(
