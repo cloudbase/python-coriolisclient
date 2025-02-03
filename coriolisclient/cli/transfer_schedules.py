@@ -72,7 +72,8 @@ class TransferScheduleDetailFormatter(formatter.EntityFormatter):
                "last_updated",
                "enabled",
                "expires",
-               "shutdown_instance")
+               "shutdown_instance",
+               "auto_deploy")
 
     def _get_formatted_data(self, obj):
         data = (obj.id,
@@ -82,7 +83,8 @@ class TransferScheduleDetailFormatter(formatter.EntityFormatter):
                 obj.updated_at,
                 obj.enabled,
                 obj.expiration_date,
-                obj.shutdown_instance)
+                obj.shutdown_instance,
+                obj.auto_deploy)
         return data
 
 
@@ -104,6 +106,11 @@ class CreateTransferSchedule(show.ShowOne):
                             help='Shutdown instance',
                             action='store_true',
                             default=False)
+        parser.add_argument('--auto-deploy',
+                            help="Auto Deploy transfer after scheduled "
+                                 "execution completes.",
+                            action="store_true",
+                            default=False)
         return parser
 
     def take_action(self, args):
@@ -115,7 +122,8 @@ class CreateTransferSchedule(show.ShowOne):
         exp = _parse_expiration_date(args.expires_at)
         schedule = self.app.client_manager.coriolis.transfer_schedules.create(
             args.transfer, parsed_schedule,
-            args.disabled is False, exp, args.shutdown_instance)
+            args.disabled is False, exp, args.shutdown_instance,
+            args.auto_deploy)
         return TransferScheduleDetailFormatter().get_formatted_entity(
             schedule)
 
@@ -179,6 +187,18 @@ class UpdateTransferSchedule(show.ShowOne):
             help="Don't shutdown instance",
             dest="shutdown",
             action='store_false')
+        auto_deploy_parser = parser.add_mutually_exclusive_group(
+            required=False)
+        auto_deploy_parser.add_argument(
+            "--auto-deploy",
+            help="Auto Deploy transfer after scheduled execution completes.",
+            dest="auto_deploy",
+            action="store_true")
+        auto_deploy_parser.add_argument(
+            "--dont-auto-deploy",
+            help="Stops auto deployment when starting scheduled execution",
+            dest="auto_deploy",
+            action="store_false")
         return parser
 
     def take_action(self, args):
@@ -198,6 +218,8 @@ class UpdateTransferSchedule(show.ShowOne):
             updated_values["shutdown_instance"] = args.shutdown
         if args.enabled is not None:
             updated_values["enabled"] = args.enabled
+        if args.auto_deploy is not None:
+            updated_values['auto_deploy'] = args.auto_deploy
 
         schedule = self.app.client_manager.coriolis.transfer_schedules.update(
             args.transfer, args.id, updated_values)
