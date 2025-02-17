@@ -53,7 +53,8 @@ class TransferScheduleFormatterTestCase(test_base.CoriolisBaseTestCase):
 
     def setUp(self):
         super(TransferScheduleFormatterTestCase, self).setUp()
-        self.transfer = transfer_schedules.TransferScheduleFormatter()
+        self.transfer_schedules = (
+            transfer_schedules.TransferScheduleFormatter())
 
     def test_get_sorted_list(self):
         obj1 = mock.Mock()
@@ -64,7 +65,7 @@ class TransferScheduleFormatterTestCase(test_base.CoriolisBaseTestCase):
         obj3.created_at = "date3"
         obj_list = [obj2, obj1, obj3]
 
-        result = self.transfer._get_sorted_list(obj_list)
+        result = self.transfer_schedules._get_sorted_list(obj_list)
 
         self.assertEqual(
             [obj1, obj2, obj3],
@@ -79,7 +80,7 @@ class TransferScheduleFormatterTestCase(test_base.CoriolisBaseTestCase):
         obj.created_at = mock.sentinel.created_at
         obj.expiration_date = mock.sentinel.expiration_date
 
-        result = self.transfer._get_formatted_data(obj)
+        result = self.transfer_schedules._get_formatted_data(obj)
 
         self.assertEqual(
             (
@@ -98,7 +99,8 @@ class TransferScheduleDetailFormatterTestCase(test_base.CoriolisBaseTestCase):
 
     def setUp(self):
         super(TransferScheduleDetailFormatterTestCase, self).setUp()
-        self.transfer = transfer_schedules.TransferScheduleDetailFormatter()
+        self.transfer_schedules = (
+            transfer_schedules.TransferScheduleDetailFormatter())
 
     def test_get_formatted_data(self):
         obj = mock.Mock()
@@ -110,8 +112,9 @@ class TransferScheduleDetailFormatterTestCase(test_base.CoriolisBaseTestCase):
         obj.enabled = False
         obj.expiration_date = mock.sentinel.expiration_date
         obj.shutdown_instance = mock.sentinel.shutdown_instance
+        obj.auto_deploy = mock.sentinel.auto_deploy
 
-        result = self.transfer._get_formatted_data(obj)
+        result = self.transfer_schedules._get_formatted_data(obj)
 
         self.assertEqual(
             (
@@ -122,7 +125,8 @@ class TransferScheduleDetailFormatterTestCase(test_base.CoriolisBaseTestCase):
                 mock.sentinel.updated_at,
                 False,
                 mock.sentinel.expiration_date,
-                mock.sentinel.shutdown_instance
+                mock.sentinel.shutdown_instance,
+                mock.sentinel.auto_deploy,
             ),
             result
         )
@@ -134,7 +138,7 @@ class CreateTransferScheduleTestCase(test_base.CoriolisBaseTestCase):
     def setUp(self):
         self.mock_app = mock.Mock()
         super(CreateTransferScheduleTestCase, self).setUp()
-        self.transfer = transfer_schedules.CreateTransferSchedule(
+        self.transfer_schedules = transfer_schedules.CreateTransferSchedule(
             self.mock_app, mock.sentinel.app_args)
 
     @mock.patch.object(show.ShowOne, 'get_parser')
@@ -142,7 +146,7 @@ class CreateTransferScheduleTestCase(test_base.CoriolisBaseTestCase):
         self,
         mock_get_parser
     ):
-        result = self.transfer.get_parser(mock.sentinel.prog_name)
+        result = self.transfer_schedules.get_parser(mock.sentinel.prog_name)
 
         self.assertEqual(
             mock_get_parser.return_value,
@@ -163,14 +167,15 @@ class CreateTransferScheduleTestCase(test_base.CoriolisBaseTestCase):
         args = mock.Mock()
         args.transfer = mock.sentinel.transfer
         args.disabled = False
-        args.shutdown_instance = mock.sentinel.shutdown_instance
+        args.shutdown_instance = False
+        args.auto_deploy = False
         mock_schedule_group_args = {"minute": mock.sentinel.minute}
         mock_parse_schedule_group_args.return_value = mock_schedule_group_args
         mock_schedule = mock.Mock()
         self.mock_app.client_manager.coriolis.transfer_schedules.create = \
             mock_schedule
 
-        result = self.transfer.take_action(args)
+        result = self.transfer_schedules.take_action(args)
 
         self.assertEqual(
             mock_get_formatted_entity.return_value,
@@ -181,7 +186,8 @@ class CreateTransferScheduleTestCase(test_base.CoriolisBaseTestCase):
             mock_schedule_group_args,
             True,
             mock_parse_expiration_date.return_value,
-            mock.sentinel.shutdown_instance
+            False,
+            False,
         )
         mock_get_formatted_entity.assert_called_once_with(
             mock_schedule.return_value)
@@ -198,7 +204,7 @@ class CreateTransferScheduleTestCase(test_base.CoriolisBaseTestCase):
 
         self.assertRaises(
             exceptions.CoriolisException,
-            self.transfer.take_action,
+            self.transfer_schedules.take_action,
             args
         )
         mock_parse_expiration_date.assert_not_called()
@@ -210,7 +216,7 @@ class ShowTransferScheduleTestCase(test_base.CoriolisBaseTestCase):
     def setUp(self):
         self.mock_app = mock.Mock()
         super(ShowTransferScheduleTestCase, self).setUp()
-        self.transfer = transfer_schedules.ShowTransferSchedule(
+        self.transfer_schedules = transfer_schedules.ShowTransferSchedule(
             self.mock_app, mock.sentinel.app_args)
 
     @mock.patch.object(show.ShowOne, 'get_parser')
@@ -218,7 +224,7 @@ class ShowTransferScheduleTestCase(test_base.CoriolisBaseTestCase):
         self,
         mock_get_parser
     ):
-        result = self.transfer.get_parser(mock.sentinel.prog_name)
+        result = self.transfer_schedules.get_parser(mock.sentinel.prog_name)
 
         self.assertEqual(
             mock_get_parser.return_value,
@@ -239,7 +245,7 @@ class ShowTransferScheduleTestCase(test_base.CoriolisBaseTestCase):
         self.mock_app.client_manager.coriolis.transfer_schedules.get = \
             schedule
 
-        result = self.transfer.take_action(args)
+        result = self.transfer_schedules.take_action(args)
 
         self.assertEqual(
             mock_get_formatted_entity.return_value,
@@ -256,7 +262,7 @@ class UpdateTransferScheduleTestCase(test_base.CoriolisBaseTestCase):
     def setUp(self):
         self.mock_app = mock.Mock()
         super(UpdateTransferScheduleTestCase, self).setUp()
-        self.transfer = transfer_schedules.UpdateTransferSchedule(
+        self.transfer_schedules = transfer_schedules.UpdateTransferSchedule(
             self.mock_app, mock.sentinel.app_args)
 
     @mock.patch.object(show.ShowOne, 'get_parser')
@@ -264,7 +270,7 @@ class UpdateTransferScheduleTestCase(test_base.CoriolisBaseTestCase):
         self,
         mock_get_parser
     ):
-        result = self.transfer.get_parser(mock.sentinel.prog_name)
+        result = self.transfer_schedules.get_parser(mock.sentinel.prog_name)
 
         self.assertEqual(
             mock_get_parser.return_value,
@@ -288,6 +294,7 @@ class UpdateTransferScheduleTestCase(test_base.CoriolisBaseTestCase):
         args.enabled = True
         args.transfer = mock.sentinel.transfer
         args.id = mock.sentinel.id
+        args.auto_deploy = False
         mock_parse_schedule_group_args.return_value = \
             {"minute": mock.sentinel.minute}
         transfer_schedule = mock.Mock()
@@ -298,9 +305,10 @@ class UpdateTransferScheduleTestCase(test_base.CoriolisBaseTestCase):
             "expiration_date": mock_parse_expiration_date.return_value,
             "shutdown_instance": True,
             "enabled": True,
+            "auto_deploy": False,
         }
 
-        result = self.transfer.take_action(args)
+        result = self.transfer_schedules.take_action(args)
 
         self.assertEqual(
             mock_get_formatted_entity.return_value,
@@ -329,13 +337,14 @@ class UpdateTransferScheduleTestCase(test_base.CoriolisBaseTestCase):
         args.expires = False
         args.shutdown = None
         args.enabled = None
+        args.auto_deploy = None
         mock_parse_schedule_group_args.return_value = {}
         transfer_schedule = mock.Mock()
         self.mock_app.client_manager.coriolis.transfer_schedules = \
             transfer_schedule
         expected_updated_values = {"expiration_date": None}
 
-        result = self.transfer.take_action(args)
+        result = self.transfer_schedules.take_action(args)
 
         self.assertEqual(
             mock_get_formatted_entity.return_value,
@@ -356,7 +365,7 @@ class DeleteTransferScheduleTestCase(test_base.CoriolisBaseTestCase):
     def setUp(self):
         self.mock_app = mock.Mock()
         super(DeleteTransferScheduleTestCase, self).setUp()
-        self.transfer = transfer_schedules.DeleteTransferSchedule(
+        self.transfer_schedules = transfer_schedules.DeleteTransferSchedule(
             self.mock_app, mock.sentinel.app_args)
 
     @mock.patch.object(command.Command, 'get_parser')
@@ -364,7 +373,7 @@ class DeleteTransferScheduleTestCase(test_base.CoriolisBaseTestCase):
         self,
         mock_get_parser
     ):
-        result = self.transfer.get_parser(mock.sentinel.prog_name)
+        result = self.transfer_schedules.get_parser(mock.sentinel.prog_name)
 
         self.assertEqual(
             mock_get_parser.return_value,
@@ -380,7 +389,7 @@ class DeleteTransferScheduleTestCase(test_base.CoriolisBaseTestCase):
         self.mock_app.client_manager.coriolis.transfer_schedules = \
             transfer_schedule
 
-        self.transfer.take_action(args)
+        self.transfer_schedules.take_action(args)
 
         transfer_schedule.delete.assert_called_once_with(
             mock.sentinel.transfer, mock.sentinel.id)
@@ -392,7 +401,7 @@ class ListTransferScheduleTestCase(test_base.CoriolisBaseTestCase):
     def setUp(self):
         self.mock_app = mock.Mock()
         super(ListTransferScheduleTestCase, self).setUp()
-        self.transfer = transfer_schedules.ListTransferSchedule(
+        self.transfer_schedules = transfer_schedules.ListTransferSchedule(
             self.mock_app, mock.sentinel.app_args)
 
     @mock.patch.object(lister.Lister, 'get_parser')
@@ -400,7 +409,7 @@ class ListTransferScheduleTestCase(test_base.CoriolisBaseTestCase):
         self,
         mock_get_parser
     ):
-        result = self.transfer.get_parser(mock.sentinel.prog_name)
+        result = self.transfer_schedules.get_parser(mock.sentinel.prog_name)
 
         self.assertEqual(
             mock_get_parser.return_value,
@@ -421,7 +430,7 @@ class ListTransferScheduleTestCase(test_base.CoriolisBaseTestCase):
         self.mock_app.client_manager.coriolis.transfer_schedules.list = \
             mock_transfer_list
 
-        result = self.transfer.take_action(args)
+        result = self.transfer_schedules.take_action(args)
 
         self.assertEqual(
             mock_list_objects.return_value,

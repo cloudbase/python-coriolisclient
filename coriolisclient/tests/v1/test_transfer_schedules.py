@@ -63,7 +63,8 @@ class TransferScheduleManagerTestCase(test_base.CoriolisBaseTestCase):
             "schedule": mock.sentinel.schedule,
             "enabled": True,
             "expiration_date": '2034-11-26T00:00:00Z',
-            "shutdown_instance": mock.sentinel.shutdown_instance
+            "shutdown_instance": mock.sentinel.shutdown_instance,
+            "auto_deploy": mock.sentinel.auto_deploy,
         }
 
         result = self.transfer_schedule.create(
@@ -71,7 +72,8 @@ class TransferScheduleManagerTestCase(test_base.CoriolisBaseTestCase):
             mock.sentinel.schedule,
             True,
             expiration_date,
-            mock.sentinel.shutdown_instance
+            mock.sentinel.shutdown_instance,
+            mock.sentinel.auto_deploy,
         )
 
         self.assertEqual(

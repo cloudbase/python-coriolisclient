@@ -258,6 +258,7 @@ class CreateTransferExecutionTestCase(test_base.CoriolisBaseTestCase):
         args = mock.Mock()
         args.transfer = mock.sentinel.transfer
         args.shutdown_instances = mock.sentinel.shutdown_instances
+        args.auto_deploy = mock.sentinel.auto_deploy
         mock_execution = mock.Mock()
         self.mock_app.client_manager.coriolis.transfer_executions.create = \
             mock_execution
@@ -269,7 +270,8 @@ class CreateTransferExecutionTestCase(test_base.CoriolisBaseTestCase):
             result
         )
         mock_execution.assert_called_once_with(
-            mock.sentinel.transfer, mock.sentinel.shutdown_instances)
+            mock.sentinel.transfer, mock.sentinel.shutdown_instances,
+            mock.sentinel.auto_deploy)
         mock_get_formatted_entity.assert_called_once_with(
             mock_execution.return_value)
 
