@@ -34,15 +34,15 @@ TRANSFER_SCENARIO_LIVE_MIGRATION = "live_migration"
 def _add_default_deployment_args_to_parser(parser):
     cd_group = parser.add_mutually_exclusive_group()
     cd_group.add_argument('--clone-disks',
-                       help='Retain the transfer disks by cloning them '
-                            'when launching deployment',
-                       action='store_true', dest="clone_disks",
-                       default=None)
+                          help='Retain the transfer disks by cloning them '
+                               'when launching deployment',
+                          action='store_true', dest="clone_disks",
+                          default=None)
     cd_group.add_argument('--dont-clone-disks',
-                       help="Deploy directly on transfer disks, without "
-                            "cloning them.",
-                       action="store_false", dest="clone_disks",
-                       default=None)
+                          help="Deploy directly on transfer disks, without "
+                               "cloning them.",
+                          action="store_false", dest="clone_disks",
+                          default=None)
 
     osm_group = parser.add_mutually_exclusive_group()
     osm_group.add_argument('--os-morphing',
