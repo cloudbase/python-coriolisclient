@@ -129,6 +129,8 @@ class TransferManagerTestCase(test_base.CoriolisBaseTestCase):
                 mock.sentinel.destination_minion_pool_id,
             "instance_osmorphing_minion_pool_mappings":
                 mock.sentinel.instance_osmorphing_minion_pool_mappings,
+            "clone_disks": True,
+            "skip_os_morphing": False,
         }
         expected_data = {"transfer": expected_data}
 
@@ -151,6 +153,8 @@ class TransferManagerTestCase(test_base.CoriolisBaseTestCase):
             mock.sentinel.destination_minion_pool_id,
             instance_osmorphing_minion_pool_mappings=
             mock.sentinel.instance_osmorphing_minion_pool_mappings,
+            clone_disks=True,
+            skip_os_morphing=False,
         )
 
         self.assertEqual(

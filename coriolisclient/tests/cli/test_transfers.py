@@ -214,6 +214,8 @@ class TransferDetailFormatterTestCase(test_base.CoriolisBaseTestCase):
             mock.sentinel.formatted_executions
         mock_obj.info = mock.sentinel.info
         mock_obj.scenario = mock.sentinel.scenario
+        mock_obj.clone_disks = mock.sentinel.clone_disks
+        mock_obj.skip_os_morphing = mock.sentinel.skip_os_morphing
         expected_result = [
             mock.sentinel.id,
             mock.sentinel.created_at,
@@ -234,8 +236,10 @@ class TransferDetailFormatterTestCase(test_base.CoriolisBaseTestCase):
             mock.sentinel.backend_mappings,
             mock.sentinel.default_storage,
             mock.sentinel.user_scripts,
+            mock.sentinel.clone_disks,
+            mock.sentinel.skip_os_morphing,
             mock.sentinel.formatted_executions,
-            mock.sentinel.info
+            mock.sentinel.info,
         ]
 
         result = self.transfer._get_formatted_data(mock_obj)
@@ -293,6 +297,8 @@ class CreateTransferTestCase(test_base.CoriolisBaseTestCase):
             {'instance_id': "instance_id1", 'pool_id': "pool_id1"},
             {'instance_id': "instance_id2", 'pool_id': "pool_id2"}
         ]
+        args.clone_disks = True
+        args.skip_os_morphing = False
         mock_endpoints = mock.Mock()
         mock_transfers = mock.Mock()
         self.mock_app.client_manager.coriolis.endpoints = mock_endpoints
@@ -330,7 +336,8 @@ class CreateTransferTestCase(test_base.CoriolisBaseTestCase):
             mock.sentinel.destination_minion_pool_id,
             instance_osmorphing_minion_pool_mappings={
                 'instance_id1': 'pool_id1', 'instance_id2': 'pool_id2'},
-            user_scripts=mock_compose_user_scripts.return_value
+            user_scripts=mock_compose_user_scripts.return_value,
+            clone_disks=True, skip_os_morphing=False,
         )
         mock_get_formatted_entity.assert_called_once_with(
             mock_transfers.return_value)
@@ -520,6 +527,8 @@ class UpdateTransferTestCase(test_base.CoriolisBaseTestCase):
             {"instance_id": "mock_instance1", "pool_id": "mock_pool1"},
             {"instance_id": "mock_instance2", "pool_id": "mock_pool2"}
         ]
+        args.clone_disks = True
+        args.skip_os_morphing = False
         mock_transfer = mock.Mock()
         self.mock_app.client_manager.coriolis.transfers = mock_transfer
         mock_get_option_value_from_args.side_effect = [
@@ -541,7 +550,9 @@ class UpdateTransferTestCase(test_base.CoriolisBaseTestCase):
             mock.sentinel.destination_minion_pool_id,
             "instance_osmorphing_minion_pool_mappings":
             {"mock_instance1": "mock_pool1", "mock_instance2": "mock_pool2"},
-            "user_scripts": mock.sentinel.user_scripts
+            "user_scripts": mock.sentinel.user_scripts,
+            "clone_disks": True,
+            "skip_os_morphing": False,
         }
 
         result = self.transfer.take_action(args)

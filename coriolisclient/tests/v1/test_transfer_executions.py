@@ -68,13 +68,15 @@ class TransferExecutionManagerTestCase(test_base.CoriolisBaseTestCase):
     @mock.patch.object(transfer_executions.TransferExecutionManager, "_post")
     def test_create(self, mock_post):
         expected_data = {
-            "shutdown_instances": mock.sentinel.shutdown_instances
+            "shutdown_instances": mock.sentinel.shutdown_instances,
+            "auto_deploy": mock.sentinel.auto_deploy,
         }
         expected_data = {"execution": expected_data}
 
         result = self.transfer_execution.create(
             mock.sentinel.transfer,
-            shutdown_instances=mock.sentinel.shutdown_instances
+            shutdown_instances=mock.sentinel.shutdown_instances,
+            auto_deploy=mock.sentinel.auto_deploy,
         )
 
         self.assertEqual(
