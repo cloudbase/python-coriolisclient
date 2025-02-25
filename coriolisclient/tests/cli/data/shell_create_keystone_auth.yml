@@ -44,9 +44,11 @@
         os_tenant_id: "mock_os_tenant_id"
     kwargs:
         auth_url: "mock_auth_url"
+        password: "mock_password"
     expected_kwargs:
         auth_url: "mock_auth_url"
         project_id: "mock_os_project_id"
+        password: "mock_password"
     api_version: '3'
     auth_type: 'other'
     auth_fun: 'keystoneauth1.identity.v3.Password'
@@ -58,9 +60,11 @@
         os_tenant_id: "mock_os_tenant_id"
     kwargs:
         auth_url: "mock_auth_url"
+        password: "mock_password"
     expected_kwargs:
         auth_url: "mock_auth_url"
         project_id: "mock_os_project_id"
+        password: "mock_password"
     api_version: '3'
     auth_type:
     auth_fun: 'keystoneauth1.identity.v3.Password'
