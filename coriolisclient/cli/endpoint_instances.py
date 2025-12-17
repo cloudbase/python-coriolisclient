@@ -103,6 +103,11 @@ class ListEndpointInstance(lister.Lister):
         parser.add_argument(
             '--name',
             help='Filter results based on regular expression search')
+        parser.add_argument(
+            '--refresh',
+            action='store_true',
+            default=False,
+            help='Force refresh of cached instance data')
 
         cli_utils.add_args_for_json_option_to_parser(parser, 'environment')
 
@@ -116,7 +121,8 @@ class ListEndpointInstance(lister.Lister):
             args, 'environment', error_on_no_value=False)
 
         obj_list = ei.list(
-            endpoint_id, env, args.marker, args.limit, args.name)
+            endpoint_id, env, args.marker, args.limit, args.name,
+            refresh=args.refresh)
         return EndpointInstanceFormatter().list_objects(obj_list)
 
 
