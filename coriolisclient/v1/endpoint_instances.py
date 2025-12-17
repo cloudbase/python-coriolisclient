@@ -33,7 +33,7 @@ class EndpointInstanceManager(base.BaseManager):
 
     def list(
             self, endpoint, env=None, marker=None,
-            limit=None, name=None):
+            limit=None, name=None, refresh=False):
 
         query = {}
         if marker is not None:
@@ -42,6 +42,8 @@ class EndpointInstanceManager(base.BaseManager):
             query['limit'] = limit
         if name is not None:
             query["name"] = name
+        if refresh:
+            query['refresh'] = True
         if env is not None:
             if not isinstance(env, dict):
                 raise ValueError("'env' param must be a dict")
