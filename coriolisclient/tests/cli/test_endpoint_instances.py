@@ -134,6 +134,7 @@ class ListEndpointInstanceTestCase(
         args.marker = mock.sentinel.marker
         args.limit = mock.sentinel.limit
         args.name = mock.sentinel.name
+        args.refresh = mock.sentinel.refresh
         mock_endpoints = mock.Mock()
         mock_ei = mock.Mock()
         self.mock_app.client_manager.coriolis.endpoints = mock_endpoints
@@ -152,7 +153,8 @@ class ListEndpointInstanceTestCase(
             mock_get_option_value_from_args.return_value,
             mock.sentinel.marker,
             mock.sentinel.limit,
-            mock.sentinel.name
+            mock.sentinel.name,
+            refresh=mock.sentinel.refresh,
         )
         mock_list_objects.assert_called_once_with(mock_ei.list.return_value)
 
