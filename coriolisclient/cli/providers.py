@@ -41,7 +41,8 @@ PROVIDERS_TYPE_FEATURE_MAP = {
     256: "Listing VM Flavors",
     512: "Listing Available Options",
     524288: "Source Minion Pool Operations",
-    1048576: "Destination Minion Pool Operations"
+    1048576: "Destination Minion Pool Operations",
+    2097152: "Endpoint Inventory Export",
 }
 
 PROVIDER_SCHEMA_TYPE_MAP = {
