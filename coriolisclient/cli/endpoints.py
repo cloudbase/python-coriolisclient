@@ -17,12 +17,14 @@ Command-line interface sub-commands related to endpoints.
 """
 import argparse
 import json
+import sys
 
 from cliff import command
 from cliff import lister
 from cliff import show
 
 from coriolisclient.cli import formatter
+from coriolisclient.cli import utils as cli_utils
 from coriolisclient import exceptions
 
 
@@ -247,6 +249,36 @@ class ListEndpoint(lister.Lister):
     def take_action(self, args):
         obj_list = self.app.client_manager.coriolis.endpoints.list()
         return EndpointFormatter().list_objects(obj_list)
+
+
+class ExportEndpointInventory(command.Command):
+    """Export the VM inventory of an endpoint in CSV format"""
+
+    def get_parser(self, prog_name):
+        parser = super(ExportEndpointInventory, self).get_parser(prog_name)
+        parser.add_argument('id', help='The endpoint\'s id or name')
+        cli_utils.add_args_for_json_option_to_parser(parser, 'environment')
+        parser.add_argument(
+            '--output-file',
+            help='Path to write the CSV to. Defaults to stdout.')
+        return parser
+
+    def take_action(self, args):
+        endpoints = self.app.client_manager.coriolis.endpoints
+        endpoint_id = endpoints.get_endpoint_id_for_name(args.id)
+        source_environment = cli_utils.get_option_value_from_args(
+            args, 'environment', error_on_no_value=False)
+
+        csv_content = endpoints.get_inventory_csv(
+            endpoint_id, source_environment=source_environment)
+
+        if args.output_file:
+            with open(args.output_file, 'w') as fout:
+                fout.write(csv_content)
+            self.app.stdout.write(
+                'Inventory written to %s\n' % args.output_file)
+        else:
+            sys.stdout.write(csv_content)
 
 
 class EndpointValidateConnection(command.Command):

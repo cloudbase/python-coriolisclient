@@ -16,6 +16,7 @@
 from coriolisclient import base
 from coriolisclient.cli import utils
 from coriolisclient import exceptions
+from coriolisclient.v1 import common
 
 
 class ConnectionInfo(base.Resource):
@@ -63,6 +64,17 @@ class EndpointManager(base.BaseManager):
 
     def delete(self, endpoint):
         return self._delete('/endpoints/%s' % base.getid(endpoint))
+
+    def get_inventory_csv(self, endpoint, source_environment=None):
+        url = '/endpoints/%s/inventory' % base.getid(endpoint)
+        if source_environment:
+            if not isinstance(source_environment, dict):
+                raise ValueError("'source_environment' param must be a dict")
+            encoded_env = common.encode_base64_param(
+                source_environment, is_json=True)
+            url = '%s?env=%s' % (url, encoded_env)
+        resp = self.client.get(url, headers={'Accept': 'text/csv'})
+        return resp.text
 
     def validate_connection(self, endpoint):
         data = self.client.post(
