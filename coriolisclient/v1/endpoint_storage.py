@@ -43,4 +43,4 @@ class EndpointStorageManager(base.BaseManager):
             encoded_env = common.encode_base64_param(environment, is_json=True)
             url = '%s?env=%s' % (url, encoded_env)
 
-        return self._get(url, 'storage').get('config_default')
+        return self._get(url, 'storage').to_dict().get('config_default')
