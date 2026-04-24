@@ -46,7 +46,8 @@ class EndpointStorageManagerTestCase(
     ):
         mock_endpoint = mock.Mock()
         mock_endpoint.uuid = '53773ab8-1474-4cf7-bf0c-a496a6595ecb'
-        mock_get.return_value = {"config_default": "mock_default"}
+        mock_get.return_value = endpoint_storage.EndpointStorage(
+            mock.Mock(), {"config_default": "mock_default"})
 
         result = self.endpoint.get_default(
             mock_endpoint,
