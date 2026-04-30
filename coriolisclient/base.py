@@ -22,6 +22,7 @@ import logging
 import traceback
 
 import six
+from six.moves.urllib import parse as urlparse
 
 from keystoneauth1 import exceptions as keystoneauth_exceptions
 from oslo_utils import strutils
@@ -166,7 +167,7 @@ class BaseManager(object):
 
     @wrap_unauthorized_exception
     def _list(self, url, response_key=None, obj_class=None, json=None,
-              values_key='values'):
+              values_key='values', query: dict | None=None):
         """List the collection.
         :param url: a partial URL, e.g., '/servers'
         :param response_key: the key to be looked up in response dictionary,
@@ -176,7 +177,12 @@ class BaseManager(object):
             (self.resource_class will be used by default)
         :param json: data that will be encoded as JSON and passed in POST
             request (GET will be sent by default)
+        :param query: an optional dict containing query filters
         """
+
+        if query:
+            url += "?" + urlparse.urlencode(query)
+
         if json:
             body = self.client.post(url, json=json).json()
         else:

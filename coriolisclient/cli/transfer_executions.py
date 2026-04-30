@@ -180,6 +180,12 @@ class ListTransferExecution(lister.Lister):
     def get_parser(self, prog_name):
         parser = super(ListTransferExecution, self).get_parser(prog_name)
         parser.add_argument('transfer', help='The transfer\'s id')
+        parser.add_argument(
+            '--marker',
+            help='The id of the last retrieved execution.')
+        parser.add_argument(
+            '--limit', type=int,
+            help='Maximum number of executions to retrieve.')
         return parser
 
     def take_action(self, args):
