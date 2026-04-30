@@ -34,9 +34,16 @@ class TransferExecutionManager(base.BaseManager):
     def __init__(self, api):
         super(TransferExecutionManager, self).__init__(api)
 
-    def list(self, transfer):
+    def list(self, transfer, marker=None, limit=None):
+        query = {}
+        if marker is not None:
+            query['marker'] = marker
+        if limit is not None:
+            query['limit'] = limit
+
         return self._list(
-            '/transfers/%s/executions' % base.getid(transfer), 'executions')
+            '/transfers/%s/executions' % base.getid(transfer), 'executions',
+            query=query)
 
     def get(self, transfer, execution):
         return self._get(
