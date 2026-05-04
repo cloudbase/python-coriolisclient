@@ -20,6 +20,7 @@ import os
 import uuid
 
 from coriolisclient import constants
+from coriolisclient import exceptions
 
 
 def add_storage_mappings_arguments_to_parser(parser):
@@ -264,3 +265,25 @@ def add_minion_pool_args_to_parser(
                  'same OS type and which are compatible with OSMorphing '
                  'the guest OS of each afferent instance. The mappings must '
                  'be of the form "INSTANCE_IDENTIFIER=MINION_POOL_ID".')
+
+
+def parse_sort_arg(sort: str) -> tuple[list, list]:
+    """Parse sort CLI argument.
+
+    :param sort: Comma-separated list of sort keys and directions in the form
+                 of <key>[:<asc|desc>]. The direction defaults to descending if
+                 not specified.
+    :returns: (sort_keys, sort_dirs)
+    """
+    sort_keys = []
+    sort_dirs = []
+    for sort_entry in sort.split(','):
+        sort_key, _sep, sort_dir = sort_entry.partition(':')
+        if not sort_dir:
+            sort_dir = 'desc'
+        elif sort_dir not in ('asc', 'desc'):
+            raise exceptions.CoriolisException(
+                'Unknown sort direction: %s' % sort_dir)
+        sort_keys.append(sort_key)
+        sort_dirs.append(sort_dir)
+    return sort_keys, sort_dirs
