@@ -470,10 +470,16 @@ class ListTransferTestCase(test_base.CoriolisBaseTestCase):
         mock_get_parser.assert_called_once_with(mock.sentinel.prog_name)
 
     @mock.patch.object(transfers.TransferFormatter, 'list_objects')
-    def test_take_action(self, mock_list_objects):
+    @mock.patch("coriolisclient.cli.utils.parse_sort_arg")
+    def test_take_action(self, mock_parse_sort_arg, mock_list_objects):
+        mock_parse_sort_arg.return_value = (
+            mock.sentinel.sort_keys, mock.sentinel.sort_dirs)
+
         args = mock.Mock()
-        mock_transfer = mock.Mock()
-        self.mock_app.client_manager.coriolis.transfers.list = mock_transfer
+        args.sort = None
+        mock_transfer_list = mock.Mock()
+        self.mock_app.client_manager.coriolis.transfers.list = (
+            mock_transfer_list)
 
         result = self.transfer.take_action(args)
 
@@ -481,7 +487,14 @@ class ListTransferTestCase(test_base.CoriolisBaseTestCase):
             mock_list_objects.return_value,
             result
         )
-        mock_list_objects.assert_called_once_with(mock_transfer.return_value)
+        mock_list_objects.assert_called_once_with(
+            mock_transfer_list.return_value)
+        mock_transfer_list.assert_called_once_with(
+            marker=args.marker,
+            limit=args.limit,
+            sort_keys=mock.sentinel.sort_keys,
+            sort_dirs=mock.sentinel.sort_dirs,
+        )
 
 
 class UpdateTransferTestCase(test_base.CoriolisBaseTestCase):

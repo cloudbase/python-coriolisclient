@@ -329,12 +329,23 @@ class ListDeploymentTestCase(test_base.CoriolisBaseTestCase):
         parser = self.cli.get_parser('coriolis')
         self.assertIsInstance(parser, argparse.ArgumentParser)
 
-    def test_take_action(self):
+    @mock.patch("coriolisclient.cli.utils.parse_sort_arg")
+    def test_take_action(self, mock_parse_sort_arg):
+        mock_parse_sort_arg.return_value = (
+            mock.sentinel.sort_keys, mock.sentinel.sort_dirs)
+
+        mock_args = mock.MagicMock()
         mock_fun = self.mock_app.client_manager.coriolis.deployments.list
         mock_fun.return_value = [
             v1_deployments.Deployment(mock.MagicMock(), DEPLOYMENT_LIST_DATA)]
 
-        columns, data = self.cli.take_action(mock.ANY)
+        columns, data = self.cli.take_action(mock_args)
 
         self.assertEqual(deployments.DeploymentFormatter().columns, columns)
         self.assertEqual([DEPLOYMENT_LIST_FORMATTED_DATA], list(data))
+        mock_fun.assert_called_once_with(
+            marker=mock_args.marker,
+            limit=mock_args.limit,
+            sort_keys=mock.sentinel.sort_keys,
+            sort_dirs=mock.sentinel.sort_dirs,
+        )
