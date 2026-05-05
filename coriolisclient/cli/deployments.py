@@ -273,8 +273,23 @@ class ListDeployment(lister.Lister):
 
     def get_parser(self, prog_name):
         parser = super(ListDeployment, self).get_parser(prog_name)
+        parser.add_argument(
+            '--marker',
+            help='The id of the last retrieved execution.')
+        parser.add_argument(
+            '--limit', type=int,
+            help='Maximum number of executions to retrieve.')
+        parser.add_argument(
+            '--sort',
+            help='Comma-separated list of sort keys and directions in the form '
+           'of <key>[:<asc|desc>]. The direction defaults to descending if '
+           'not specified.')
         return parser
 
     def take_action(self, args):
-        obj_list = self.app.client_manager.coriolis.deployments.list()
+        obj_list = self.app.client_manager.coriolis.deployments.list(
+            marker=args.marker,
+            limit=args.limit,
+            sort_keys=sort_keys,
+            sort_dirs=sort_dirs)
         return DeploymentFormatter().list_objects(obj_list)

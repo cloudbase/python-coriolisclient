@@ -52,11 +52,25 @@ class DeploymentManager(base.BaseManager):
     def __init__(self, api):
         super(DeploymentManager, self).__init__(api)
 
-    def list(self, detail=False):
+    def list(self, detail=False,
+             marker=None, limit=None,
+             sort_keys=None, sort_dirs=None):
+        query = []
+        if marker is not None:
+            query.append(("marker", marker))
+        if limit is not None:
+            query.append(("limit", limit))
+        if sort_keys is not None:
+            query.extend(('sort_key', sort_key)
+                         for sort_key in sort_keys)
+        if sort_dirs is not None:
+            query.extend(('sort_dir', sort_dir)
+                         for sort_dir in sort_dirs)
+
         path = "/deployments"
         if detail:
             path = "%s/detail" % path
-        return self._list(path, 'deployments')
+        return self._list(path, 'deployments', query=query)
 
     def get(self, deployment):
         return self._get(
