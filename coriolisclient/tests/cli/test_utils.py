@@ -323,3 +323,13 @@ class UtilsTestCase(test_base.CoriolisBaseTestCase):
             [{'instance_id': 'mock_instance_id', 'pool_id': 'mock_pool_id'}],
             args.instance_osmorphing_minion_pool_mappings
         )
+
+    @ddt.data(
+        (None, ([], [])),
+        ("key0:asc,key1:desc,key2",
+            (["key0", "key1", "key2"], ["asc", "desc", "desc"]))
+    )
+    @ddt.unpack
+    def test_parse_sort_arg(self, sort_arg, exp_ret):
+        ret = utils.parse_sort_arg(sort_arg)
+        self.assertEqual(exp_ret, ret)

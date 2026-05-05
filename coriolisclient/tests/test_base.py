@@ -279,7 +279,7 @@ class BaseManagerTestCase(CoriolisBaseTestCase):
         self.manager = base.BaseManager(mock_client)
 
     def test_list(self):
-        self.manager.client.get(mock.sentinel.url).json.return_value = {
+        self.manager.client.get.return_value.json.return_value = {
             "mock_response_key": {
                 "data": [mock.sentinel.data1, mock.sentinel.data2]}
         }
@@ -294,6 +294,7 @@ class BaseManagerTestCase(CoriolisBaseTestCase):
             values_key="data"
         )
 
+        self.manager.client.get.assert_called_once_with(mock.sentinel.url)
         self.assertEqual(
             [obj_class.return_value] * 2,
             result
@@ -302,6 +303,46 @@ class BaseManagerTestCase(CoriolisBaseTestCase):
             mock.call(self.manager, mock.sentinel.data1, loaded=True),
             mock.call(self.manager, mock.sentinel.data2, loaded=True)
         ])
+
+    def test_list_with_dict_query(self):
+        self.manager.client.get.return_value.json.return_value = {
+            "mock_response_key": {"data": []}
+        }
+        testutils.get_wrapped_function(self.manager._list)(
+            self.manager,
+            url="test-url",
+            response_key="mock_response_key",
+            obj_class=mock.Mock(),
+            json=None,
+            values_key="data",
+            query={
+                "some_filter": "some_value",
+                "some_other_filter": "some_other_value"
+            }
+        )
+        self.manager.client.get.assert_called_once_with(
+            "test-url?some_filter=some_value&"
+            "some_other_filter=some_other_value")
+
+    def test_list_with_tuple_list_query(self):
+        self.manager.client.get.return_value.json.return_value = {
+            "mock_response_key": {"data": []}
+        }
+        testutils.get_wrapped_function(self.manager._list)(
+            self.manager,
+            url="test-url",
+            response_key="mock_response_key",
+            obj_class=mock.Mock(),
+            json=None,
+            values_key="data",
+            query=[
+                ("some_filter", "some_value"),
+                ("some_other_filter", "some_other_value"),
+            ]
+        )
+        self.manager.client.get.assert_called_once_with(
+            "test-url?some_filter=some_value&"
+            "some_other_filter=some_other_value")
 
     def test_list_json(self):
         (self.manager.client.post(mock.sentinel.url, json=True).json.

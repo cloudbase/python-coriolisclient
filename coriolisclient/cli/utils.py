@@ -267,7 +267,7 @@ def add_minion_pool_args_to_parser(
                  'be of the form "INSTANCE_IDENTIFIER=MINION_POOL_ID".')
 
 
-def parse_sort_arg(sort: str) -> tuple[list, list]:
+def parse_sort_arg(sort: str | None) -> tuple[list, list]:
     """Parse sort CLI argument.
 
     :param sort: Comma-separated list of sort keys and directions in the form
@@ -277,6 +277,9 @@ def parse_sort_arg(sort: str) -> tuple[list, list]:
     """
     sort_keys = []
     sort_dirs = []
+    if not sort:
+        return sort_keys, sort_dirs
+
     for sort_entry in sort.split(','):
         sort_key, _sep, sort_dir = sort_entry.partition(':')
         if not sort_dir:

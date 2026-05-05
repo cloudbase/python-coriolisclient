@@ -85,7 +85,30 @@ class TransferManagerTestCase(test_base.CoriolisBaseTestCase):
             mock_list.return_value,
             result
         )
-        mock_list.assert_called_once_with("/transfers", "transfers")
+        mock_list.assert_called_once_with("/transfers", "transfers", query=[])
+
+    @mock.patch.object(transfers.TransferManager, "_list")
+    def test_list_with_pagination(self, mock_list):
+        result = self.transfer.list(
+            detail=False,
+            marker=mock.sentinel.marker,
+            limit=mock.sentinel.limit,
+            sort_keys=[mock.sentinel.sort_key0, mock.sentinel.sort_key1],
+            sort_dirs=[mock.sentinel.sort_dir0, mock.sentinel.sort_dir1],)
+        exp_query = [
+            ("marker", mock.sentinel.marker),
+            ("limit", mock.sentinel.limit),
+            ("sort_key", mock.sentinel.sort_key0),
+            ("sort_key", mock.sentinel.sort_key1),
+            ("sort_dir", mock.sentinel.sort_dir0),
+            ("sort_dir", mock.sentinel.sort_dir1),
+        ]
+        self.assertEqual(
+            mock_list.return_value,
+            result
+        )
+        mock_list.assert_called_once_with(
+            "/transfers", "transfers", query=exp_query)
 
     @mock.patch.object(transfers.TransferManager, "_list")
     def test_list_details(self, mock_list):
@@ -95,7 +118,8 @@ class TransferManagerTestCase(test_base.CoriolisBaseTestCase):
             mock_list.return_value,
             result
         )
-        mock_list.assert_called_once_with("/transfers/detail", "transfers")
+        mock_list.assert_called_once_with(
+            "/transfers/detail", "transfers", query=[])
 
     @mock.patch.object(transfers.TransferManager, "_get")
     def test_get(self, mock_get):

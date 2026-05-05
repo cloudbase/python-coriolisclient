@@ -75,7 +75,28 @@ class DeploymentManagerTestCase(test_base.CoriolisBaseTestCase):
             result = self.deployments.list(detail=True)
             self.assertEqual(mock_list.return_value, result)
             mock_list.assert_called_once_with(
-                '/deployments/detail', 'deployments')
+                '/deployments/detail', 'deployments', query=[])
+
+    def test_list_with_pagination(self):
+        with mock.patch.object(self.deployments, '_list') as mock_list:
+            result = self.deployments.list(
+                detail=True,
+                marker=mock.sentinel.marker,
+                limit=mock.sentinel.limit,
+                sort_keys=[mock.sentinel.sort_key0, mock.sentinel.sort_key1],
+                sort_dirs=[mock.sentinel.sort_dir0, mock.sentinel.sort_dir1],
+            )
+            exp_query = [
+                ("marker", mock.sentinel.marker),
+                ("limit", mock.sentinel.limit),
+                ("sort_key", mock.sentinel.sort_key0),
+                ("sort_key", mock.sentinel.sort_key1),
+                ("sort_dir", mock.sentinel.sort_dir0),
+                ("sort_dir", mock.sentinel.sort_dir1),
+            ]
+            self.assertEqual(mock_list.return_value, result)
+            mock_list.assert_called_once_with(
+                '/deployments/detail', 'deployments', query=exp_query)
 
     def test_get(self):
         deployment = mock.Mock(uuid=DEPLOYMENT_ID)

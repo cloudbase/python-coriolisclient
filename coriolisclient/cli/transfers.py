@@ -334,11 +334,13 @@ class ListTransfer(lister.Lister):
         return parser
 
     def take_action(self, args):
+        sort_keys, sort_dirs = cli_utils.parse_sort_arg(args.sort)
         obj_list = self.app.client_manager.coriolis.transfers.list(
             marker=args.marker,
             limit=args.limit,
-            sort_keys=args.sort_keys,
-            sort_dirs=args.sort_dirs)
+            sort_keys=sort_keys,
+            sort_dirs=sort_dirs,
+        )
         return TransferFormatter().list_objects(obj_list)
 
 

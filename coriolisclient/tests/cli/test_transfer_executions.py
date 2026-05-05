@@ -419,10 +419,15 @@ class ListTransferExecutionTestCase(test_base.CoriolisBaseTestCase):
 
     @mock.patch.object(transfer_executions.TransferExecutionFormatter,
                        'list_objects')
+    @mock.patch("coriolisclient.cli.utils.parse_sort_arg")
     def test_take_action(
         self,
+        mock_parse_sort_arg,
         mock_list_objects
     ):
+        mock_parse_sort_arg.return_value = (
+            mock.sentinel.sort_keys, mock.sentinel.sort_dirs)
+
         args = mock.Mock()
         args.transfer = mock.sentinel.transfer
         mock_transfer_list = mock.Mock()
@@ -435,6 +440,12 @@ class ListTransferExecutionTestCase(test_base.CoriolisBaseTestCase):
             mock_list_objects.return_value,
             result
         )
-        mock_transfer_list.assert_called_once_with(mock.sentinel.transfer)
+        mock_transfer_list.assert_called_once_with(
+            mock.sentinel.transfer,
+            marker=args.marker,
+            limit=args.limit,
+            sort_keys=mock.sentinel.sort_keys,
+            sort_dirs=mock.sentinel.sort_dirs,
+        )
         mock_list_objects.assert_called_once_with(
             mock_transfer_list.return_value)
