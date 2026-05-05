@@ -281,15 +281,15 @@ class ListDeployment(lister.Lister):
             help='Maximum number of executions to retrieve.')
         parser.add_argument(
             '--sort',
-            help='Comma-separated list of sort keys and directions in the form '
-           'of <key>[:<asc|desc>]. The direction defaults to descending if '
-           'not specified.')
+            help='Comma-separated list of sort keys and directions in the '
+                 'form of <key>[:<asc|desc>]. The direction defaults to '
+                 'descending if not specified.')
         return parser
 
     def take_action(self, args):
         obj_list = self.app.client_manager.coriolis.deployments.list(
             marker=args.marker,
             limit=args.limit,
-            sort_keys=sort_keys,
-            sort_dirs=sort_dirs)
+            sort_keys=args.sort_keys,
+            sort_dirs=args.sort_dirs)
         return DeploymentFormatter().list_objects(obj_list)

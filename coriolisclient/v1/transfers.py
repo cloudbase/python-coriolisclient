@@ -47,11 +47,25 @@ class TransferManager(base.BaseManager):
     def __init__(self, api):
         super(TransferManager, self).__init__(api)
 
-    def list(self, detail=False):
+    def list(self, detail=False, marker=None, limit=None,
+             sort_keys=None, sort_dirs=None):
+        # List of key-value tuples.
+        query = []
+        if marker is not None:
+            query.append(("marker", marker))
+        if limit is not None:
+            query.append(("limit", limit))
+        if sort_keys is not None:
+            query.extend(('sort_key', sort_key)
+                         for sort_key in sort_keys)
+        if sort_dirs is not None:
+            query.extend(('sort_dir', sort_dir)
+                         for sort_dir in sort_dirs)
+
         path = "/transfers"
         if detail:
             path = "%s/detail" % path
-        return self._list(path, 'transfers')
+        return self._list(path, 'transfers', query=query)
 
     def get(self, transfer):
         return self._get('/transfers/%s' % base.getid(transfer), 'transfer')

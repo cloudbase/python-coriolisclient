@@ -167,7 +167,7 @@ class BaseManager(object):
 
     @wrap_unauthorized_exception
     def _list(self, url, response_key=None, obj_class=None, json=None,
-              values_key='values', query: dict | list | None=None):
+              values_key='values', query: dict | list | None = None):
         """List the collection.
         :param url: a partial URL, e.g., '/servers'
         :param response_key: the key to be looked up in response dictionary,
