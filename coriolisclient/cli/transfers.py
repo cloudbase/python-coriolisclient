@@ -322,10 +322,10 @@ class ListTransfer(lister.Lister):
         parser = super(ListTransfer, self).get_parser(prog_name)
         parser.add_argument(
             '--marker',
-            help='The id of the last retrieved execution.')
+            help='The id of the last retrieved transfer.')
         parser.add_argument(
             '--limit', type=int,
-            help='Maximum number of executions to retrieve.')
+            help='Maximum number of transfers to retrieve.')
         parser.add_argument(
             '--sort',
             help='Comma-separated list of sort keys and directions in the '
