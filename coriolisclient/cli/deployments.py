@@ -275,10 +275,10 @@ class ListDeployment(lister.Lister):
         parser = super(ListDeployment, self).get_parser(prog_name)
         parser.add_argument(
             '--marker',
-            help='The id of the last retrieved execution.')
+            help='The id of the last retrieved deployment.')
         parser.add_argument(
             '--limit', type=int,
-            help='Maximum number of executions to retrieve.')
+            help='Maximum number of deployments to retrieve.')
         parser.add_argument(
             '--sort',
             help='Comma-separated list of sort keys and directions in the '
