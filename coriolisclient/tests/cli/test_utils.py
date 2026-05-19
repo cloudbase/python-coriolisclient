@@ -9,6 +9,10 @@ from unittest import mock
 from coriolisclient.cli import utils
 from coriolisclient.tests import test_base
 
+_user_script_path = os.path.join(
+    os.path.dirname(os.path.realpath(__file__)),
+    'data/user_scripts.yml')
+
 
 @ddt.ddt
 class UtilsTestCase(test_base.CoriolisBaseTestCase):
@@ -252,11 +256,7 @@ class UtilsTestCase(test_base.CoriolisBaseTestCase):
         {
             "global_scripts": ["linux script"],
             "instance_scripts": ["linux script"],
-            "expected_result":
-            {
-                "global": {},
-                "instances": {}
-            }
+            "expected_result": None
         },
         {
             "global_scripts": ["invalid_os=scrips"],
@@ -273,6 +273,20 @@ class UtilsTestCase(test_base.CoriolisBaseTestCase):
             "instance_scripts": ["linux='invalid/file/path'"],
             "expected_result": None
         },
+        {
+            "global_scripts": None,
+            # Too many parameters.
+            "instance_scripts": [
+                f"linux={_user_script_path},windows={_user_script_path}"],  # noqa
+            "expected_result": None
+        },
+        {
+            "global_scripts": None,
+            # Invalid phase.
+            "instance_scripts": [
+                f"linux={_user_script_path},phase=invalid-phase"],  # noqa
+            "expected_result": None
+        }
     )
     def test_compose_user_scripts(self, data):
         global_scripts = data["global_scripts"]
@@ -298,15 +312,58 @@ class UtilsTestCase(test_base.CoriolisBaseTestCase):
     def test_compose_user_scripts_from_file(self):
         script_path = os.path.dirname(os.path.realpath(__file__))
         script_path = os.path.join(script_path, 'data/user_scripts.yml')
-        global_scripts = ["linux=%s" % script_path]
-        instance_scripts = ["linux=%s" % script_path]
+        global_scripts = [
+            f"linux={script_path}",
+            f"windows={script_path},phase=osmorphing_pre_os_mount",  # noqa
+            f"windows={script_path},phase=osmorphing_post_os_mount",  # noqa
+        ]
+        instance_scripts = [
+            f"instance0={script_path}",
+            f"instance1={script_path}",
+            f"instance1={script_path},phase=osmorphing_pre_os_mount",  # noqa
+        ]
 
         result = utils.compose_user_scripts(global_scripts, instance_scripts)
 
+        payload = '"mock_script1"\n"mock_script2"\n'
         self.assertEqual(
             {
-                'global': {'linux': '"mock_script1"\n"mock_script2"\n'},
-                'instances': {'linux': '"mock_script1"\n"mock_script2"\n'}
+                'global': {
+                    'linux': [
+                        {
+                            'phase': "osmorphing_post_os_mount",
+                            'payload': payload,
+                        },
+                    ],
+                    'windows': [
+                        {
+                            'phase': "osmorphing_pre_os_mount",
+                            'payload': payload,
+                        },
+                        {
+                            'phase': "osmorphing_post_os_mount",
+                            'payload': payload,
+                        },
+                    ],
+                },
+                'instances': {
+                    'instance0': [
+                        {
+                            'phase': "osmorphing_post_os_mount",
+                            'payload': payload,
+                        },
+                    ],
+                    'instance1': [
+                        {
+                            'phase': "osmorphing_post_os_mount",
+                            'payload': payload,
+                        },
+                        {
+                            'phase': "osmorphing_pre_os_mount",
+                            'payload': payload,
+                        },
+                    ],
+                },
             },
             result
         )

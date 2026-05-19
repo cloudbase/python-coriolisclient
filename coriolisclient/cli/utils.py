@@ -191,6 +191,23 @@ def get_option_value_from_args(args, option_name, error_on_no_value=True):
     return value
 
 
+def comma_separated_kv_to_dict(input_string: str) -> dict:
+    """Convert a comma separated list of key=value pairs to dict.
+
+    Example: some_key=some_val,some_other_key=some_other_val
+             -> {"some_key": "some_val", "some_other_key": "some_other_val"}
+    """
+    out = {}
+    kv_pairs = input_string.split(",")
+    for kv_pair in kv_pairs:
+        try:
+            key, value = kv_pair.split("=")
+        except ValueError:
+            raise ValueError("Not a <key>=<value> pair: %s" % kv_pair)
+        out[key] = value
+    return out
+
+
 def compose_user_scripts(global_scripts, instance_scripts):
     ret = {
         "global": {},
@@ -198,35 +215,97 @@ def compose_user_scripts(global_scripts, instance_scripts):
     }
     global_scripts = global_scripts or []
     instance_scripts = instance_scripts or []
-    for glb in global_scripts:
-        split = glb.split("=", 1)
-        if len(split) != 2:
-            continue
-        if split[0] not in constants.OS_LIST:
+    for global_script_str_params in global_scripts:
+        try:
+            params = comma_separated_kv_to_dict(global_script_str_params)
+        except ValueError:
+            raise ValueError(
+                "Invalid global user script parameter: %s. Expecting "
+                "<os_type>=<script_path>. Can optionally include a comma "
+                "separated phase parameter, "
+                "e.g. <os_type>=<script_path>,phase=<phase>" %
+                global_script_str_params)
+        phase = params.pop("phase", constants.PHASE_OSMORPHING_POST_OS_MOUNT)
+        if phase not in constants.USER_SCRIPT_PHASES:
+            raise ValueError(
+                f"Invalid user script phase: {phase}. "
+                "Available options are: "
+                f"{', '.join(constants.USER_SCRIPT_PHASES)}.")
+        if not params:
+            raise ValueError(
+                "OS type not specified. "
+                "Available options are: %s" % ", ".join(constants.OS_LIST))
+        if len(params.keys()) > 1:
+            raise ValueError(
+                "Too many parameters. Expecting just the OS type.")
+        os_type = list(params.keys())[0]
+        script_path = params[os_type]
+        if os_type not in constants.OS_LIST:
             raise ValueError(
                 "Invalid OS %s. Available options are: %s" % (
-                    split[0], ", ".join(constants.OS_LIST)))
-        if not split[1]:
-            # removing script
-            ret["global"][split[0]] = None
-            continue
-        if os.path.isfile(split[1]) is False:
-            raise ValueError("Could not find %s" % split[1])
-        with open(split[1]) as sc:
-            ret["global"][split[0]] = sc.read()
+                    os_type, ", ".join(constants.OS_LIST)))
 
-    for inst in instance_scripts:
-        split = inst.split("=", 1)
-        if len(split) != 2:
+        payload = None
+        # The user may omit the script path in order to remove all script
+        # records.
+        if not script_path:
+            ret["global"][os_type] = None
             continue
-        if not split[1]:
-            # removing script
-            ret['instances'][split[0]] = None
+
+        if not os.path.isfile(script_path):
+            raise ValueError("Could not find %s" % script_path)
+        with open(script_path) as sc:
+            payload = sc.read()
+        if os_type not in ret["global"]:
+            ret["global"][os_type] = []
+        script_entry = {
+            "phase": phase,
+            "payload": payload,
+        }
+        ret["global"][os_type].append(script_entry)
+
+    for instance_scripts_str_params in instance_scripts:
+        try:
+            params = comma_separated_kv_to_dict(instance_scripts_str_params)
+        except ValueError:
+            raise ValueError(
+                "Invalid instance user script parameter: %s. Expecting "
+                "<instance>=<script_path>. Can optionally include a comma "
+                "separated phase parameter, "
+                "e.g. <instance>=<script_path>,phase=<phase>" %
+                instance_scripts_str_params)
+
+        phase = params.pop("phase", constants.PHASE_OSMORPHING_POST_OS_MOUNT)
+        if phase not in constants.USER_SCRIPT_PHASES:
+            raise ValueError(
+                f"Invalid user script phase: {phase}. "
+                "Available options are: "
+                f"{', '.join(constants.USER_SCRIPT_PHASES)}.")
+        if not params:
+            raise ValueError("Instance not specified.")
+        if len(params.keys()) > 1:
+            raise ValueError(
+                "Too many parameters. Expecting just one instance.")
+        instance = list(params.keys())[0]
+        script_path = params[instance]
+        payload = None
+        # The user may omit the script path in order to remove all script
+        # records.
+        if not script_path:
+            ret["instances"][instance] = None
             continue
-        if os.path.isfile(split[1]) is False:
-            raise ValueError("Could not find %s" % split[1])
-        with open(split[1]) as sc:
-            ret["instances"][split[0]] = sc.read()
+
+        if not os.path.isfile(script_path):
+            raise ValueError("Could not find %s" % script_path)
+        with open(script_path) as sc:
+            payload = sc.read()
+        if instance not in ret["instances"]:
+            ret["instances"][instance] = []
+        script_entry = {
+            "phase": phase,
+            "payload": payload,
+        }
+        ret["instances"][instance].append(script_entry)
     return ret
 
 

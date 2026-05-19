@@ -161,37 +161,51 @@ class CreateDeployment(show.ShowOne):
     """Start a new deployment from an existing transfer"""
     def get_parser(self, prog_name):
         parser = super(CreateDeployment, self).get_parser(prog_name)
-        parser.add_argument('transfer',
-                            help='The ID of the transfer to migrate')
-        parser.add_argument('--force',
-                            help='Force the deployment in case of a transfer '
-                            'with failed executions', action='store_true',
-                            default=False)
-        parser.add_argument('--dont-clone-disks',
-                            help='Retain the transfer disks by cloning them',
-                            action='store_false', dest="clone_disks",
-                            default=True)
-        parser.add_argument('--skip-os-morphing',
-                            help='Skip the OS morphing process',
-                            action='store_true',
-                            default=False)
-        parser.add_argument('--user-script-global', action='append',
-                            required=False,
-                            dest="global_scripts",
-                            help='A script that will run for a particular '
-                            'os_type. This option can be used multiple '
-                            'times. Use: linux=/path/to/script.sh or '
-                            'windows=/path/to/script.ps1')
-        parser.add_argument('--user-script-instance', action='append',
-                            required=False,
-                            dest="instance_scripts",
-                            help='A script that will run for a particular '
-                            'instance specified by the --instance option. '
-                            'This option can be used multiple times. '
-                            'Use: "instance_name"=/path/to/script.sh.'
-                            ' This option overwrites any OS specific script '
-                            'specified in --user-script-global for this '
-                            'instance')
+        parser.add_argument(
+            'transfer',
+            help='The ID of the transfer to migrate')
+        parser.add_argument(
+            '--force',
+            help='Force the deployment in case of a transfer '
+                 'with failed executions',
+            action='store_true',
+            default=False)
+        parser.add_argument(
+            '--dont-clone-disks',
+            help='Retain the transfer disks by cloning them',
+            action='store_false',
+            dest="clone_disks",
+            default=True)
+        parser.add_argument(
+            '--skip-os-morphing',
+            help='Skip the OS morphing process',
+            action='store_true',
+            default=False)
+        parser.add_argument(
+            '--user-script-global',
+            action='append',
+            required=False,
+            dest="global_scripts",
+            help='A script that will run for a particular os_type. This '
+                 'option can be used multiple times. '
+                 'Use: linux=/path/to/script.sh or '
+                 'windows=/path/to/script.ps1. '
+                 'Can optionally include a script phase: '
+                 'windows=/path/to/script.ps1,phase=osmorphing_pre_os_mount.')
+        parser.add_argument(
+            '--user-script-instance',
+            action='append',
+            required=False,
+            dest="instance_scripts",
+            help='A script that will run for a particular '
+                 'instance specified by the --instance option. '
+                 'This option can be used multiple times. '
+                 'Use: "instance_name"=/path/to/script.sh.'
+                 ' This option overwrites any OS specific script '
+                 'specified in --user-script-global for this '
+                 'instance. Can optionally include a script phase: '
+                 'instance_name=/path/to/script.ps1,'
+                 'phase=osmorphing_pre_os_mount.')
         cli_utils.add_minion_pool_args_to_parser(
             parser, include_origin_pool_arg=False,
             include_destination_pool_arg=False,
