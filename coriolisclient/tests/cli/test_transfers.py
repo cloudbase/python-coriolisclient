@@ -494,6 +494,7 @@ class ListTransferTestCase(test_base.CoriolisBaseTestCase):
             limit=args.limit,
             sort_keys=mock.sentinel.sort_keys,
             sort_dirs=mock.sentinel.sort_dirs,
+            filters={'status': args.status},
         )
 
 

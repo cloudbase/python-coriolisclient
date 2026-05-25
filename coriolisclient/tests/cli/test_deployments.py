@@ -348,4 +348,5 @@ class ListDeploymentTestCase(test_base.CoriolisBaseTestCase):
             limit=mock_args.limit,
             sort_keys=mock.sentinel.sort_keys,
             sort_dirs=mock.sentinel.sort_dirs,
+            filters={'status': mock_args.status},
         )

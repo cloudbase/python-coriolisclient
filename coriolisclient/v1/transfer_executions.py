@@ -35,7 +35,7 @@ class TransferExecutionManager(base.BaseManager):
         super(TransferExecutionManager, self).__init__(api)
 
     def list(self, transfer, marker=None, limit=None,
-             sort_keys=None, sort_dirs=None):
+             sort_keys=None, sort_dirs=None, filters=None):
         # List of key-value tuples.
         query = []
         if marker is not None:
@@ -48,6 +48,8 @@ class TransferExecutionManager(base.BaseManager):
         if sort_dirs is not None:
             query.extend(('sort_dir', sort_dir)
                          for sort_dir in sort_dirs)
+        if filters:
+            query.extend((key, value) for key, value in filters.items())
 
         return self._list(
             '/transfers/%s/executions' % base.getid(transfer), 'executions',

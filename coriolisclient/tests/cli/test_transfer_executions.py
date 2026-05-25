@@ -446,6 +446,7 @@ class ListTransferExecutionTestCase(test_base.CoriolisBaseTestCase):
             limit=args.limit,
             sort_keys=mock.sentinel.sort_keys,
             sort_dirs=mock.sentinel.sort_dirs,
+            filters={'status': args.status},
         )
         mock_list_objects.assert_called_once_with(
             mock_transfer_list.return_value)
