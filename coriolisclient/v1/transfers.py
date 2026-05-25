@@ -48,7 +48,7 @@ class TransferManager(base.BaseManager):
         super(TransferManager, self).__init__(api)
 
     def list(self, detail=False, marker=None, limit=None,
-             sort_keys=None, sort_dirs=None):
+             sort_keys=None, sort_dirs=None, filters=None):
         # List of key-value tuples.
         query = []
         if marker is not None:
@@ -61,6 +61,8 @@ class TransferManager(base.BaseManager):
         if sort_dirs is not None:
             query.extend(('sort_dir', sort_dir)
                          for sort_dir in sort_dirs)
+        if filters:
+            query.extend((key, value) for key, value in filters.items())
 
         path = "/transfers"
         if detail:

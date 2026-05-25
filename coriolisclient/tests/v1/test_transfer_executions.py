@@ -60,6 +60,7 @@ class TransferExecutionManagerTestCase(test_base.CoriolisBaseTestCase):
             limit=mock.sentinel.limit,
             sort_keys=[mock.sentinel.sort_key0, mock.sentinel.sort_key1],
             sort_dirs=[mock.sentinel.sort_dir0, mock.sentinel.sort_dir1],
+            filters={"status": mock.sentinel.status},
         )
         exp_query = [
             ("marker", mock.sentinel.marker),
@@ -68,6 +69,7 @@ class TransferExecutionManagerTestCase(test_base.CoriolisBaseTestCase):
             ("sort_key", mock.sentinel.sort_key1),
             ("sort_dir", mock.sentinel.sort_dir0),
             ("sort_dir", mock.sentinel.sort_dir1),
+            ("status", mock.sentinel.status),
         ]
         self.assertEqual(
             mock_list.return_value,

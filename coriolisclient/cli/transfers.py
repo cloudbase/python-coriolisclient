@@ -331,15 +331,22 @@ class ListTransfer(lister.Lister):
             help='Comma-separated list of sort keys and directions in the '
                  'form of <key>[:<asc|desc>]. The direction defaults to '
                  'descending if not specified.')
+        parser.add_argument(
+            '--status',
+            help='Search by transfer status.')
         return parser
 
     def take_action(self, args):
+        filters = {}
+        if args.status:
+            filters["status"] = args.status
         sort_keys, sort_dirs = cli_utils.parse_sort_arg(args.sort)
         obj_list = self.app.client_manager.coriolis.transfers.list(
             marker=args.marker,
             limit=args.limit,
             sort_keys=sort_keys,
             sort_dirs=sort_dirs,
+            filters=filters,
         )
         return TransferFormatter().list_objects(obj_list)
 
