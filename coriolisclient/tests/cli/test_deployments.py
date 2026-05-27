@@ -219,7 +219,7 @@ class CreateDeploymentTestCase(test_base.CoriolisBaseTestCase):
             '--user-script-instance', instance_script])
         self.assertEqual(
             ('transfer_id', True, False, True,
-              processed_global_scripts, processed_instance_scripts),
+             processed_global_scripts, processed_instance_scripts),
             (args.transfer, args.force, args.clone_disks,
              args.skip_os_morphing, args.global_scripts,
              args.instance_scripts))
