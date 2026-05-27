@@ -170,50 +170,72 @@ class CreateTransfer(show.ShowOne):
     """Create a new transfer"""
     def get_parser(self, prog_name):
         parser = super(CreateTransfer, self).get_parser(prog_name)
-        parser.add_argument('--origin-endpoint', required=True,
-                            help='The origin endpoint id')
-        parser.add_argument('--destination-endpoint', required=True,
-                            help='The destination endpoint id')
-        parser.add_argument('--instance', action='append', required=True,
-                            dest="instances", metavar="INSTANCE_IDENTIFIER",
-                            help='The identifier of a source instance to be '
-                                 'transferred. Can be specified multiple '
-                                 'times')
-        parser.add_argument('--scenario',
-                            dest="scenario", metavar="SCENARIO",
-                            choices=[
-                                TRANSFER_SCENARIO_REPLICA,
-                                TRANSFER_SCENARIO_LIVE_MIGRATION],
-                            default=TRANSFER_SCENARIO_REPLICA,
-                            help='The type of scenario to use when creating '
-                                 'the Transfer. "replica" will create a '
-                                 'monthly-billed Replica which can be '
-                                 'executed and deployed as many times as '
-                                 'desired, while "live_migration" will '
-                                 'create a Transfer which can be synced '
-                                 'as many times as needed but only '
-                                 'deployed once.')
-        parser.add_argument('--notes', dest='notes',
-                            help='Notes about the transfer')
-        parser.add_argument('--user-script-global', action='append',
-                            required=False,
-                            dest="global_scripts",
-                            type=cli_utils.comma_separated_kv_to_dict,
-                            help='A script that will run for a particular '
-                            'os_type. This option can be used multiple '
-                            'times. Use: linux=/path/to/script.sh or '
-                            'windows=/path/to/script.ps1')
-        parser.add_argument('--user-script-instance', action='append',
-                            required=False,
-                            dest="instance_scripts",
-                            type=cli_utils.comma_separated_kv_to_dict,
-                            help='A script that will run for a particular '
-                            'instance specified by the --instance option. '
-                            'This option can be used multiple times. '
-                            'Use: "instance_name"=/path/to/script.sh.'
-                            ' This option overwrites any OS specific script '
-                            'specified in --user-script-global for this '
-                            'instance')
+        parser.add_argument(
+            '--origin-endpoint',
+            required=True,
+            help='The origin endpoint id')
+        parser.add_argument(
+            '--destination-endpoint',
+            required=True,
+            help='The destination endpoint id')
+        parser.add_argument(
+            '--instance',
+            action='append',
+            required=True,
+            dest="instances",
+            metavar="INSTANCE_IDENTIFIER",
+            help='The identifier of a source instance to be '
+                 'transferred. Can be specified multiple times')
+        parser.add_argument(
+            '--scenario',
+            dest="scenario",
+            metavar="SCENARIO",
+            choices=[
+                TRANSFER_SCENARIO_REPLICA,
+                TRANSFER_SCENARIO_LIVE_MIGRATION],
+            default=TRANSFER_SCENARIO_REPLICA,
+            help='The type of scenario to use when creating '
+                 'the Transfer. "replica" will create a '
+                 'monthly-billed Replica which can be '
+                 'executed and deployed as many times as '
+                 'desired, while "live_migration" will '
+                 'create a Transfer which can be synced '
+                 'as many times as needed but only '
+                 'deployed once.')
+        parser.add_argument(
+            '--notes',
+            dest='notes',
+            help='Notes about the transfer')
+        parser.add_argument(
+            '--user-script-global',
+            action='append',
+            required=False,
+            dest="global_scripts",
+            type=cli_utils.comma_separated_kv_to_dict,
+            help='A script that will run for a particular '
+                 'os_type. This option can be used multiple '
+                 'times. Use: linux=/path/to/script.sh or '
+                 'windows=/path/to/script.ps1.'
+                 'Can optionally include a script phase: '
+                 'windows=/path/to/script.ps1,phase=osmorphing_pre_os_mount. '
+                 'Supported phases: osmorphing_post_os_mount (default), '
+                 'osmorphing_pre_os_mount.')
+        parser.add_argument(
+            '--user-script-instance', action='append',
+            required=False,
+            dest="instance_scripts",
+            type=cli_utils.comma_separated_kv_to_dict,
+            help='A script that will run for a particular '
+                 'instance specified by the --instance option. '
+                 'This option can be used multiple times. '
+                 'Use: "instance_name"=/path/to/script.sh.'
+                 ' This option overwrites any OS specific script '
+                 'specified in --user-script-global for this '
+                 'instance. Can optionally include a script phase: '
+                 'instance_name=/path/to/script.ps1,'
+                 'phase=osmorphing_pre_os_mount. '
+                 'Supported phases: osmorphing_post_os_mount (default), '
+                 'osmorphing_pre_os_mount.')
 
         cli_utils.add_args_for_json_option_to_parser(
             parser, 'destination-environment')
@@ -351,27 +373,42 @@ class UpdateTransfer(show.ShowOne):
     def get_parser(self, prog_name):
         parser = super(UpdateTransfer, self).get_parser(prog_name)
         parser.add_argument('id', help='The transfer\'s id')
-        parser.add_argument('--notes', dest='notes',
-                            help='Notes about the transfer.')
-        parser.add_argument('--user-script-global', action='append',
-                            required=False,
-                            dest="global_scripts",
-                            type=cli_utils.comma_separated_kv_to_dict,
-                            help='A script that will run for a particular '
-                            'os_type. This option can be used multiple '
-                            'times. Use: linux=/path/to/script.sh or '
-                            'windows=/path/to/script.ps1')
-        parser.add_argument('--user-script-instance', action='append',
-                            required=False,
-                            dest="instance_scripts",
-                            type=cli_utils.comma_separated_kv_to_dict,
-                            help='A script that will run for a particular '
-                            'instance specified by the --instance option. '
-                            'This option can be used multiple times. '
-                            'Use: "instance_name"=/path/to/script.sh.'
-                            ' This option overwrites any OS specific script '
-                            'specified in --user-script-global for this '
-                            'instance')
+        parser.add_argument(
+            '--notes',
+            dest='notes',
+            help='Notes about the transfer.')
+        parser.add_argument(
+            '--user-script-global',
+            action='append',
+            required=False,
+            dest="global_scripts",
+            type=cli_utils.comma_separated_kv_to_dict,
+            help='A script that will run for a particular '
+                 'os_type. This option can be used multiple '
+                 'times. Use: linux=/path/to/script.sh or '
+                 'windows=/path/to/script.ps1. '
+                 'Omit the path to unregister the script, e.g. "linux=".'
+                 'Can optionally include a script phase: '
+                 'windows=/path/to/script.ps1,phase=osmorphing_pre_os_mount. '
+                 'Supported phases: osmorphing_post_os_mount (default), '
+                 'osmorphing_pre_os_mount.')
+        parser.add_argument(
+            '--user-script-instance', action='append',
+            required=False,
+            dest="instance_scripts",
+            type=cli_utils.comma_separated_kv_to_dict,
+            help='A script that will run for a particular '
+                 'instance specified by the --instance option. '
+                 'This option can be used multiple times. '
+                 'Use: "instance_name"=/path/to/script.sh.'
+                 ' This option overwrites any OS specific script '
+                 'specified in --user-script-global for this instance.'
+                 'Omit the path to unregister the script, e.g. "linux=".'
+                 'Can optionally include a script phase: '
+                 'instance_name=/path/to/script.ps1,'
+                 'phase=osmorphing_pre_os_mount. '
+                 'Supported phases: osmorphing_post_os_mount (default), '
+                 'osmorphing_pre_os_mount.')
 
         cli_utils.add_args_for_json_option_to_parser(
             parser, 'destination-environment')
