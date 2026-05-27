@@ -198,6 +198,7 @@ class CreateTransfer(show.ShowOne):
         parser.add_argument('--user-script-global', action='append',
                             required=False,
                             dest="global_scripts",
+                            type=cli_utils.comma_separated_kv_to_dict,
                             help='A script that will run for a particular '
                             'os_type. This option can be used multiple '
                             'times. Use: linux=/path/to/script.sh or '
@@ -205,6 +206,7 @@ class CreateTransfer(show.ShowOne):
         parser.add_argument('--user-script-instance', action='append',
                             required=False,
                             dest="instance_scripts",
+                            type=cli_utils.comma_separated_kv_to_dict,
                             help='A script that will run for a particular '
                             'instance specified by the --instance option. '
                             'This option can be used multiple times. '
@@ -354,6 +356,7 @@ class UpdateTransfer(show.ShowOne):
         parser.add_argument('--user-script-global', action='append',
                             required=False,
                             dest="global_scripts",
+                            type=cli_utils.comma_separated_kv_to_dict,
                             help='A script that will run for a particular '
                             'os_type. This option can be used multiple '
                             'times. Use: linux=/path/to/script.sh or '
@@ -361,6 +364,7 @@ class UpdateTransfer(show.ShowOne):
         parser.add_argument('--user-script-instance', action='append',
                             required=False,
                             dest="instance_scripts",
+                            type=cli_utils.comma_separated_kv_to_dict,
                             help='A script that will run for a particular '
                             'instance specified by the --instance option. '
                             'This option can be used multiple times. '
