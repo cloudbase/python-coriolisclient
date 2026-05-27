@@ -283,14 +283,14 @@ class UtilsTestCase(test_base.CoriolisBaseTestCase):
             "global_scripts": None,
             # Too many parameters.
             "instance_scripts": [
-                f"linux={_user_script_path},windows={_user_script_path}"],  # noqa
+                f"linux={_user_script_path},windows={_user_script_path}"],
             "expected_result": None
         },
         {
             "global_scripts": None,
             # Invalid phase.
             "instance_scripts": [
-                f"linux={_user_script_path},phase=invalid-phase"],  # noqa
+                f"linux={_user_script_path},phase=invalid-phase"],
             "expected_result": None
         }
     )
@@ -326,13 +326,13 @@ class UtilsTestCase(test_base.CoriolisBaseTestCase):
         script_path = os.path.join(script_path, 'data/user_scripts.yml')
         global_scripts = [
             f"linux={script_path}",
-            f"windows={script_path},phase=osmorphing_pre_os_mount",  # noqa
-            f"windows={script_path},phase=osmorphing_post_os_mount",  # noqa
+            f"windows={script_path},phase=osmorphing_pre_os_mount",
+            f"windows={script_path},phase=osmorphing_post_os_mount",
         ]
         instance_scripts = [
             f"instance0={script_path}",
             f"instance1={script_path}",
-            f"instance1={script_path},phase=osmorphing_pre_os_mount",  # noqa
+            f"instance1={script_path},phase=osmorphing_pre_os_mount",
         ]
 
         # We could've provided the dicts directly but we'll exercise
