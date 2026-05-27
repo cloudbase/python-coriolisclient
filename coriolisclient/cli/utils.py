@@ -246,8 +246,7 @@ def compose_user_scripts(
                 "OS type not specified. "
                 "Available options are: %s" % ", ".join(constants.OS_LIST))
         if len(params.keys()) > 1:
-            raise ValueError(
-                "Too many parameters. Expecting just the OS type.")
+            raise ValueError("Too many parameters.")
         os_type = list(params.keys())[0]
         script_path = params[os_type]
         if os_type not in constants.OS_LIST:

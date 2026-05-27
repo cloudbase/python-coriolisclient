@@ -192,7 +192,9 @@ class CreateDeployment(show.ShowOne):
                  'Use: linux=/path/to/script.sh or '
                  'windows=/path/to/script.ps1. '
                  'Can optionally include a script phase: '
-                 'windows=/path/to/script.ps1,phase=osmorphing_pre_os_mount.')
+                 'windows=/path/to/script.ps1,phase=osmorphing_pre_os_mount. '
+                 'Supported phases: osmorphing_post_os_mount (default), '
+                 'osmorphing_pre_os_mount.')
         parser.add_argument(
             '--user-script-instance',
             action='append',
@@ -207,7 +209,9 @@ class CreateDeployment(show.ShowOne):
                  'specified in --user-script-global for this '
                  'instance. Can optionally include a script phase: '
                  'instance_name=/path/to/script.ps1,'
-                 'phase=osmorphing_pre_os_mount.')
+                 'phase=osmorphing_pre_os_mount. '
+                 'Supported phases: osmorphing_post_os_mount (default), '
+                 'osmorphing_pre_os_mount.')
         cli_utils.add_minion_pool_args_to_parser(
             parser, include_origin_pool_arg=False,
             include_destination_pool_arg=False,
