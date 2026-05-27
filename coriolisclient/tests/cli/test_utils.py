@@ -235,6 +235,17 @@ class UtilsTestCase(test_base.CoriolisBaseTestCase):
         )
 
     @ddt.data(
+        "linux script",
+        "linux=script,phase",
+    )
+    def test_comma_separated_kv_to_dict_invalid(self, params):
+        self.assertRaises(
+            ValueError,
+            utils.comma_separated_kv_to_dict,
+            params,
+        )
+
+    @ddt.data(
         {
             "global_scripts": None,
             "instance_scripts": None,
@@ -252,11 +263,6 @@ class UtilsTestCase(test_base.CoriolisBaseTestCase):
                 "global": {"linux": None},
                 "instances": {"instance_1": None}
             }
-        },
-        {
-            "global_scripts": ["linux script"],
-            "instance_scripts": ["linux script"],
-            "expected_result": None
         },
         {
             "global_scripts": ["invalid_os=scrips"],
@@ -289,8 +295,14 @@ class UtilsTestCase(test_base.CoriolisBaseTestCase):
         }
     )
     def test_compose_user_scripts(self, data):
-        global_scripts = data["global_scripts"]
-        instance_scripts = data["instance_scripts"]
+        global_scripts = [
+            utils.comma_separated_kv_to_dict(params)
+            for params in data["global_scripts"]
+        ] if data["global_scripts"] else None
+        instance_scripts = [
+            utils.comma_separated_kv_to_dict(params)
+            for params in data["instance_scripts"]
+        ] if data["instance_scripts"] else None
         expected_result = data["expected_result"]
 
         if expected_result:
@@ -321,6 +333,17 @@ class UtilsTestCase(test_base.CoriolisBaseTestCase):
             f"instance0={script_path}",
             f"instance1={script_path}",
             f"instance1={script_path},phase=osmorphing_pre_os_mount",  # noqa
+        ]
+
+        # We could've provided the dicts directly but we'll exercise
+        # comma_separated_kv_to_dict instead.
+        global_scripts = [
+            utils.comma_separated_kv_to_dict(params)
+            for params in global_scripts
+        ]
+        instance_scripts = [
+            utils.comma_separated_kv_to_dict(params)
+            for params in instance_scripts
         ]
 
         result = utils.compose_user_scripts(global_scripts, instance_scripts)

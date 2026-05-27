@@ -186,6 +186,7 @@ class CreateDeployment(show.ShowOne):
             action='append',
             required=False,
             dest="global_scripts",
+            type=cli_utils.comma_separated_kv_to_dict,
             help='A script that will run for a particular os_type. This '
                  'option can be used multiple times. '
                  'Use: linux=/path/to/script.sh or '
@@ -197,6 +198,7 @@ class CreateDeployment(show.ShowOne):
             action='append',
             required=False,
             dest="instance_scripts",
+            type=cli_utils.comma_separated_kv_to_dict,
             help='A script that will run for a particular '
                  'instance specified by the --instance option. '
                  'This option can be used multiple times. '

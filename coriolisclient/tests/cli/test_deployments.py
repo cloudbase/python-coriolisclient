@@ -210,13 +210,16 @@ class CreateDeploymentTestCase(test_base.CoriolisBaseTestCase):
         parser = self.cli.get_parser('coriolis')
         global_script = "linux=/linux/path"
         instance_script = "instance1=/instance1/path"
+
+        processed_global_scripts = [{"linux": "/linux/path"}]
+        processed_instance_scripts = [{"instance1": "/instance1/path"}]
         args = parser.parse_args([
             'transfer_id', '--force', '--dont-clone-disks',
             '--skip-os-morphing', '--user-script-global', global_script,
             '--user-script-instance', instance_script])
         self.assertEqual(
-            ('transfer_id', True, False, True, [global_script],
-             [instance_script]),
+            ('transfer_id', True, False, True,
+              processed_global_scripts, processed_instance_scripts),
             (args.transfer, args.force, args.clone_disks,
              args.skip_os_morphing, args.global_scripts,
              args.instance_scripts))

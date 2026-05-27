@@ -202,29 +202,39 @@ def comma_separated_kv_to_dict(input_string: str) -> dict:
     for kv_pair in kv_pairs:
         try:
             key, value = kv_pair.split("=")
-        except ValueError:
-            raise ValueError("Not a <key>=<value> pair: %s" % kv_pair)
+        except ValueError as err:
+            raise ValueError(
+                "Not a <key>=<value> pair: %s. " % kv_pair) from err
         out[key] = value
     return out
 
 
-def compose_user_scripts(global_scripts, instance_scripts):
+def compose_user_scripts(
+    global_scripts: list[dict],
+    instance_scripts: list[dict],
+) -> dict:
+    """Process user script arguments.
+
+    :param global_scripts: a list of dicts describing user scripts, the target
+        OS and the phase in which the scripts should be invoked.
+        The dicts are expected to contain the following keys:
+            * <os>: one of the operating systems supported by Coriolis,
+              e.g. "windows" or "linux". The value will be a local script path.
+            * "phase": optional phase, defaults to "osmorphing_post_os_mount".
+    :param instance_scripts: a list of dicts describing user scripts, each
+        having a corresponding instance.
+        The dicts are expected to contain the following keys:
+            * <instance>: The name of the instance where the script must run.
+            * "phase": optional phase, defaults to "osmorphing_post_os_mount".
+    :returns: the processed list of scripts as expected by the Coriolis API.
+    """
     ret = {
         "global": {},
         "instances": {}
     }
     global_scripts = global_scripts or []
     instance_scripts = instance_scripts or []
-    for global_script_str_params in global_scripts:
-        try:
-            params = comma_separated_kv_to_dict(global_script_str_params)
-        except ValueError:
-            raise ValueError(
-                "Invalid global user script parameter: %s. Expecting "
-                "<os_type>=<script_path>. Can optionally include a comma "
-                "separated phase parameter, "
-                "e.g. <os_type>=<script_path>,phase=<phase>" %
-                global_script_str_params)
+    for params in global_scripts:
         phase = params.pop("phase", constants.PHASE_OSMORPHING_POST_OS_MOUNT)
         if phase not in constants.USER_SCRIPT_PHASES:
             raise ValueError(
@@ -264,17 +274,7 @@ def compose_user_scripts(global_scripts, instance_scripts):
         }
         ret["global"][os_type].append(script_entry)
 
-    for instance_scripts_str_params in instance_scripts:
-        try:
-            params = comma_separated_kv_to_dict(instance_scripts_str_params)
-        except ValueError:
-            raise ValueError(
-                "Invalid instance user script parameter: %s. Expecting "
-                "<instance>=<script_path>. Can optionally include a comma "
-                "separated phase parameter, "
-                "e.g. <instance>=<script_path>,phase=<phase>" %
-                instance_scripts_str_params)
-
+    for params in instance_scripts:
         phase = params.pop("phase", constants.PHASE_OSMORPHING_POST_OS_MOUNT)
         if phase not in constants.USER_SCRIPT_PHASES:
             raise ValueError(
