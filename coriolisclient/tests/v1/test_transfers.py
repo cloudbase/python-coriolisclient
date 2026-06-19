@@ -135,6 +135,19 @@ class TransferManagerTestCase(test_base.CoriolisBaseTestCase):
         mock_get.assert_called_once_with(
             "/transfers/%s" % mock.sentinel.transfer, "transfer")
 
+    @mock.patch.object(transfers.TransferManager, "_get")
+    def test_get_with_task_info(self, mock_get):
+        result = self.transfer.get(
+            mock.sentinel.transfer, include_task_info=True)
+
+        self.assertEqual(
+            mock_get.return_value,
+            result
+        )
+        mock_get.assert_called_once_with(
+            "/transfers/%s?include_task_info=true" % mock.sentinel.transfer,
+            "transfer")
+
     @mock.patch.object(transfers.TransferManager, "_post")
     def test_create(self, mock_post):
         expected_data = {
