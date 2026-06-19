@@ -30,6 +30,8 @@ from coriolisclient.cli import utils as cli_utils
 TRANSFER_SCENARIO_REPLICA = "replica"
 TRANSFER_SCENARIO_LIVE_MIGRATION = "live_migration"
 
+TRANSFER_SHOW_EXECUTIONS_LIMIT = 10
+
 
 def _add_default_deployment_args_to_parser(parser):
     cd_group = parser.add_mutually_exclusive_group()
@@ -70,12 +72,6 @@ class TransferFormatter(formatter.EntityFormatter):
     def _get_sorted_list(self, obj_list):
         return sorted(obj_list, key=lambda o: o.created_at)
 
-    def _format_last_execution(self, obj):
-        if obj.executions:
-            execution = sorted(obj.executions, key=lambda e: e.created_at)[-1]
-            return "%(id)s %(status)s" % execution.to_dict()
-        return ""
-
     def _get_formatted_data(self, obj):
         data = (obj.id,
                 getattr(obj, "scenario", "replica"),
@@ -89,7 +85,8 @@ class TransferFormatter(formatter.EntityFormatter):
 
 class TransferDetailFormatter(formatter.EntityFormatter):
 
-    def __init__(self, show_instances_data=False):
+    def __init__(self, show_instances_data=False, executions=None):
+        self._executions = executions
         self.columns = [
             "id",
             "created",
@@ -133,6 +130,9 @@ class TransferDetailFormatter(formatter.EntityFormatter):
         storage_mappings = obj.to_dict().get("storage_mappings", {})
         default_storage, backend_mappings, disk_mappings = (
             cli_utils.parse_storage_mappings(storage_mappings))
+        executions = (
+            self._executions if self._executions is not None
+            else obj.executions)
         data = [obj.id,
                 obj.created_at,
                 obj.updated_at,
@@ -158,7 +158,7 @@ class TransferDetailFormatter(formatter.EntityFormatter):
                 cli_utils.format_json_for_object_property(obj, 'user_scripts'),
                 obj.clone_disks,
                 obj.skip_os_morphing,
-                self._format_executions(obj.executions)]
+                self._format_executions(executions)]
 
         if "instances-data" in self.columns:
             data.append(obj.info)
@@ -307,9 +307,15 @@ class ShowTransfer(show.ShowOne):
         return parser
 
     def take_action(self, args):
-        transfer = self.app.client_manager.coriolis.transfers.get(args.id)
+        coriolis = self.app.client_manager.coriolis
+        transfer = coriolis.transfers.get(args.id)
+        executions = coriolis.transfer_executions.list(
+            args.id,
+            limit=TRANSFER_SHOW_EXECUTIONS_LIMIT,
+            sort_keys=["number"], sort_dirs=["desc"])
         return TransferDetailFormatter(
-            args.show_instances_data).get_formatted_entity(transfer)
+            args.show_instances_data,
+            executions=executions).get_formatted_entity(transfer)
 
 
 class DeleteTransfer(command.Command):

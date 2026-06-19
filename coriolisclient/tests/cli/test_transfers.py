@@ -36,44 +36,6 @@ class TransferFormatterTestCase(test_base.CoriolisBaseTestCase):
             result
         )
 
-    def test_format_last_execution(self):
-        obj = mock.Mock()
-        obj.executions = None
-
-        result = self.transfer._format_last_execution(obj)
-
-        self.assertEqual(
-            "",
-            result
-        )
-
-        execution1 = mock.Mock()
-        execution2 = mock.Mock()
-        execution3 = mock.Mock()
-        execution1.created_at = "date1"
-        execution2.created_at = "date2"
-        execution3.created_at = "date3"
-        execution1.to_dict.return_value = {
-            "id": "mock_id1",
-            "status": "mock_status1"
-        }
-        execution2.to_dict.return_value = {
-            "id": "mock_id2",
-            "status": "mock_status2"
-        }
-        execution3.to_dict.return_value = {
-            "id": "mock_id3",
-            "status": "mock_status3"
-        }
-        obj.executions = [execution1, execution3, execution2]
-
-        result = self.transfer._format_last_execution(obj)
-
-        self.assertEqual(
-            "mock_id3 mock_status3",
-            result
-        )
-
     def test_get_formatted_data(self):
         obj = mock.Mock()
         obj.id = mock.sentinel.id
@@ -362,23 +324,32 @@ class ShowTransferTestCase(test_base.CoriolisBaseTestCase):
         )
         mock_get_parser.assert_called_once_with(mock.sentinel.prog_name)
 
-    @mock.patch.object(transfers.TransferDetailFormatter,
-                       'get_formatted_entity')
-    def test_take_action(self, mock_get_formatted_entity):
+    @mock.patch.object(transfers, 'TransferDetailFormatter')
+    def test_take_action(self, mock_formatter_class):
         args = mock.Mock()
         args.id = mock.sentinel.id
-        mock_transfer = mock.Mock()
-        self.mock_app.client_manager.coriolis.transfers.get = mock_transfer
+        args.show_instances_data = mock.sentinel.show_instances_data
+        coriolis = self.mock_app.client_manager.coriolis
+        mock_get = coriolis.transfers.get
+        mock_list = coriolis.transfer_executions.list
+        mock_formatter = mock_formatter_class.return_value
 
         result = self.transfer.take_action(args)
 
         self.assertEqual(
-            mock_get_formatted_entity.return_value,
+            mock_formatter.get_formatted_entity.return_value,
             result
         )
-        mock_transfer.assert_called_once_with(mock.sentinel.id)
-        mock_get_formatted_entity.assert_called_once_with(
-            mock_transfer.return_value)
+        mock_get.assert_called_once_with(mock.sentinel.id)
+        mock_list.assert_called_once_with(
+            mock.sentinel.id,
+            limit=transfers.TRANSFER_SHOW_EXECUTIONS_LIMIT,
+            sort_keys=["number"], sort_dirs=["desc"])
+        mock_formatter_class.assert_called_once_with(
+            mock.sentinel.show_instances_data,
+            executions=mock_list.return_value)
+        mock_formatter.get_formatted_entity.assert_called_once_with(
+            mock_get.return_value)
 
 
 class DeleteTransferTestCase(test_base.CoriolisBaseTestCase):
