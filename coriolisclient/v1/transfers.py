@@ -69,8 +69,11 @@ class TransferManager(base.BaseManager):
             path = "%s/detail" % path
         return self._list(path, 'transfers', query=query)
 
-    def get(self, transfer):
-        return self._get('/transfers/%s' % base.getid(transfer), 'transfer')
+    def get(self, transfer, include_task_info=False):
+        url = '/transfers/%s' % base.getid(transfer)
+        if include_task_info:
+            url += '?include_task_info=true'
+        return self._get(url, 'transfer')
 
     def create(self, origin_endpoint_id, destination_endpoint_id,
                source_environment, destination_environment, instances,

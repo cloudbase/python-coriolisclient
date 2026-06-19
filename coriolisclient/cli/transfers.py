@@ -308,7 +308,8 @@ class ShowTransfer(show.ShowOne):
 
     def take_action(self, args):
         coriolis = self.app.client_manager.coriolis
-        transfer = coriolis.transfers.get(args.id)
+        transfer = coriolis.transfers.get(
+            args.id, include_task_info=args.show_instances_data)
         executions = coriolis.transfer_executions.list(
             args.id,
             limit=TRANSFER_SHOW_EXECUTIONS_LIMIT,

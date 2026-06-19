@@ -340,7 +340,9 @@ class ShowTransferTestCase(test_base.CoriolisBaseTestCase):
             mock_formatter.get_formatted_entity.return_value,
             result
         )
-        mock_get.assert_called_once_with(mock.sentinel.id)
+        mock_get.assert_called_once_with(
+            mock.sentinel.id,
+            include_task_info=mock.sentinel.show_instances_data)
         mock_list.assert_called_once_with(
             mock.sentinel.id,
             limit=transfers.TRANSFER_SHOW_EXECUTIONS_LIMIT,
