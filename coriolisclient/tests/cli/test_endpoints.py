@@ -200,11 +200,11 @@ class CreateEndpointTestCase(test_base.CoriolisBaseTestCase):
         args.regions = mock.sentinel.regions
         args.skip_validation = False
         mock_create = mock.Mock()
-        mock_validate_connection = mock.Mock()
-        mock_validate_connection.return_value = (True, "mock_message")
+        mock_validate_connection_info = mock.Mock()
+        mock_validate_connection_info.return_value = (True, "mock_message")
         self.mock_app.client_manager.coriolis.endpoints.create = mock_create
-        self.mock_app.client_manager.coriolis.endpoints.validate_connection = \
-            mock_validate_connection
+        (self.mock_app.client_manager.coriolis.endpoints
+            .validate_connection_info) = mock_validate_connection_info
 
         result = self.endpoint.take_action(args)
 
@@ -213,6 +213,10 @@ class CreateEndpointTestCase(test_base.CoriolisBaseTestCase):
             result
         )
         mock_get_connection_info_from_args.assert_called_once_with(args)
+        mock_validate_connection_info.assert_called_once_with(
+            mock.sentinel.provider,
+            mock_get_connection_info_from_args.return_value,
+            regions=mock.sentinel.regions)
         mock_create.assert_called_once_with(
             mock.sentinel.name,
             mock.sentinel.provider,
@@ -220,8 +224,6 @@ class CreateEndpointTestCase(test_base.CoriolisBaseTestCase):
             mock.sentinel.description,
             regions=mock.sentinel.regions,
         )
-        mock_validate_connection.assert_called_once_with(
-            mock_create.return_value.id)
         mock_get_formatted_entity.assert_called_once_with(
             mock_create.return_value)
 
@@ -253,11 +255,11 @@ class CreateEndpointTestCase(test_base.CoriolisBaseTestCase):
         args.regions = mock.sentinel.regions
         args.skip_validation = False
         mock_create = mock.Mock()
-        mock_validate_connection = mock.Mock()
-        mock_validate_connection.return_value = (False, "mock_message")
+        mock_validate_connection_info = mock.Mock()
+        mock_validate_connection_info.return_value = (False, "mock_message")
         self.mock_app.client_manager.coriolis.endpoints.create = mock_create
-        self.mock_app.client_manager.coriolis.endpoints.validate_connection = \
-            mock_validate_connection
+        (self.mock_app.client_manager.coriolis.endpoints
+            .validate_connection_info) = mock_validate_connection_info
 
         self.assertRaises(
             exceptions.EndpointConnectionValidationFailed,
@@ -266,15 +268,11 @@ class CreateEndpointTestCase(test_base.CoriolisBaseTestCase):
         )
 
         mock_get_connection_info_from_args.assert_called_once_with(args)
-        mock_create.assert_called_once_with(
-            mock.sentinel.name,
+        mock_validate_connection_info.assert_called_once_with(
             mock.sentinel.provider,
             mock_get_connection_info_from_args.return_value,
-            mock.sentinel.description,
-            regions=mock.sentinel.regions,
-        )
-        mock_validate_connection.assert_called_once_with(
-            mock_create.return_value.id)
+            regions=mock.sentinel.regions)
+        mock_create.assert_not_called()
         mock_get_formatted_entity.assert_not_called()
 
 

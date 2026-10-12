@@ -160,6 +160,47 @@ class EndpointManagerTestCase(
             '/endpoints/53773ab8-1474-4cf7-bf0c-a496a6595ecb/actions',
             json={'validate-connection': None})
 
+    def test_validate_connection_info(self):
+        self.mock_client.post.return_value.json.return_value = {
+            "validate-connection-info": {
+                "valid": mock.sentinel.valid,
+                "message": mock.sentinel.message
+            }
+        }
+
+        result = self.endpoint.validate_connection_info(
+            mock.sentinel.platform, mock.sentinel.connection_info,
+            regions=mock.sentinel.regions)
+
+        self.assertEqual(
+            (mock.sentinel.valid, mock.sentinel.message),
+            result
+        )
+        self.mock_client.post.assert_called_once_with(
+            '/endpoints/actions',
+            json={'validate-connection-info': {
+                "platform": mock.sentinel.platform,
+                "connection_info": mock.sentinel.connection_info,
+                "mapped_regions": mock.sentinel.regions}})
+
+    def test_validate_connection_info_no_regions(self):
+        self.mock_client.post.return_value.json.return_value = {
+            "validate-connection-info": {
+                "valid": mock.sentinel.valid,
+                "message": mock.sentinel.message
+            }
+        }
+
+        self.endpoint.validate_connection_info(
+            mock.sentinel.platform, mock.sentinel.connection_info)
+
+        self.mock_client.post.assert_called_once_with(
+            '/endpoints/actions',
+            json={'validate-connection-info': {
+                "platform": mock.sentinel.platform,
+                "connection_info": mock.sentinel.connection_info,
+                "mapped_regions": []}})
+
     @mock.patch.object(endpoints.EndpointManager, '_get_endpoint_id_for_name')
     def test_get_endpoint_id_for_name_uuid(
         self,

@@ -80,7 +80,21 @@ class EndpointManager(base.BaseManager):
         data = self.client.post(
             '/endpoints/%s/actions' % base.getid(endpoint),
             json={'validate-connection': None}).json()
-        validate_data = data["validate-connection"]
+        return self._get_validation_result(data, 'validate-connection')
+
+    def validate_connection_info(self, platform, connection_info,
+                                 regions=None):
+        data = self.client.post(
+            '/endpoints/actions',
+            json={'validate-connection-info': {
+                "platform": platform,
+                "connection_info": connection_info,
+                "mapped_regions": regions or []}}).json()
+        return self._get_validation_result(data, 'validate-connection-info')
+
+    @staticmethod
+    def _get_validation_result(data, action):
+        validate_data = data[action]
         return validate_data.get("valid"), validate_data.get("message")
 
     def get_endpoint_id_for_name(self, endpoint):
