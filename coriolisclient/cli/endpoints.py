@@ -151,19 +151,19 @@ class CreateEndpoint(show.ShowOne):
                 "--connection-secret, but not both")
 
         conn_info = get_connection_info_from_args(args)
-        endpoint = self.app.client_manager.coriolis.endpoints.create(
+        endpoints = self.app.client_manager.coriolis.endpoints
+        if not args.skip_validation:
+            valid, message = endpoints.validate_connection_info(
+                args.provider, conn_info, regions=args.regions)
+            if not valid:
+                raise exceptions.EndpointConnectionValidationFailed(message)
+
+        endpoint = endpoints.create(
             args.name,
             args.provider,
             conn_info,
             args.description,
             regions=args.regions)
-
-        if not args.skip_validation:
-            valid, message = (
-                self.app.client_manager.coriolis.endpoints.validate_connection(
-                    endpoint.id))
-            if not valid:
-                raise exceptions.EndpointConnectionValidationFailed(message)
 
         return EndpointDetailFormatter().get_formatted_entity(endpoint)
 
