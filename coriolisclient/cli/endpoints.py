@@ -295,3 +295,30 @@ class EndpointValidateConnection(command.Command):
         valid, message = endpoints.validate_connection(endpoint_id)
         if not valid:
             raise exceptions.EndpointConnectionValidationFailed(message)
+
+
+class EndpointValidateConnectionInfo(command.Command):
+    """Validates the given endpoint connection info"""
+
+    def get_parser(self, prog_name):
+        parser = super(
+            EndpointValidateConnectionInfo, self).get_parser(prog_name)
+        parser.add_argument('--provider', required=True,
+                            help='The provider, e.g.: '
+                            'vmware_vsphere, openstack')
+        parser.add_argument('--coriolis-region', action='append',
+                            dest='regions', default=[],
+                            help="ID of a region the connection info should "
+                            "be validated in. Can be supplied multiple "
+                            "times.")
+        add_connection_info_args_to_parser(parser)
+
+        return parser
+
+    def take_action(self, args):
+        conn_info = get_connection_info_from_args(args)
+        endpoints = self.app.client_manager.coriolis.endpoints
+        valid, message = endpoints.validate_connection_info(
+            args.provider, conn_info, regions=args.regions)
+        if not valid:
+            raise exceptions.EndpointConnectionValidationFailed(message)
