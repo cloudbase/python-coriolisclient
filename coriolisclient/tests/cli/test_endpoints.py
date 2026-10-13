@@ -531,3 +531,72 @@ class EndpointValidateConnectionTestCase(test_base.CoriolisBaseTestCase):
             mock.sentinel.id)
         mock_validate_connection.assert_called_once_with(
             mock_endpoint.get_endpoint_id_for_name.return_value)
+
+
+class EndpointValidateConnectionInfoTestCase(test_base.CoriolisBaseTestCase):
+    """Test suite for the Coriolis Client Endpoint Validate Connection
+    Info."""
+
+    def setUp(self):
+        self.mock_app = mock.Mock()
+        super(EndpointValidateConnectionInfoTestCase, self).setUp()
+        self.endpoint = endpoints.EndpointValidateConnectionInfo(
+            self.mock_app, mock.sentinel.app_args)
+
+    @mock.patch.object(endpoints, 'add_connection_info_args_to_parser')
+    @mock.patch.object(command.Command, 'get_parser')
+    def test_get_parser(
+        self,
+        mock_get_parser,
+        mock_add_connection_info_args_to_parser
+    ):
+        result = self.endpoint.get_parser(mock.sentinel.prog_name)
+
+        self.assertEqual(
+            mock_get_parser.return_value,
+            result
+        )
+        mock_get_parser.assert_called_once_with(mock.sentinel.prog_name)
+        mock_add_connection_info_args_to_parser.assert_called_once_with(
+            mock_get_parser.return_value)
+
+    @mock.patch.object(endpoints, 'get_connection_info_from_args')
+    def test_take_action(self, mock_get_connection_info_from_args):
+        args = mock.Mock()
+        args.provider = mock.sentinel.provider
+        args.regions = mock.sentinel.regions
+        mock_validate_connection_info = mock.Mock()
+        mock_validate_connection_info.return_value = (True, None)
+        (self.mock_app.client_manager.coriolis.endpoints
+            .validate_connection_info) = mock_validate_connection_info
+
+        self.endpoint.take_action(args)
+
+        mock_get_connection_info_from_args.assert_called_once_with(args)
+        mock_validate_connection_info.assert_called_once_with(
+            mock.sentinel.provider,
+            mock_get_connection_info_from_args.return_value,
+            regions=mock.sentinel.regions)
+
+    @mock.patch.object(endpoints, 'get_connection_info_from_args')
+    def test_take_action_not_valid(self, mock_get_connection_info_from_args):
+        args = mock.Mock()
+        args.provider = mock.sentinel.provider
+        args.regions = mock.sentinel.regions
+        mock_validate_connection_info = mock.Mock()
+        mock_validate_connection_info.return_value = (False, "mock_message")
+        (self.mock_app.client_manager.coriolis.endpoints
+            .validate_connection_info) = mock_validate_connection_info
+
+        self.assertRaisesRegex(
+            exceptions.EndpointConnectionValidationFailed,
+            "mock_message",
+            self.endpoint.take_action,
+            args
+        )
+
+        mock_get_connection_info_from_args.assert_called_once_with(args)
+        mock_validate_connection_info.assert_called_once_with(
+            mock.sentinel.provider,
+            mock_get_connection_info_from_args.return_value,
+            regions=mock.sentinel.regions)
